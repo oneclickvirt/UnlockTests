@@ -3,11 +3,12 @@ package asia
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
-	"regexp"
-	"strings"
 )
 
 // StarPlus
@@ -27,7 +28,12 @@ func StarPlus(request *gorequest.SuperAgent) model.Result {
 	if resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
+	//fmt.Println(resp.StatusCode)
+	//fmt.Println(resp.Request.URL.String())
 	if resp.StatusCode == 200 {
+		if resp.StatusCode == 302 || resp.Header.Get("Location") == "https://www.preview.starplus.com/unavailable" {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
 		re := regexp.MustCompile(`Region:\s+([A-Za-z]{2})`)
 		matches := re.FindStringSubmatch(body)
 		if len(matches) >= 2 {
@@ -43,8 +49,6 @@ func StarPlus(request *gorequest.SuperAgent) model.Result {
 			}
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-	} else if resp.StatusCode == 302 && resp.Header.Get("Location") == "https://www.preview.starplus.com/unavailable" {
-		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.starplus.com failed with code: %d", resp.StatusCode)}
