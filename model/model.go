@@ -21,6 +21,11 @@ const (
 	UA_Pjsekai       = "pjsekai/48 CFNetwork/1240.0.4 Darwin/20.6.0"
 )
 
+var StarPlusSupportCountry = []string{
+	"br", "mx", "ar", "cl", "co", "pe", "uy", "ec", "pa", "cr", "py", "bo",
+	"gt", "ni", "do", "sv", "hn", "ve",
+}
+
 var GptSupportCountry = []string{
 	"al", "dz", "ad", "ao", "ag", "ar", "am", "au", "at", "az", "bs", "bd",
 	"bb", "be", "bz", "bj", "bt", "ba", "bw", "br", "bg", "bf", "cv", "ca",
