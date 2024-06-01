@@ -1,6 +1,11 @@
 package nl
 
 import (
+	"encoding/json"
+	"io"
+	"strings"
+
+	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -12,31 +17,45 @@ func NPOStartPlus(request *gorequest.SuperAgent) model.Result {
 	tokenURL := "https://www.npo.nl/start/api/domain/player-token?productId=LI_NL1_4188102"
 	streamURL := "https://prod.npoplayer.nl/stream-link"
 	referrerURL := "https://npo.nl/start/live?channel=NPO1"
-	resp, body, errs1 := request.Get(tokenURL).
-		Set("User-Agent", model.UA_Browser).
-		Set("Host", "www.npo.nl").
-		Set("Connection", "keep-alive").
-		Set("Accept", "application/json, text/plain, */*").
-		Set("Referer", referrerURL).
-		End()
-	if len(errs1) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
-	}
+	client := req.DefaultClient()
+	client.ImpersonateChrome()
+	resp, err := client.R().Get(tokenURL)
 	defer resp.Body.Close()
-	token := body
-	resp2, _, errs2 := request.Post(streamURL).
-		Set("User-Agent", model.UA_Browser).
-		Set("Accept", "*/*").
-		Set("Authorization", token).
-		Set("Content-Type", "application/json").
-		Set("Origin", "https://npo.nl").
-		Set("Referer", "https://npo.nl/").
-		Send(`{"profileName":"dash","drmType":"playready","referrerUrl":"` + referrerURL + `"}`).
-		End()
-	if len(errs2) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	if resp2.StatusCode == 451 {
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	// body := string(b)
+	// fmt.Println(body)
+	var res1 struct {
+		Token string `json:"token"`
+	}
+	if err := json.Unmarshal(b, &res1); err != nil {
+		return model.Result{Name: name, Status: model.StatusErr, Err: err}
+	}
+	token := res1.Token
+	client.Headers.Set("Origin", "https://npo.nl")
+	client.Headers.Set("Referer", "https://npo.nl/")
+	client.Headers.Set("Content-Type", "application/json")
+	client.Headers.Set("Authorization", token)
+	resp2, err2 := client.R().SetBodyString(`{"profileName":"dash","drmType":"playready","referrerUrl":"` + referrerURL + `"}`).
+		Post(streamURL)
+	if err2 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	defer resp2.Body.Close()
+	b, err = io.ReadAll(resp2.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	body := string(b)
+	// fmt.Println(body)
+	// fmt.Println(resp2.StatusCode)
+	// {"status":451,"body":"Dit programma mag niet bekeken worden vanaf jouw locatie."}
+	if resp2.StatusCode == 451 || strings.Contains(body, "Dit programma mag niet bekeken worden vanaf jouw locatie.") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp2.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusYes}
