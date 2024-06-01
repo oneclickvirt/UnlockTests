@@ -3,9 +3,10 @@ package asia
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // MolaTV
@@ -35,9 +36,9 @@ func MolaTV(request *gorequest.SuperAgent) model.Result {
 		}
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	if res.Data.Attributes.IsAllowed == false {
+	if !res.Data.Attributes.IsAllowed {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if res.Data.Attributes.IsAllowed == true {
+	} else if res.Data.Attributes.IsAllowed {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

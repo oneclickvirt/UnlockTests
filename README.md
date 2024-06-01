@@ -6,15 +6,19 @@
 
 开发中，勿要使用
 
-## 待解决的问题
+## TODO
 
 ### 同态检测
+
+可能需要拆分检测
 
 ```
 TLCGO 和 NBCTV 
 ```
 
 ### 无效检测
+
+需要重新构建检测逻辑
 
 ```
 HBO_Nordic
@@ -34,11 +38,15 @@ KPLUS - ssoToken 已过期
 
 ### 地区失效
 
+不需要再做支持
+
 ```
 KBSAmerican - 不再支持本地区
 ```
 
 ### 部分失效
+
+有替代的检测，但仍保留失效检测的部分，未知是否完全失效
 
 ```
 Au7plus - 7plus-sevennetwork.akamaized.net 无论如何请求都失败

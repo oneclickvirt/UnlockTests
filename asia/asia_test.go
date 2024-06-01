@@ -2,64 +2,59 @@ package asia
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
-	"sync"
 	"testing"
+
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 func Test(t *testing.T) {
-	var wg sync.WaitGroup
-	wg.Add(6)
-	results := make(chan model.Result, 6)
+	req, _ := utils.ParseInterface("", "", "tcp4")
 
-	go func() {
-		defer wg.Done()
-		req, _ := utils.ParseInterface("", "", "tcp4")
-		res := StarPlus(req)
-		results <- res
-	}()
-	go func() {
-		defer wg.Done()
-		req, _ := utils.ParseInterface("", "", "tcp4")
-		res := TLCGO(req)
-		results <- res
-	}()
-	go func() {
-		defer wg.Done()
-		req, _ := utils.ParseInterface("", "", "tcp4")
-		res := BilibiliMainland(req)
-		results <- res
-	}()
-	go func() {
-		defer wg.Done()
-		req, _ := utils.ParseInterface("", "", "tcp4")
-		res := HBOGO(req)
-		results <- res
-	}()
-	go func() {
-		defer wg.Done()
-		req, _ := utils.ParseInterface("", "", "tcp4")
-		res := Hotstar(req)
-		results <- res
-	}()
-	go func() {
-		defer wg.Done()
-		req, _ := utils.ParseInterface("", "", "tcp4")
-		res := MolaTV(req)
-		results <- res
-	}()
-
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
-
-	for res := range results {
-		fmt.Printf(res.Name + ": ")
-		if res.Err != nil {
-			fmt.Printf(res.Err.Error() + " ")
-		}
-		fmt.Println(res.Status, res.Region)
+	res := BilibiliID(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
 	}
+	fmt.Println("BilibiliID", ": ", res.Status, res.Region)
+
+	res = BilibiliMainland(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println("BilibiliMainland", ": ", res.Status, res.Region)
+
+	res = BilibiliSEA(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println("BilibiliSEA", ": ", res.Status, res.Region)
+
+	res = HBOGO(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region)
+
+	res = Hotstar(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region)
+
+	res = MolaTV(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region)
+
+	res = StarPlus(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region)
+
+	res = TLCGO(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region)
 }
