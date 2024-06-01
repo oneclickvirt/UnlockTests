@@ -15,7 +15,9 @@
 可能需要拆分检测
 
 ```
-TLCGO 和 NBCTV 
+TLCGO 和 NBCTV
+
+DirectvStream 和 ATTNOW
 ```
 
 ### 无效检测
