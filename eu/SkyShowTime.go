@@ -1,0 +1,46 @@
+package eu
+
+import (
+	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
+	"strings"
+)
+
+// SkyShowTime
+// www.skyshowtime.com 双栈 get 请求
+func SkyShowTime(request *gorequest.SuperAgent) model.Result {
+	name := "SkyShowTime"
+	url := "https://www.skyshowtime.com/"
+	request = request.Set("User-Agent", model.UA_Browser).
+		Set("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	if len(errs) > 0 {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	}
+	defer resp.Body.Close()
+	//fmt.Println(body)
+	if strings.Contains(body, "Access Denied") ||
+		strings.Contains(resp.Request.URL.String(), "where-can-i-stream") ||
+		strings.Contains(body, "is not available in your location") ||
+		resp.StatusCode == 403 || resp.StatusCode == 451 {
+		return model.Result{Name: name, Status: model.StatusNo}
+	} else if resp.StatusCode == 200 {
+		var region string
+		tempList := strings.Split(body, "\n")
+		for _, line := range tempList {
+			if strings.Contains(line, "location") && strings.Contains(line, ":") {
+				tpList := strings.Split(line, ":")
+				if len(tpList) >= 2 {
+					region = strings.TrimSpace(strings.ReplaceAll(tpList[1], "?", ""))
+					break
+				} else {
+					return model.Result{Name: name, Status: model.StatusNo}
+				}
+			}
+		}
+		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+	}
+	return model.Result{Name: name, Status: model.StatusUnexpected,
+		Err: fmt.Errorf("get www.skyshowtime.com failed with code: %d", resp.StatusCode)}
+}
