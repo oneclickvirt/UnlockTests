@@ -9,7 +9,8 @@ import (
 )
 
 // BahamutAnime
-// ani.gamer.com.tw 仅 ipv4 且 get 请求
+// ani.gamer.com.tw 仅 ipv4 且 get 请求 有问题
+// 存在 cloudflare 的5秒盾
 func BahamutAnime(request *gorequest.SuperAgent) model.Result {
 	name := "Bahamut Anime"
 	url := "https://ani.gamer.com.tw/ajax/getdeviceid.php"

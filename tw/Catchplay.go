@@ -3,13 +3,15 @@ package tw
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Catchplay
 // sunapi.catchplay.com 仅 ipv4 且 get 请求
+// unauthorized 有问题
 func Catchplay(request *gorequest.SuperAgent) model.Result {
 	name := "CatchPlay+"
 	url := "https://sunapi.catchplay.com/geo"
@@ -27,6 +29,7 @@ func Catchplay(request *gorequest.SuperAgent) model.Result {
 		if strings.Contains(body, "is not allowed") && strings.Contains(body, "The location") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
+		fmt.Println(body)
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.Code == "100016" {

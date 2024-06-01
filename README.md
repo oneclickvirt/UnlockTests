@@ -52,6 +52,10 @@ PCRJP - stream error: stream ID 1; INTERNAL_ERROR; received from peer
 PrettyDerby - stream error: stream ID 1; INTERNAL_ERROR; received from peer
 
 WorldFlipper - stream error: stream ID 1; INTERNAL_ERROR; received from peer
+
+Catchplay - unauthorized 原 token 已过期
+
+BahamutAnime - 存在 cloudflare 的5秒盾
 ```
 
 ### 地区失效
