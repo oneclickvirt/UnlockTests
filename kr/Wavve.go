@@ -21,7 +21,7 @@ func Wavve(request *gorequest.SuperAgent) model.Result {
 	//fmt.Println(body)
 	if strings.Contains(body, "해외 스트리밍이 거부되었습니다") ||
 		strings.Contains(body, "허용된 국가가 아닙니다") ||
-		resp.StatusCode == 403 || resp.StatusCode == 451 {
+		resp.StatusCode == 403 || resp.StatusCode == 451 || resp.StatusCode == 550 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusYes}
