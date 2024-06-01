@@ -2,9 +2,10 @@ package asia
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Hotstar
@@ -23,12 +24,17 @@ func Hotstar(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if resp.StatusCode == 401 {
-		resp, _, errs = request.Get("https://www.hotstar.com").Retry(2, 5).End()
-		if resp.StatusCode == 301 {
+		resp1, _, errs1 := request.Get("https://www.hotstar.com").Retry(2, 5).End()
+		if len(errs1) > 0 {
+			return model.Result{Name: name, Status: model.StatusUnexpected,
+				Err: fmt.Errorf("get api.hotstar.com failed with code: %d %d", resp.StatusCode, resp1.StatusCode)}
+		}
+		defer resp1.Body.Close()
+		if resp1.StatusCode == 301 {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
 		//fmt.Println(body)
-		u := resp.Header.Get("Location")
+		u := resp1.Header.Get("Location")
 		if u == "" {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
