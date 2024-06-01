@@ -2,11 +2,11 @@ package ca
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
-
 
 // CBCGem
 // www.cbc.ca 仅 ipv4 且 get 请求
@@ -19,7 +19,9 @@ func CBCGem(request *gorequest.SuperAgent) model.Result {
 	}
 	defer resp.Body.Close()
 	if strings.Contains(body, `country":"CA"`) {
-		return model.Result{Name: name, Status: model.StatusYes}
+		return model.Result{Name: name, Status: model.StatusYes, Region: "ca"}
+	} else if resp.StatusCode == 200 {
+		return model.Result{Name: name, Status: model.StatusYes, Region: "global"}
 	}
 	if resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
