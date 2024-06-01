@@ -29,7 +29,9 @@ HBO_Portugal
 
 ElevenSportsTW
 
-MathsSpot 
+MathsSpot
+
+MegogoTV
 
 TV360 - 登录认证已过期
 
@@ -70,6 +72,8 @@ Paravi - 已迁移并集成到 U-NEXT 中。由于整合，除了传统的Paravi
 Au7plus - 7plus-sevennetwork.akamaized.net 无论如何请求都失败
 
 BilibiliID - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
+
+BilibiliTH - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
 
 TVer - get platform-api.tver.jp failed with code: 400
 ```
