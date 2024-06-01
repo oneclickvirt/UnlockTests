@@ -1,10 +1,10 @@
 package transnation
 
 import (
-	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Steam
@@ -18,15 +18,11 @@ func Steam(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	for _, c := range resp.Request.Cookies() {
-		if c.Name == "steamCountry" {
-			i := strings.Index(c.Value, "%")
-			if i == -1 {
-				return model.Result{Name: name, Status: model.StatusNo}
-			}
-			return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(c.Value[:i])}
-		}
+	cookies := resp.Header.Get("Set-Cookie")
+	if strings.Contains(cookies, "steamCountry=") {
+		region := strings.ToLower(strings.ReplaceAll(cookies, "steamCountry=", "")[0:2])
+		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+	} else {
+		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	return model.Result{Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("get store.steampowered.com failed with code: %d", resp.StatusCode)}
 }
