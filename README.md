@@ -79,6 +79,8 @@ BilibiliID - 对应URL请求无论如何都返回为空 {"code":10004001,"messag
 
 BilibiliTH - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
 
+BilibiliVN - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
+
 TVer - get platform-api.tver.jp failed with code: 400
 ```
 
