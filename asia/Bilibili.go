@@ -3,9 +3,10 @@ package asia
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Bilibili
@@ -17,7 +18,7 @@ func Bilibili(request *gorequest.SuperAgent, url string) model.Result {
 		return model.Result{Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	//fmt.Println(body)
+	// fmt.Println(body)
 	var res struct {
 		Code int `json:"code"`
 	}
