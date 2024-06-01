@@ -33,11 +33,11 @@ MathsSpot
 
 MegogoTV
 
+KPLUS - ssoToken 已过期
+
 TV360 - 登录认证已过期
 
 Crackle - Platform Key is not specified
-
-KPLUS - ssoToken 已过期
 
 Eurosport - Tokem 已过期 且 api 官网已升级至于 v3
 
