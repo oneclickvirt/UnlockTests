@@ -2,12 +2,14 @@ package jp
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
 
 // PrettyDerby
 // api-umamusume.cygames.jp 双栈 且 get 请求
+// 有问题 stream error: stream ID 1; INTERNAL_ERROR; received from peer
 func PrettyDerby(request *gorequest.SuperAgent) model.Result {
 	name := "Pretty Derby Japan"
 	url := "https://api-umamusume.cygames.jp/"

@@ -7,7 +7,8 @@ import (
 )
 
 // PCRJP
-// api-priconne-redive.cygames.jp 仅 ipv4 且 get 请求
+// api-priconne-redive.cygames.jp 仅 ipv4 且 get 请求 
+// 有问题 stream error: stream ID 1; INTERNAL_ERROR; received from peer
 func PCRJP(request *gorequest.SuperAgent) model.Result {
 	name := "Princess Connect Re - Dive Japan"
 	url := "https://api-priconne-redive.cygames.jp/"

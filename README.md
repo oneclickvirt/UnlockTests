@@ -44,6 +44,12 @@ HBOGOEurope - api.ugw.hbogo.eu 已经 host 为空了 查询不到内容
 HBOSpain - api-discovery.hbo.eu 的 host 已经为空了
 
 Salto - Get remote error: tls: unrecognized name
+
+PCRJP - stream error: stream ID 1; INTERNAL_ERROR; received from peer
+
+PrettyDerby - stream error: stream ID 1; INTERNAL_ERROR; received from peer
+
+WorldFlipper - stream error: stream ID 1; INTERNAL_ERROR; received from peer
 ```
 
 ### 地区失效
@@ -64,6 +70,8 @@ Paravi - 已迁移并集成到 U-NEXT 中。由于整合，除了传统的Paravi
 Au7plus - 7plus-sevennetwork.akamaized.net 无论如何请求都失败
 
 BilibiliID - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
+
+TVer - get platform-api.tver.jp failed with code: 400
 ```
 
 </details>

@@ -3,9 +3,10 @@ package jp
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Telasa
@@ -25,7 +26,7 @@ func Telasa(request *gorequest.SuperAgent) model.Result {
 			Subtype string `json:"subtype"`
 		} `json:"status"`
 	}
-	fmt.Println(body)
+	// fmt.Println(body)
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		if strings.Contains(body, "RequestForbidden") {
 			return model.Result{Name: name, Status: model.StatusNo}
