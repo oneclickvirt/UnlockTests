@@ -16,8 +16,6 @@
 
 ```
 TLCGO 和 NBCTV
-
-DirectvStream 和 ATTNOW
 ```
 
 ### 无效检测
