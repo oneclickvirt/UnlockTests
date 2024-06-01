@@ -2,9 +2,10 @@ package eu
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // SkyShowTime
@@ -26,12 +27,16 @@ func SkyShowTime(request *gorequest.SuperAgent) model.Result {
 		resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
+		// fmt.Println(resp.Request.URL.String())
 		var region string
 		tempList := strings.Split(body, "\n")
 		for _, line := range tempList {
 			if strings.Contains(line, "location") && strings.Contains(line, ":") {
+				if strings.Contains(line, "https://www.skyshowtime.com/watch/home") {
+					continue
+				}
 				tpList := strings.Split(line, ":")
-				if len(tpList) >= 2 {
+				if len(tpList) >= 2 && len(tpList[1]) <= 3 {
 					region = strings.TrimSpace(strings.ReplaceAll(tpList[1], "?", ""))
 					break
 				} else {
@@ -39,7 +44,11 @@ func SkyShowTime(request *gorequest.SuperAgent) model.Result {
 				}
 			}
 		}
-		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+		if region != "" {
+			return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+		} else {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.skyshowtime.com failed with code: %d", resp.StatusCode)}

@@ -38,6 +38,8 @@ KPLUS - ssoToken 已过期
 Eurosport - Tokem 已过期 且 api 官网已升级至于 v3
 
 HBOGOEurope - api.ugw.hbogo.eu 已经 host 为空了 查询不到内容
+
+HBOSpain - api-discovery.hbo.eu 的 host 已经为空了
 ```
 
 ### 地区失效
