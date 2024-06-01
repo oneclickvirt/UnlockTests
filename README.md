@@ -6,7 +6,7 @@
 
 开发中，勿要使用
 
-## TODO
+## 待解决的问题
 
 ### 同态检测
 
@@ -36,4 +36,10 @@ KPLUS - ssoToken 已过期
 
 ```
 KBSAmerican - 不再支持本地区
+```
+
+### 部分失效
+
+```
+Au7plus - 7plus-sevennetwork.akamaized.net 无论如何请求都失败
 ```
