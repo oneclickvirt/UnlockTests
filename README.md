@@ -52,6 +52,8 @@ Salto - Get remote error: tls: unrecognized name
 
 ```
 KBSAmerican - 不再支持本地区
+
+Paravi - 已迁移并集成到 U-NEXT 中。由于整合，除了传统的Paravi作品外，现在还有电影、动漫、亚洲和外国戏剧等等可以无限观看。
 ```
 
 ### 部分失效
