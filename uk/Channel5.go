@@ -3,9 +3,11 @@ package uk
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"time"
 )
 
 // Channel5
@@ -19,13 +21,14 @@ func Channel5(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
+	// fmt.Println(body)
 	var res struct {
 		code string `json:"code"`
 	}
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	if res.code == "3000" {
+	if res.code == "3000" || strings.Contains(body, "this service is only available in restricted regions") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if res.code == "4003" {
