@@ -117,15 +117,11 @@ func FormarPrint(language string) {
 	// 根据 Names 中的 name 顺序输出结果，重新排序结果
 	for _, name := range Names {
 		if r, found := resultMap[name]; found {
-			if r.Status == "" && r.Name != "" {
-				printCenteredMessage("[ " + r.Name + " ]")
-			} else {
-				result := ShowResult(r)
-				if r.Status == "Yes" && strings.HasSuffix(r.Name, "CDN") {
-					result = Blue(r.Region)
-				}
-				fmt.Printf("%-"+strconv.Itoa(Length)+"s %s\n", r.Name, result)
+			result := ShowResult(r)
+			if r.Status == "Yes" && strings.HasSuffix(r.Name, "CDN") {
+				result = Blue(r.Region)
 			}
+			fmt.Printf("%-"+strconv.Itoa(Length)+"s %s\n", r.Name, result)
 		}
 	}
 }
@@ -151,7 +147,6 @@ func excute(F func(request *gorequest.SuperAgent) model.Result) {
 }
 
 func Multination(ifaceName, ipAddr, netType string) {
-	R = append(R, &model.Result{Name: "Multination"})
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
 		transnation.DAZN,
 		transnation.DisneyPlus,
@@ -179,6 +174,7 @@ func main() {
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
 	Multination("", "", "tcp4")
+	printCenteredMessage("[ " + "Multination" + " ]")
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
