@@ -12,6 +12,7 @@ import (
 	. "github.com/oneclickvirt/UnlockTests/defaultset"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/transnation"
+	"github.com/oneclickvirt/UnlockTests/uk"
 	"github.com/oneclickvirt/UnlockTests/us"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
@@ -147,6 +148,17 @@ func excute(F func(request *gorequest.SuperAgent) model.Result) {
 	}()
 }
 
+func processFunction(FuncList [](func(request *gorequest.SuperAgent) model.Result)) {
+	// 生成顺序输出的名字
+	for _, f := range FuncList {
+		Names = append(Names, f(nil).Name)
+	}
+	// 实际开始任务
+	for _, f := range FuncList {
+		excute(f)
+	}
+}
+
 func Multination(ifaceName, ipAddr, netType string) {
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
 		transnation.DAZN,
@@ -166,12 +178,7 @@ func Multination(ifaceName, ipAddr, netType string) {
 		transnation.Steam,
 		transnation.Reddit,
 	}
-	for _, f := range FuncList {
-		Names = append(Names, f(nil).Name)
-	}
-	for _, f := range FuncList {
-		excute(f)
-	}
+	processFunction(FuncList)
 }
 
 func SouthAmerica(ifaceName, ipAddr, netType string) {
@@ -180,22 +187,32 @@ func SouthAmerica(ifaceName, ipAddr, netType string) {
 		us.HBOMax,
 		us.DirecTVGO,
 	}
-	for _, f := range FuncList {
-		Names = append(Names, f(nil).Name)
+	processFunction(FuncList)
+}
+
+func Oceania(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		us.NBATV,
+		us.AcornTV,
+		uk.BritBox,
+		transnation.ParamountPlus,
+		transnation.SonyLiv,
 	}
-	for _, f := range FuncList {
-		excute(f)
-	}
+	processFunction(FuncList)
 }
 
 func main() {
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
-	SouthAmerica("", "", "tcp4")
+	// Multination("", "", "tcp4")
+	// SouthAmerica("", "", "tcp4")
+	Oceania("", "", "tcp4")
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
 	fmt.Println()
-	FormarPrint("zh", "South America")
+	// FormarPrint("zh", "Multination")
+	// FormarPrint("zh", "SouthAmerica")
+	FormarPrint("zh", "Oceania")
 	fmt.Println()
 }
