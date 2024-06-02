@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/oneclickvirt/UnlockTests/asia"
+	"github.com/oneclickvirt/UnlockTests/ca"
 	. "github.com/oneclickvirt/UnlockTests/defaultset"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/transnation"
@@ -235,6 +236,9 @@ func NorthAmerica(ifaceName, ipAddr, netType string) {
 		us.DirectvStream,
 		transnation.KOCOWA,
 		transnation.SonyLiv,
+		asia.Hotstar,
+		ca.CBCGem,
+		ca.Crave,
 	}
 	processFunction(FuncList)
 }
