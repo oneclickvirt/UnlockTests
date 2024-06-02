@@ -7,7 +7,6 @@ import (
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
-// play.maxgo.com CineMax 被收购了
 func Test(t *testing.T) {
 	req, _ := utils.ParseInterface("", "", "tcp4")
 

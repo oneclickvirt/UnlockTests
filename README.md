@@ -33,6 +33,8 @@ MathsSpot
 
 MegogoTV
 
+CineMax
+
 KPLUS - ssoToken 已过期
 
 TV360 - 登录认证已过期
