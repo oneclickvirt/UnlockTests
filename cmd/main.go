@@ -201,18 +201,58 @@ func Oceania(ifaceName, ipAddr, netType string) {
 	processFunction(FuncList)
 }
 
+func NorthAmerica(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		us.Fox,
+		us.Hulu,
+		us.NFLPlus,
+		us.ESPNPlus,
+		us.Epix,
+		us.Starz,
+		us.Philo,
+		us.FXNOW,
+		us.HBOMax,
+		asia.TLCGO,
+		us.Shudder,
+		uk.BritBox,
+		// us.Crackle,
+		us.CWTV,
+		us.AETV,
+		us.NBATV,
+		us.FuboTV,
+		us.TubiTV,
+		// us.NBCTV,
+		us.SlingTV,
+		us.PlutoTV,
+		us.AcornTV,
+		us.SHOWTIME,
+		us.EncoreTVB,
+		us.DiscoveryPlus,
+		transnation.ParamountPlus,
+		us.PeacockTV,
+		us.Popcornflix,
+		us.Crunchyroll,
+		us.DirectvStream,
+		transnation.KOCOWA,
+		transnation.SonyLiv,
+	}
+	processFunction(FuncList)
+}
+
 func main() {
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
 	// Multination("", "", "tcp4")
+	NorthAmerica("", "", "tcp4")
 	// SouthAmerica("", "", "tcp4")
-	Oceania("", "", "tcp4")
+	// Oceania("", "", "tcp4")
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
 	fmt.Println()
 	// FormarPrint("zh", "Multination")
-	// FormarPrint("zh", "SouthAmerica")
-	FormarPrint("zh", "Oceania")
+	// FormarPrint("zh", "South America")
+	// FormarPrint("zh", "Oceania")
+	FormarPrint("zh", "North America")
 	fmt.Println()
 }
