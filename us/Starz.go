@@ -3,10 +3,11 @@ package us
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"io"
 )
 
 // Starz
@@ -41,7 +42,7 @@ func Starz(request *gorequest.SuperAgent) model.Result {
 			IsKnownProxy     bool   `json:"isKnownProxy"`
 			Country          string `json:"country"`
 		}
-		fmt.Println(body2)
+		// fmt.Println(body2)
 		if err := json.Unmarshal([]byte(body2), &res); err != nil {
 			return model.Result{Name: name, Status: model.StatusErr, Err: err}
 		}
