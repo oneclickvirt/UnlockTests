@@ -8,27 +8,24 @@ import (
 )
 
 func ShowResult(r model.Result) (s string) {
-	switch r.Status {
-	case model.StatusYes:
-		s = Green("YES")
+	formatResult := func(colorFunc func(string) string, status string, r model.Result) string {
+		s := colorFunc(status)
 		if r.Info != "" {
-			s += Green(" (" + r.Info + ")")
+			s += colorFunc(" (" + r.Info + ")")
 		}
 		if r.Region != "" {
-			s += Green(" (Region: " + strings.ToUpper(r.Region) + ")")
+			s += colorFunc(" (Region: " + strings.ToUpper(r.Region) + ")")
 		}
 		return s
+	}
+
+	switch r.Status {
+	case model.StatusYes:
+		return formatResult(Green, "YES", r)
 	case model.StatusNetworkErr:
 		return Red("NO") + Yellow(" (Network Err)")
 	case model.StatusRestricted:
-		s = Yellow("Restricted")
-		if r.Info != "" {
-			s += Yellow(" (" + r.Info + ")")
-		}
-		if r.Region != "" {
-			s += Yellow(" (Region: " + strings.ToUpper(r.Region) + ")")
-		}
-		return s
+		return formatResult(Yellow, "Restricted", r)
 	case model.StatusErr:
 		s = Yellow("Error")
 		if r.Err != nil {
@@ -36,14 +33,7 @@ func ShowResult(r model.Result) (s string) {
 		}
 		return s
 	case model.StatusNo:
-		s = Red("NO")
-		if r.Info != "" {
-			s += Yellow(" (" + r.Info + ")")
-		}
-		if r.Region != "" {
-			s += Yellow(" (Region: " + strings.ToUpper(r.Region) + ")")
-		}
-		return s
+		return formatResult(Red, "NO", r)
 	case model.StatusBanned:
 		s = Red("Banned")
 		if r.Info != "" {
@@ -57,6 +47,6 @@ func ShowResult(r model.Result) (s string) {
 		}
 		return s
 	default:
-		return
+		return ""
 	}
 }
