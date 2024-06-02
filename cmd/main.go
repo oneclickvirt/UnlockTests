@@ -1,8 +1,10 @@
 package main
 
 import (
+	"os"
 	"strings"
 	"sync"
+	"time"
 
 	. "github.com/oneclickvirt/UnlockTests/defaultset"
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -17,6 +19,20 @@ var (
 	IPV4 = true
 	IPV6 = true
 )
+
+func NewBar(count int64) *pb.ProgressBar {
+	return pb.NewOptions64(
+		count,
+		pb.OptionSetDescription("testing"),
+		pb.OptionSetWriter(os.Stderr),
+		pb.OptionSetWidth(20),
+		pb.OptionThrottle(100*time.Millisecond),
+		pb.OptionShowCount(),
+		pb.OptionClearOnFinish(),
+		pb.OptionEnableColorCodes(true),
+		pb.OptionSpinnerType(14),
+	)
+}
 
 func ShowResult(r model.Result) (s string) {
 	formatResult := func(colorFunc func(string) string, status string, r model.Result) string {
