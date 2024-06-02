@@ -2,6 +2,9 @@ package us
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -19,13 +22,17 @@ func ESPNPlus(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
+	// fmt.Println(body)
+	if strings.Contains(body, "forbidden-location") {
+		return model.Result{Name: name, Status: model.StatusNo}
+	}
 	var res struct {
 		RefreshToken string `json:"refresh_token"`
 	}
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-
+	
 	url2 := "https://espn.api.edge.bamgrid.com/graph/v1/device/graphql"
 	data2 := `{"query":"mutation registerDevice($input: RegisterDeviceInput!) {\n            registerDevice(registerDevice: $input) {\n                grant {\n                    grantType\n                    assertion\n                }\n            }\n        }","variables":{"input":{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","deviceLanguage":"zh-CN","attributes":{"osDeviceIds":[],"manufacturer":"microsoft","model":null,"operatingSystem":"windows","operatingSystemVersion":"10.0","browserName":"chrome","browserVersion":"96.0.4664"}}}}`
 	resp2, body2, errs2 := request.Post(url2).Type("json").
@@ -53,5 +60,6 @@ func ESPNPlus(request *gorequest.SuperAgent) model.Result {
 	if res2.Extensions.Sdk.Session.Location.CountryCode == "US" && res2.Extensions.Sdk.Session.InSupportedLocation {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
-	return model.Result{Name: name, Status: model.StatusNo}
+	return model.Result{Name: name, Status: model.StatusUnexpected,
+		Err: fmt.Errorf("get espn.api.edge.bamgrid.com failed with code: %d", resp.StatusCode)}
 }

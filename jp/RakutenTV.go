@@ -2,14 +2,15 @@ package jp
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // RakutenTV
-// www.rakuten.tv 仅 ipv4 且 get 请求 带 cloudflare 的 5秒盾
-// api.tv.rakuten.co.jp 仅 ipv4 且 get 请求
+// www.rakuten.tv 仅 ipv4 且 get 请求 带 cloudflare 的 5秒盾 无法使用 "is not available in your country"
+// api.tv.rakuten.co.jp 仅 ipv4 且 get 请求 无盾可使用
 func RakutenTV(request *gorequest.SuperAgent) model.Result {
 	name := "Rakuten TV"
 	url := "https://api.tv.rakuten.co.jp/content/playinfo.json?content_id=476611&device_id=14&trailer=1&auth=0&log=0&serial_code=&tmp_eng_flag=1&multi_audio_support=1&_=1716694365356"
@@ -23,6 +24,7 @@ func RakutenTV(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
+	// fmt.Println(body)
 	if resp.StatusCode == 403 || strings.Contains(body, "海外からのアクセスのため、動画を再生できません。") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-// GYAO 已被合并至于 LINE VOOM
 func Test(t *testing.T) {
 	req, _ := utils.ParseInterface("", "", "tcp4")
 

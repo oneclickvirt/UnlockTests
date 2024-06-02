@@ -16,6 +16,8 @@
 
 ```
 TLCGO 和 NBCTV
+
+GYAO 和 LINE VOOM
 ```
 
 ### 无效检测
