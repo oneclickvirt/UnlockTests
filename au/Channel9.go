@@ -2,6 +2,7 @@ package au
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // login.nine.com.au 双栈 且 get 请求
 func Channel9(request *gorequest.SuperAgent) model.Result {
 	name := "Channel 9"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://login.nine.com.au"
 	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {

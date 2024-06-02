@@ -12,6 +12,9 @@ import (
 // www.skyshowtime.com 双栈 get 请求
 func SkyShowTime(request *gorequest.SuperAgent) model.Result {
 	name := "SkyShowTime"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.skyshowtime.com/"
 	request = request.Set("User-Agent", model.UA_Browser).
 		Set("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")

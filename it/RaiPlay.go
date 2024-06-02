@@ -2,15 +2,19 @@ package it
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // RaiPlay
 // mediapolisvod.rai.it 仅 ipv4 且 get 请求
 func RaiPlay(request *gorequest.SuperAgent) model.Result {
 	name := "Rai Play"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://mediapolisvod.rai.it/relinker/relinkerServlet.htm?cont=VxXwi7UcqjApssSlashbjsAghviAeeqqEEqualeeqqEEqual&output=64"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

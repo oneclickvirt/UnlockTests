@@ -3,17 +3,21 @@ package de
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"strings"
+
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"io"
-	"strings"
 )
 
 // SkyDe
 // edge.api.brightcove.com 仅 ipv4 且 get 请求
 func SkyDe(request *gorequest.SuperAgent) model.Result {
 	name := "SKY DE"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://edge.api.brightcove.com/playback/v1/accounts/1050888051001/videos/6247131490001"
 	client := req.DefaultClient()
 	client.ImpersonateChrome()

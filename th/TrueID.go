@@ -2,9 +2,10 @@ package th
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 func getStringBetween(value string, a string, b string) string {
@@ -24,6 +25,9 @@ func getStringBetween(value string, a string, b string) string {
 // tv.trueid.net 双栈 get 请求
 func TrueID(request *gorequest.SuperAgent) model.Result {
 	name := "TrueID"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://tv.trueid.net/th-en/live/thairathtv-hd"
 	headers := map[string]string{
 		"User-Agent":                "{UA_Browser}",

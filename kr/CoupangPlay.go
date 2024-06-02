@@ -2,15 +2,19 @@ package kr
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // CoupangPlay
 // www.coupangplay.com 仅 ipv4 且 get 请求
 func CoupangPlay(request *gorequest.SuperAgent) model.Result {
 	name := "Coupang Play"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.coupangplay.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

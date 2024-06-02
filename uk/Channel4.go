@@ -2,6 +2,7 @@ package uk
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // www.channel4.com 仅 ipv4 且 get 请求
 func Channel4(request *gorequest.SuperAgent) model.Result {
 	name := "Channel 4"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.channel4.com/simulcast/channels/C4"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).End()

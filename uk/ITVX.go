@@ -2,15 +2,19 @@ package uk
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // ITVX
 // simulcast.itv.com 仅 ipv4 且 get 请求
 func ITVX(request *gorequest.SuperAgent) model.Result {
 	name := "ITV Hub"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	resp, body, errs := request.Get("https://simulcast.itv.com/playlist/itvonline/ITV").End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr}

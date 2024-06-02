@@ -3,15 +3,19 @@ package hk
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // MyTvSuper
 // www.mytvsuper.com 仅 ipv4 且 get 请求
 func MyTvSuper(request *gorequest.SuperAgent) model.Result {
 	name := "MyTVSuper"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.mytvsuper.com/api/auth/getSession/self/"
 	request = request.Set("User-Agent", model.UA_Browser).Set("Content-Type", "application/json")
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

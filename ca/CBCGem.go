@@ -12,6 +12,9 @@ import (
 // www.cbc.ca 仅 ipv4 且 get 请求
 func CBCGem(request *gorequest.SuperAgent) model.Result {
 	name := "CBC Gem"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.cbc.ca/g/stats/js/cbc-stats-top.js"
 	resp, body, errs := request.Get(url).Retry(2, 5).End()
 	if len(errs) > 0 {

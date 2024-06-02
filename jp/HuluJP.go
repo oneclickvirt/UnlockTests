@@ -10,6 +10,9 @@ import (
 // https://www.hulu.jp/login
 func Hulu(request *gorequest.SuperAgent) model.Result {
 	name := "Hulu Japan"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	request = request.Set("User-Agent", model.UA_Browser).
 		Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,"+
 			"image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9").

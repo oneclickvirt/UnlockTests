@@ -10,6 +10,9 @@ import (
 // authentication.dstv.com 仅 ipv4 且 get 请求
 func DSTV(request *gorequest.SuperAgent) model.Result {
 	name := "DSTV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://authentication.dstv.com/favicon.ico"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

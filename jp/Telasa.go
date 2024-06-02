@@ -13,6 +13,9 @@ import (
 // api-videopass-anon.kddi-video.com 双栈 get 请求
 func Telasa(request *gorequest.SuperAgent) model.Result {
 	name := "Telasa"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	resp, body, errs := request.Get("https://api-videopass-anon.kddi-video.com/v1/playback/system_status").
 		Set("X-Device-ID", "d36f8e6b-e344-4f5e-9a55-90aeb3403799").
 		End()

@@ -15,6 +15,9 @@ import (
 // www.starz.com 双栈 get 请求
 func Starz(request *gorequest.SuperAgent) model.Result {
 	name := "Starz"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	client := req.DefaultClient()
 	client.ImpersonateChrome()
 	client.Headers.Set("Referer", "https://www.starz.com/us/en/")

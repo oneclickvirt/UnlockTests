@@ -1,15 +1,19 @@
 package us
 
 import (
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // FXNOW
 // fxnow.fxnetworks.com 仅 ipv4 且 get 请求
 func FXNOW(request *gorequest.SuperAgent) model.Result {
 	name := "FXNOW"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://fxnow.fxnetworks.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

@@ -12,6 +12,9 @@ import (
 // api.epix.com 仅 ipv4 且 post 请求
 func Epix(request *gorequest.SuperAgent) model.Result {
 	name := "MGM+"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api.epix.com/v2/sessions"
 	payload := `{"device":{"guid":"7a0baaaf-384c-45cd-a21d-310ca5d3002a","format":"console","os":"web","display_width":1865,"display_height":942,"app_version":"1.0.2","model":"browser","manufacturer":"google"},"apikey":"53e208a9bbaee479903f43b39d7301f7"}`
 	request = request.Set("User-Agent", model.UA_Browser)

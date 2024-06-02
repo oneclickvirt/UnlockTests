@@ -2,6 +2,7 @@ package au
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // auth.streamotion.com.au 双栈 get 请求
 func Binge(request *gorequest.SuperAgent) model.Result {
 	name := "Binge"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://auth.streamotion.com.au"
 	resp, _, errs := request.Get(url).Retry(2, 5).End()
 	if len(errs) > 0 {

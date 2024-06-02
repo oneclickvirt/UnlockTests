@@ -2,15 +2,19 @@ package transnation
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Reddit
 // www.reddit.com 仅 ipv4 且 get 请求
 func Reddit(request *gorequest.SuperAgent) model.Result {
 	name := "Reddit"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.reddit.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

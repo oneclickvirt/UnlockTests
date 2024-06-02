@@ -1,15 +1,19 @@
 package us
 
 import (
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Shudder
 // www.shudder.com 双栈 get 请求
 func Shudder(request *gorequest.SuperAgent) model.Result {
 	name := "Shudder"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.shudder.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

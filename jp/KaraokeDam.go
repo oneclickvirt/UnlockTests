@@ -2,6 +2,7 @@ package jp
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // cds1.clubdam.com 仅 ipv4 且 get 请求
 func KaraokeDam(request *gorequest.SuperAgent) model.Result {
 	name := "Karaoke@DAM"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "http://cds1.clubdam.com/vhls-cds1/site/xbox/sample_1.mp4.m3u8"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

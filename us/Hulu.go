@@ -2,15 +2,19 @@ package us
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Hulu
 // www.hulu.com 仅 ipv4 且 post 请求
 func Hulu(request *gorequest.SuperAgent) model.Result {
 	name := "Hulu"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	resp, body, errs := request.Get("https://www.hulu.com").
 		//Set("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9").
 		Set("User-Agent", model.UA_Browser).

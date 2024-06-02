@@ -2,15 +2,19 @@ package transnation
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // ParamountPlus
 // www.paramountplus.com 双栈 且 get 请求
 func ParamountPlus(request *gorequest.SuperAgent) model.Result {
 	name := "Paramount+"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.paramountplus.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

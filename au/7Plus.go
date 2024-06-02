@@ -12,6 +12,9 @@ import (
 // 7plus-sevennetwork.akamaized.net 有问题 - 无论如何请求都失败
 func Au7plus(request *gorequest.SuperAgent) model.Result {
 	name := "7plus"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://7plus-sevennetwork.akamaized.net/media/v1/dash/live/cenc/5303576322001/68dca38b-85d7-4dae-b1c5-c88acc58d51c/f4ea4711-514e-4cad-824f-e0c87db0a614/225ec0a0-ef18-4b7c-8fd6-8dcdd16cf03a/1x/segment0.m4f?akamai_token=exp=1672500385~acl=/media/v1/dash/live/cenc/5303576322001/68dca38b-85d7-4dae-b1c5-c88acc58d51c/f4ea4711-514e-4cad-824f-e0c87db0a614/*~hmac=800e1e1d1943addf12b71339277c637c7211582fe12d148e486ae40d6549dbde"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

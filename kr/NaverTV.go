@@ -6,17 +6,21 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 // NaverTV
 // apis.naver.com 仅 ipv4 且 get 请求
 func NaverTV(request *gorequest.SuperAgent) model.Result {
 	name := "Naver TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	ts := time.Now().UnixNano() / int64(time.Millisecond)
 	baseURL := "https://apis.naver.com/"
 	key := "nbxvs5nwNG9QKEWK0ADjYA4JZoujF4gHcIwvoCxFTPAeamq5eemvt5IWAYXxrbYM"

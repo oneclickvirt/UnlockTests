@@ -3,17 +3,21 @@ package us
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
-	"io"
-	"strings"
 )
 
 // DiscoveryPlus
 // discoveryplus.com 双栈 且 post 请求
 func DiscoveryPlus(request *gorequest.SuperAgent) model.Result {
 	name := "Discovery+"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url1 := "https://us1-prod-direct.discoveryplus.com/token?" +
 		"deviceId=d1a4a5d25212400d1e6985984604d740&realm=go&shortlived=true"
 	resp1, _, errs1 := request.Get(url1).End()

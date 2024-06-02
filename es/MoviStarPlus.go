@@ -2,6 +2,7 @@ package es
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // contratar.movistarplus.es 仅 ipv4 且 get 请求
 func MoviStarPlus(request *gorequest.SuperAgent) model.Result {
 	name := "Movistar+"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get("https://contratar.movistarplus.es/").End()
 	if len(errs) > 0 {

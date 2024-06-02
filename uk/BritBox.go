@@ -2,15 +2,19 @@ package uk
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // BritBox
 // www.britbox.com 双栈 get 请求
 func BritBox(request *gorequest.SuperAgent) model.Result {
 	name := "BritBox"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.britbox.com/"
 	resp, body, errs := request.Get(url).Retry(2, 5).End()
 	if len(errs) > 0 {

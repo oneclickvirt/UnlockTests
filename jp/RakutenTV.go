@@ -13,6 +13,9 @@ import (
 // api.tv.rakuten.co.jp 仅 ipv4 且 get 请求 无盾可使用
 func RakutenTV(request *gorequest.SuperAgent) model.Result {
 	name := "Rakuten TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api.tv.rakuten.co.jp/content/playinfo.json?content_id=476611&device_id=14&trailer=1&auth=0&log=0&serial_code=&tmp_eng_flag=1&multi_audio_support=1&_=1716694365356"
 	resp, body, errs := request.Get(url).
 		Set("connection", "keep-alive").

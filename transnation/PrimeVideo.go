@@ -1,15 +1,19 @@
 package transnation
 
 import (
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // PrimeVideo
 // www.primevideo.com 仅 ipv4 且 get 请求
 func PrimeVideo(request *gorequest.SuperAgent) model.Result {
 	name := "Amazon Prime Video"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.primevideo.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

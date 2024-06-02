@@ -3,6 +3,7 @@ package de
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
@@ -12,6 +13,9 @@ import (
 // auth.joyn.de 仅 ipv4 且 post 请求
 func Joyn(request *gorequest.SuperAgent) model.Result {
 	name := "Joyn"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://auth.joyn.de/auth/anonymous"
 	payload := `{"client_id":"b74b9f27-a994-4c45-b7eb-5b81b1c856e7","client_name":"web","anon_device_id":"b74b9f27-a994-4c45-b7eb-5b81b1c856e7"}`
 	resp, body, errs := utils.PostJson(request, url, payload)

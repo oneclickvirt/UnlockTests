@@ -13,6 +13,9 @@ import (
 // kayosports.com.au 实际使用 cf 检测，非澳洲请求将一直超时
 func KayoSports(request *gorequest.SuperAgent) model.Result {
 	name := "Kayo Sports"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://kayosports.com.au"
 	request = request.Set("User-Agent", model.UA_Browser).Timeout(20 * time.Second)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

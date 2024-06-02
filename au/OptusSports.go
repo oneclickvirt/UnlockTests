@@ -2,6 +2,7 @@ package au
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // sport.optus.com.au 双栈 get 请求
 func OptusSports(request *gorequest.SuperAgent) model.Result {
 	name := "Optus Sports"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://sport.optus.com.au/api/userauth/validate/web/username/restriction.check@gmail.com"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

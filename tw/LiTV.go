@@ -2,16 +2,20 @@ package tw
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // LiTV
 // www.litv.tv 仅 ipv4 且 post 请求
 func LiTV(request *gorequest.SuperAgent) model.Result {
 	name := "LiTV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	headers := []map[string]string{
 		{"Cookie": "PUID=34eb9a17-8834-4f83-855c-69382fd656fa; L_PUID=34eb9a17-8834-4f83-855c-69382fd656fa; device-id=f4d7faefc54f476bb2e7e27b7482469a"},
 		{"Origin": "https://www.litv.tv"},

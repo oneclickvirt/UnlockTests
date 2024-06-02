@@ -12,6 +12,9 @@ import (
 // www.youtube.com 双栈 且 get 请求
 func Youtube(request *gorequest.SuperAgent) model.Result {
 	name := "YouTube Region"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.youtube.com/premium"
 	request = request.Set("User-Agent", model.UA_Browser).Timeout(30*time.Second).
 		Set("Cookie", "YSC=BiCUU3-5Gdk; CONSENT=YES+cb.20220301-11-p0.en+FX+700; GPS=1; VISITOR_INFO1_LIVE=4VwPMkB7W5A; SOCS=CAISOAgDEitib3FfaWRlbnRpdHlmcm9udGVuZHVpc2VydmVyXzIwMjQwNTIxLjA3X3AxGgV6aC1DTiACGgYIgNTEsgY; PREF=f7=4000&tz=Asia.Shanghai&f4=4000000; _gcl_au=1.1.1809531354.1646633279")
@@ -44,6 +47,9 @@ func Youtube(request *gorequest.SuperAgent) model.Result {
 // redirector.googlevideo.com 双栈 且 get 请求
 func YoutubeCDN(request *gorequest.SuperAgent) model.Result {
 	name := "YouTube CDN"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://redirector.googlevideo.com/report_mapping"
 	request = request.Set("User-Agent", model.UA_Browser).Timeout(30 * time.Second)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

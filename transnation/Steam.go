@@ -11,6 +11,9 @@ import (
 // store.steampowered.com 仅 ipv4 且 get 请求
 func Steam(request *gorequest.SuperAgent) model.Result {
 	name := "Steam Currency"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://store.steampowered.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

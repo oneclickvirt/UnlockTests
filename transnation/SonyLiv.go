@@ -23,6 +23,9 @@ func parseSonyLivToken(body string) string {
 // www.sonyliv.com 双栈 且 get 请求
 func SonyLiv(request *gorequest.SuperAgent) model.Result {
 	name := "SonyLiv"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.sonyliv.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp1, body1, errs1 := request.Get(url).Retry(2, 5).End()

@@ -15,6 +15,9 @@ import (
 // www.starplus.com 双栈 且 get 请求
 func StarPlus(request *gorequest.SuperAgent) model.Result {
 	name := "Star+"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.starplus.com/"
 	resp, body, errs := request.Get(url).
 		Set("User-Agent", model.UA_Browser).

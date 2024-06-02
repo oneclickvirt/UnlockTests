@@ -14,6 +14,9 @@ import (
 // api.videoland.com 双栈 且 post 请求
 func VideoLand(request *gorequest.SuperAgent) model.Result {
 	name := "Videoland"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api.videoland.com/subscribe/videoland-account/graphql"
 	payload := `{"operationName":"IsOnboardingGeoBlocked","variables":{},"query":"query IsOnboardingGeoBlocked {\n  isOnboardingGeoBlocked\n}\n"}`
 	client := req.DefaultClient()

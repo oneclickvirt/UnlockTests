@@ -2,16 +2,20 @@ package jp
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // VideoMarket
 // www.videomarket.jp 仅 ipv4 且 post 请求
 func VideoMarket(request *gorequest.SuperAgent) model.Result {
 	name := "VideoMarket"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	resp, bodyBytes, errs := utils.PostJson(request, "https://www.videomarket.jp/graphql",
 		`{"operationName": "repPacksOnTab","variables": {"fullTitleId": "292072","groupType": "SINGLE_CHOICE","page": {"current": 1,"size": 20}},"query": "query repPacksOnTab($fullTitleId: String!, $groupType: GroupType!, $page: PageInput!) {\n  repPacksOnTab(fullTitleId: $fullTitleId, groupType: $groupType, page: $page) {\n    repFullPackId\n    groupType\n    packName\n    fullTitleId\n    titleName\n    storyImageUrl16x9\n    playTime\n    subtitleDubType\n    outlines\n    courseIds\n    price\n    discountRate\n    couponPrice\n    couponDiscountRate\n    rentalDays\n    viewDays\n    deliveryExpiredAt\n    salesType\n    counter {\n      currentPage\n      currentResult\n      totalPages\n      totalResults\n      __typename\n    }\n    undiscountedPrice\n    packs {\n      undiscountedPrice\n      canPurchase\n      fullPackId\n      subGroupType\n      fullTitleId\n      qualityConsentType\n      courseIds\n      price\n      discountRate\n      couponPrice\n      couponDiscountRate\n      rentalDays\n      viewDays\n      deliveryExpiredAt\n      salesType\n      extId\n      stories {\n        fullStoryId\n        subtitleDubType\n        encodeVersion\n        isDownloadable\n        isBonusMaterial\n        fileSize\n        __typename\n      }\n      __typename\n    }\n    status {\n      hasBeenPlayed\n      isCourseRegistered\n      isEstPurchased\n      isNowPlaying\n      isPlayable\n      isRented\n      playExpiredAt\n      playableQualityType\n      rentalExpiredAt\n      __typename\n    }\n    __typename\n  }\n}\n"}`,
 		map[string]string{"authority": "www.videomarket.jp"},

@@ -2,10 +2,11 @@ package eu
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 	"strings"
 	"time"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 // Docplay
@@ -13,6 +14,9 @@ import (
 // www.docplay.com 仅 ipv4 且 get 请求
 func Docplay(request *gorequest.SuperAgent) model.Result {
 	name := "Docplay"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.docplay.com/subscribe"
 	request = request.Set("User-Agent", model.UA_Browser).Timeout(20 * time.Second)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

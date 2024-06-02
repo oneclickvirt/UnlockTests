@@ -2,15 +2,19 @@ package in
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // JioCinema
 // apis-jiocinema.voot.com 双栈 get 请求
 func JioCinema(request *gorequest.SuperAgent) model.Result {
 	name := "Jio Cinema"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	resp1, body1, errs1 := request.Get("https://apis-jiocinema.voot.com/location").
 		Set("Accept", "application/json, text/plain, */*").
 		Set("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6").

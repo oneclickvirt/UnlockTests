@@ -2,15 +2,19 @@ package in
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // MXPlayer
 // www.mxplayer.in 仅 ipv4 且 get 请求
 func MXPlayer(request *gorequest.SuperAgent) model.Result {
 	name := "MX Player"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.mxplayer.in/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

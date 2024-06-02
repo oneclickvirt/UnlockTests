@@ -2,15 +2,19 @@ package ch
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // SkyCh
 // sky.ch 双栈 且 get 请求
 func SkyCh(request *gorequest.SuperAgent) model.Result {
 	name := "SKY CH"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://sky.ch/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

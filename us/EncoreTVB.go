@@ -3,17 +3,21 @@ package us
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"strings"
+
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"io"
-	"strings"
 )
 
 // EncoreTVB
 // edge.api.brightcove.com 仅 ipv4 且 get 请求
 func EncoreTVB(request *gorequest.SuperAgent) model.Result {
 	name := "EncoreTVB"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://edge.api.brightcove.com/playback/v1/accounts/5324042807001/videos/6005570109001"
 	client := req.DefaultClient()
 	client.ImpersonateChrome()

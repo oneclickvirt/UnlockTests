@@ -2,15 +2,19 @@ package us
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // DirecTVGO
 // www.directvgo.com 仅 ipv4 且 get 请求
 func DirecTVGO(request *gorequest.SuperAgent) model.Result {
 	name := "DirecTV Go"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.directvgo.com/registrarse"
 	resp, body, errs := request.Get(url).Retry(2, 5).End()
 	if len(errs) > 0 {

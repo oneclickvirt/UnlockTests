@@ -3,6 +3,7 @@ package us
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -11,6 +12,9 @@ import (
 // ccpa-service.sp-prod.net 仅 ipv4 且 post 请求
 func AETV(request *gorequest.SuperAgent) model.Result {
 	name := "A&E TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://ccpa-service.sp-prod.net/ccpa/consent/10265/display-dns"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Post(url).Retry(2, 5).End()

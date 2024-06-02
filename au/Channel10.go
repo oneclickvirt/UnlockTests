@@ -15,6 +15,9 @@ import (
 // https://10play.com.au/geo-web 仅 ipv4 且 get 请求
 func Channel10(request *gorequest.SuperAgent) model.Result {
 	name := "Channel 10"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://10play.com.au/geo-web"
 	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {

@@ -3,15 +3,19 @@ package us
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Philo
 // content-us-east-2-fastly-b.www.philo.com 仅 ipv4 且 get 请求
 func Philo(request *gorequest.SuperAgent) model.Result {
 	name := "Philo"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://content-us-east-2-fastly-b.www.philo.com/geo"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

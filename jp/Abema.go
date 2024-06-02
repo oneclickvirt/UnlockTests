@@ -2,15 +2,19 @@ package jp
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Abema
 // api.abema.io 仅 ipv4 且 get 请求
 func Abema(request *gorequest.SuperAgent) model.Result {
 	name := "Abema.TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api.abema.io/v1/ip/check?device=android"
 	request = request.Set("User-Agent", model.UA_Dalvik)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

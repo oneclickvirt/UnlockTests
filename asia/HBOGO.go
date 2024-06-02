@@ -11,6 +11,9 @@ import (
 // api2.hbogoasia.com 仅 ipv4 且 get 请求
 func HBOGO(request *gorequest.SuperAgent) model.Result {
 	name := "HBO GO Asia"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api2.hbogoasia.com/v1/geog?lang=undefined&version=0&bundleId=www.hbogoasia.com"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

@@ -2,15 +2,19 @@ package ru
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Amediateka
 // www.amediateka.ru 仅 ipv4 且 get 请求
 func Amediateka(request *gorequest.SuperAgent) model.Result {
 	name := "Amediateka"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.amediateka.ru/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

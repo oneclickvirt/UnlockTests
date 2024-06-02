@@ -2,15 +2,19 @@ package au
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // ABCiView
 // api.iview.abc.net.au 仅 ipv4 且 get 请求
 func ABCiView(request *gorequest.SuperAgent) model.Result {
 	name := "ABC iView"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api.iview.abc.net.au/v2/show/abc-kids-live-stream/video/LS1604H001S00?embed=highlightVideo,selectedSeries"
 	resp, body, errs := request.Get(url).Retry(2, 5).End()
 	if len(errs) > 0 {

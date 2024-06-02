@@ -2,15 +2,19 @@ package transnation
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // KOCOWA
 // www.kocowa.com 仅 ipv4 且 get 请求
 func KOCOWA(request *gorequest.SuperAgent) model.Result {
 	name := "KOCOWA"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.kocowa.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

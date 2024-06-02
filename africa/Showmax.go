@@ -2,15 +2,19 @@ package africa
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Showmax
 // www.showmax.com 双栈 且 get 请求
 func Showmax(request *gorequest.SuperAgent) model.Result {
 	name := "Showmax"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.showmax.com/"
 	resp, body, errs := request.Get(url).
 		Set("Host", "www.showmax.com").

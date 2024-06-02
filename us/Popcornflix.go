@@ -2,6 +2,7 @@ package us
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // popcornflix-prod.cloud.seachange.com 仅 ipv4 且 get 请求
 func Popcornflix(request *gorequest.SuperAgent) model.Result {
 	name := "Popcornflix"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://popcornflix-prod.cloud.seachange.com/cms/popcornflix/clientconfiguration/versions/2"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

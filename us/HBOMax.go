@@ -1,9 +1,10 @@
 package us
 
 import (
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // HBOMax
@@ -11,6 +12,9 @@ import (
 // www.hbonow.com 仅 ipv4 且 get 请求 (重定向至于 www.max.com 了)
 func HBOMax(request *gorequest.SuperAgent) model.Result {
 	name := "HBO Max"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.max.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

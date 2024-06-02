@@ -12,6 +12,9 @@ import (
 // api.hotstar.com 双栈 get 请求
 func Hotstar(request *gorequest.SuperAgent) model.Result {
 	name := "Hotstar"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api.hotstar.com/o/v1/page/1557?offset=0&size=20&tao=0&tas=20"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

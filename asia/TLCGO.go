@@ -1,9 +1,10 @@
 package asia
 
 import (
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // TLCGO
@@ -11,6 +12,9 @@ import (
 // geolocation.onetrust.com 双栈 get 请求
 func TLCGO(request *gorequest.SuperAgent) model.Result {
 	name := "TLC GO"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location/dnsfeed"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

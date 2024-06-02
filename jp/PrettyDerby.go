@@ -12,6 +12,9 @@ import (
 // 有问题 stream error: stream ID 1; INTERNAL_ERROR; received from peer
 func PrettyDerby(request *gorequest.SuperAgent) model.Result {
 	name := "Pretty Derby Japan"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api-umamusume.cygames.jp/"
 	request = request.Set("User-Agent", model.UA_Dalvik)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

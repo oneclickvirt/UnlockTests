@@ -2,15 +2,19 @@ package th
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // AISPlay
 // 49-231-37-237-rewriter.ais-vidnt.com 双栈 get 请求
 func AISPlay(request *gorequest.SuperAgent) model.Result {
 	name := "AIS Play"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://49-231-37-237-rewriter.ais-vidnt.com/ais/play/origin/VOD/playlist/ais-yMzNH1-bGUxc/index.m3u8"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

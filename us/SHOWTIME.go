@@ -2,6 +2,7 @@ package us
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // www.showtime.com 仅 ipv4 且 get 请求
 func SHOWTIME(request *gorequest.SuperAgent) model.Result {
 	name := "SHOWTIME"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.showtime.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

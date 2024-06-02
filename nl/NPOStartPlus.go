@@ -14,6 +14,9 @@ import (
 // www.npo.nl 双栈 且 get 请求
 func NPOStartPlus(request *gorequest.SuperAgent) model.Result {
 	name := "NPO Start Plus"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	tokenURL := "https://www.npo.nl/start/api/domain/player-token?productId=LI_NL1_4188102"
 	streamURL := "https://prod.npoplayer.nl/stream-link"
 	referrerURL := "https://npo.nl/start/live?channel=NPO1"

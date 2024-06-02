@@ -3,17 +3,21 @@ package kr
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"strings"
+
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"io"
-	"strings"
 )
 
 // SPOTVNOW
 // edge.api.brightcove.com 仅 ipv4 且 get 请求
 func SPOTVNOW(request *gorequest.SuperAgent) model.Result {
 	name := "SPOTV NOW"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://edge.api.brightcove.com/playback/v1/accounts/5764318566001/videos/6349973203112"
 	client := req.DefaultClient()
 	client.ImpersonateChrome()

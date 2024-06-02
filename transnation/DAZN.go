@@ -12,6 +12,9 @@ import (
 // startup.core.indazn.com 仅 ipv4 且 post 请求
 func DAZN(request *gorequest.SuperAgent) model.Result {
 	name := "Dazn"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	resp, bodyBytes, errs := utils.PostJson(request, "https://startup.core.indazn.com/misl/v5/Startup",
 		`{"LandingPageKey":"generic","Languages":"zh-CN,zh,en","Platform":"web","PlatformAttributes":{},"Manufacturer":"","PromoCode":"","Version":"2"}`,
 		map[string]string{"User-Agent": model.UA_Browser},

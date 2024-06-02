@@ -2,10 +2,11 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 	"regexp"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 func parseBingRegion(responseBody string) string {
@@ -21,6 +22,9 @@ func parseBingRegion(responseBody string) string {
 // www.bing.com 双栈 且 post 请求
 func Bing(request *gorequest.SuperAgent) model.Result {
 	name := "Bing Region"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.bing.com/search?q=www.spiritysdx.top"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).End()

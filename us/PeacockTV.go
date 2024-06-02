@@ -1,15 +1,19 @@
 package us
 
 import (
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // PeacockTV
 // www.peacocktv.com 双栈 get 请求
 func PeacockTV(request *gorequest.SuperAgent) model.Result {
 	name := "Peacock TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.peacocktv.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

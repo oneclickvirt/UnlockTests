@@ -13,6 +13,9 @@ import (
 // api.fast.com 双栈 get 请求
 func NetflixCDN(request *gorequest.SuperAgent) model.Result {
 	name := "Netflix CDN"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api.fast.com/netflix/speedtest/v2?https=true&token=YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm&urlCount=5"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()
@@ -51,6 +54,9 @@ func NetflixCDN(request *gorequest.SuperAgent) model.Result {
 // www.netflix.com 双栈 且 get 请求
 func Netflix(request *gorequest.SuperAgent) model.Result {
 	name := "Netflix"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url1 := "https://www.netflix.com/title/81280792" // 乐高
 	url2 := "https://www.netflix.com/title/70143836" // 绝命毒师
 	url3 := "https://www.netflix.com/title/80018499" // Test Patterns

@@ -3,15 +3,19 @@ package tw
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"time"
 )
 
 // Tw4gtv
 // api2.4gtv.tv 仅 ipv4 且 post 请求
 func Tw4gtv(request *gorequest.SuperAgent) model.Result {
 	name := "4GTV.TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api2.4gtv.tv//Vod/GetVodUrl3"
 	formData := `value=D33jXJ0JVFkBqV%2BZSi1mhPltbejAbPYbDnyI9hmfqjKaQwRQdj7ZKZRAdb16%2FRUrE8vGXLFfNKBLKJv%2BfDSiD%2BZJlUa5Msps2P4IWuTrUP1%2BCnS255YfRadf%2BKLUhIPj`
 	request = request.Set("User-Agent", model.UA_Browser)

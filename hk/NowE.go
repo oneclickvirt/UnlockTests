@@ -3,6 +3,7 @@ package hk
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -11,6 +12,9 @@ import (
 // webtvapi.nowe.com 仅 ipv4 且 post 请求
 func NowE(request *gorequest.SuperAgent) model.Result {
 	name := "Now E"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url1 := "https://webtvapi.nowe.com/16/1/getVodURL"
 	data1 := `{"contentId":"202403181904703","contentType":"Vod","pin":"","deviceName":"Browser","deviceId":"w-663bcc51-913c-913c-913c-913c913c","deviceType":"WEB","secureCookie":null,"callerReferenceNo":"W17151951620081575","profileId":null,"mupId":null}`
 	resp, body, errs := request.Post(url1).

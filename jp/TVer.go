@@ -3,11 +3,12 @@ package jp
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"strings"
+
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"io"
-	"strings"
 )
 
 type PlatformResponse struct {
@@ -80,6 +81,9 @@ func TVer(request *gorequest.SuperAgent) model.Result {
 // 主要的检测逻辑
 func FirstTVer(request *gorequest.SuperAgent) model.Result {
 	name := "TVer"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	// 创建平台用户
 	res, body, errs := request.Post("https://platform-api.tver.jp/v2/api/platform_users/browser/create").
 		Set("content-type", "application/x-www-form-urlencoded").

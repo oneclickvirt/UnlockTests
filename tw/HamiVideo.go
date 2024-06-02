@@ -3,15 +3,19 @@ package tw
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"time"
 )
 
 // HamiVideo
 // hamivideo.hinet.net 仅 ipv4 且 get 请求
 func HamiVideo(request *gorequest.SuperAgent) model.Result {
 	name := "Hami Video"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://hamivideo.hinet.net/api/play.do?id=OTT_VOD_0000249064&freeProduct=1"
 	request = request.Set("User-Agent", model.UA_Browser).Timeout(15 * time.Second)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

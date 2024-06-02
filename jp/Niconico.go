@@ -2,15 +2,19 @@ package jp
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Niconico
 // www.nicovideo.jp 仅 ipv4 且 get 请求
 func Niconico(request *gorequest.SuperAgent) model.Result {
 	name := "Niconico"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url1 := "https://www.nicovideo.jp/watch/so40278367" // 进击的巨人
 	//url2 := "https://www.nicovideo.jp/watch/so23017073" // 假面骑士
 	request = request.Set("User-Agent", model.UA_Browser)

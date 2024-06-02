@@ -2,15 +2,19 @@ package jp
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // EroGameSpace
 // erogamescape.org 仅 ipv4 且 get 请求
 func EroGameSpace(request *gorequest.SuperAgent) model.Result {
 	name := "EroGameSpace"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://erogamescape.org/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

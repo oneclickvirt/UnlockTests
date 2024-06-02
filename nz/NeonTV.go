@@ -2,15 +2,19 @@ package nz
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // NeonTV
 // api.neontv.co.nz 仅 ipv4 且 post 请求
 func NeonTV(request *gorequest.SuperAgent) model.Result {
 	name := "Neon TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api.neontv.co.nz/api/client/gql?"
 	request = request.Set("User-Agent", model.UA_Browser).
 		Set("content-type", "application/json").

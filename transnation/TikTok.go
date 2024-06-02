@@ -2,10 +2,11 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 	"regexp"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 func TikTokCountry(body string) string {
@@ -21,6 +22,9 @@ func TikTokCountry(body string) string {
 // www.tiktok.com 仅 ipv4 且 get 请求
 func TikTok(request *gorequest.SuperAgent) model.Result {
 	name := "TikTok"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get("https://www.tiktok.com/explore").End()
 	if len(errs) > 0 {

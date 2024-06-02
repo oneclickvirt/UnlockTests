@@ -3,17 +3,21 @@ package nz
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"strings"
+
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"io"
-	"strings"
 )
 
 // MaoriTV
 // www.maoriplus.co.nz 双栈 且 get 请求
 func MaoriTV(request *gorequest.SuperAgent) model.Result {
 	name := "Maori TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	// https://www.maoriplus.co.nz/show/kapa-haka-regionals-2024-tamaki-makaurau/play/6352727601112
 	url := "https://edge.api.brightcove.com/playback/v1/accounts/1614493167001/videos/6352727601112"
 	client := req.DefaultClient()

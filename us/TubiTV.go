@@ -2,15 +2,19 @@ package us
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // TubiTV
 // tubitv.com 双栈 get 请求
 func TubiTV(request *gorequest.SuperAgent) model.Result {
 	name := "Tubi TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://tubitv.com/home"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

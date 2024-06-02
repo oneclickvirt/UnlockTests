@@ -2,15 +2,19 @@ package uk
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // SkyGo
 // skyid.sky.com 仅 ipv4 且 get 请求
 func SkyGo(request *gorequest.SuperAgent) model.Result {
 	name := "Sky Go"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://skyid.sky.com/authorise/skygo?response_type=token&client_id=sky&appearance=compact&redirect_uri=skygo://auth"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

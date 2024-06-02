@@ -2,15 +2,19 @@ package hk
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // ViuCom
 // www.viu.com 仅 ipv4 且 get 请求
 func ViuCom(request *gorequest.SuperAgent) model.Result {
 	name := "Viu.com"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.viu.com"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

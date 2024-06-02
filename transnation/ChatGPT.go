@@ -2,16 +2,20 @@ package transnation
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // OpenAI
 // api.openai.com 仅 ipv4 且 get 请求
 func OpenAI(request *gorequest.SuperAgent) model.Result {
 	name := "ChatGPT"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url1 := "https://api.openai.com/compliance/cookie_requirements"
 	resp1, body1, errs1 := request.Get(url1).
 		Set("User-Agent", model.UA_Browser).

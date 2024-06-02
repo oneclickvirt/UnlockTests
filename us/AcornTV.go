@@ -2,15 +2,19 @@ package us
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // AcornTV
 // acorn.tv 仅 ipv4 且 get 请求
 func AcornTV(request *gorequest.SuperAgent) model.Result {
 	name := "Acorn TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://acorn.tv/"
 	resp, body, errs := request.Get(url).Retry(2, 10).End()
 	if len(errs) > 0 {

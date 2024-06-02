@@ -2,6 +2,7 @@ package au
 
 import (
 	"encoding/json"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // www.sbs.com.au 仅 ipv4 且 get 请求
 func SBSonDemand(request *gorequest.SuperAgent) model.Result {
 	name := "SBS on Demand"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.sbs.com.au/api/v3/network?context=odwebsite"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

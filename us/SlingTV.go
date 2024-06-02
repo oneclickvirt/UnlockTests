@@ -2,6 +2,7 @@ package us
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // www.sling.com 双栈 且 get 请求
 func SlingTV(request *gorequest.SuperAgent) model.Result {
 	name := "Sling TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.sling.com/"
 	request = request.Set("User-Agent", model.UA_Dalvik)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

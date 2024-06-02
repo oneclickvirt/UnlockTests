@@ -5,10 +5,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 	"strings"
 	"time"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 func getFirstLink(jsonStr string) string {
@@ -91,6 +92,9 @@ func getMetaId(htmlStr string) string {
 // www.wowow.co.jp 仅 ipv4 且 get 请求
 func Wowow(request *gorequest.SuperAgent) model.Result {
 	name := "WOWOW"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	// 获取当前时间戳
 	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
 	// 第一次请求：获取原创剧集列表

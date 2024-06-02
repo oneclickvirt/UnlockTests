@@ -13,6 +13,9 @@ import (
 // mola.tv 仅 ipv4 且 get 请求
 func MolaTV(request *gorequest.SuperAgent) model.Result {
 	name := "Mola TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://mola.tv/api/v2/videos/geoguard/check/vd30491025"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

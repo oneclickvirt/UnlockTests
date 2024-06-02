@@ -2,6 +2,7 @@ package jp
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // api.konosubafd.jp 仅 ipv4 且 post 请求
 func KonosubaFD(request *gorequest.SuperAgent) model.Result {
 	name := "Konosuba Fantastic Days"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api.konosubafd.jp/api/masterlist"
 	request = request.Set("User-Agent", "pj0007/212 CFNetwork/1240.0.4 Darwin/20.6.0")
 	resp, _, errs := request.Post(url).Retry(1, 30).End()

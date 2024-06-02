@@ -11,6 +11,9 @@ import (
 // proxies.bein-mena-production.eu-west-2.tuc.red 仅 ipv4 且 get 请求
 func BeinConnect(request *gorequest.SuperAgent) model.Result {
 	name := "Bein Sports Connect"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://proxies.bein-mena-production.eu-west-2.tuc.red/proxy/availableOffers"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

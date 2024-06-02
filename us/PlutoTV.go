@@ -11,6 +11,9 @@ import (
 // pluto.tv 仅 ipv4 且 get 请求
 func PlutoTV(request *gorequest.SuperAgent) model.Result {
 	name := "Pluto TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://pluto.tv/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

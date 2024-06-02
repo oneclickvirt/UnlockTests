@@ -1,16 +1,20 @@
 package tw
 
 import (
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 	"strings"
 	"time"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 // MyVideo
 // www.myvideo.net.tw 仅 ipv4 且 get 请求
 func MyVideo(request *gorequest.SuperAgent) model.Result {
 	name := "MyVideo"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.myvideo.net.tw/login.do"
 	resp, body, errs := request.Timeout(15 * time.Second).Get(url).End()
 	if len(errs) > 0 {

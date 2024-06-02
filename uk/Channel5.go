@@ -14,6 +14,9 @@ import (
 // cassie.channel5.com 仅 ipv4 且 get 请求
 func Channel5(request *gorequest.SuperAgent) model.Result {
 	name := "Channel 5"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
 	url := fmt.Sprintf("https://cassie.channel5.com/api/v2/live_media/my5desktopng/C5.json?timestamp=%d&auth=0_rZDiY0hp_TNcDyk2uD-Kl40HqDbXs7hOawxyqPnbI", timestamp)
 	resp, body, errs := request.Get(url).End()

@@ -2,6 +2,7 @@ package jp
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // if.lemino.docomo.ne.jp 双栈 且 get 请求
 func Lemino(request *gorequest.SuperAgent) model.Result {
 	name := "Lemino"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://if.lemino.docomo.ne.jp/v1/user/delivery/watch/ready"
 	//request = request.Set("User-Agent", model.UA_Browser)
 	resp, _, errs := request.Get(url).

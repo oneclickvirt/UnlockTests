@@ -2,15 +2,19 @@ package us
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // CWTV
 // www.cwtv.com 双栈 get 请求
 func CWTV(request *gorequest.SuperAgent) model.Result {
 	name := "CW TV"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.cwtv.com/"
 	request = request.Set("User-Agent", model.UA_Browser)
 	resp, body, errs := request.Get(url).Retry(2, 5).End()

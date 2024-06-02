@@ -2,6 +2,7 @@ package jp
 
 import (
 	"fmt"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -10,6 +11,9 @@ import (
 // Kancolle 仅 ipv4 且 get 请求
 func Kancolle(request *gorequest.SuperAgent) model.Result {
 	name := "Kancolle Japan"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "http://203.104.209.7/kcscontents/news/"
 	request = request.Set("User-Agent", model.UA_Dalvik)
 	resp, _, errs := request.Get(url).Retry(2, 5).End()

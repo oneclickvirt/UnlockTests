@@ -1,10 +1,11 @@
 package nl
 
 import (
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // ZIETCDN
@@ -37,6 +38,9 @@ func ZIETCDN() model.Result {
 // nlziet.nl 仅 ipv4 且 get 请求 cookie 有效期非常短
 func ZIET(request *gorequest.SuperAgent) model.Result {
 	name := "NLZIET"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://api.nlziet.nl/v7/stream/handshake/Widevine/Dash/VOD/rzIL9rb-TkSn-ek_wBmvaw?playerName=BitmovinWeb"
 	resp, body, errs := request.Get(url).
 		Set("User-Agent", model.UA_Browser).

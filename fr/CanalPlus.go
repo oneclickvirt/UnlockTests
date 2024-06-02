@@ -2,15 +2,19 @@ package fr
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // CanalPlus
 // canalplus.com 双栈 get 请求
 func CanalPlus(request *gorequest.SuperAgent) model.Result {
 	name := "Canal+"
+	if request == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://boutique-tunnel.canalplus.com/"
 	resp, body, errs := request.Get(url).Retry(2, 5).End()
 	if len(errs) > 0 {
