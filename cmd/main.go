@@ -134,13 +134,11 @@ func excute(F func(request *gorequest.SuperAgent) model.Result) {
 		defer wg.Done()
 		req, err := utils.ParseInterface(ifaceName, ipAddr, netType)
 		if err == nil {
-			Names = append(Names, F(nil).Name)
 			res := F(req)
 			R = append(R, &res)
 			bar.Describe(res.Name + " " + ShowResult(&res))
 			bar.Add(1)
 		} else {
-			Names = append(Names, F(nil).Name)
 			bar.Describe(err.Error())
 			bar.Add(1)
 		}
@@ -165,6 +163,9 @@ func Multination(ifaceName, ipAddr, netType string) {
 		transnation.Instagram,
 		transnation.Steam,
 		transnation.Reddit,
+	}
+	for _, f := range FuncList {
+		Names = append(Names, f(nil).Name)
 	}
 	for _, f := range FuncList {
 		excute(f)
