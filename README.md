@@ -55,7 +55,7 @@ WorldFlipper - stream error: stream ID 1; INTERNAL_ERROR; received from peer
 
 Catchplay - unauthorized 原 token 已过期
 
-BahamutAnime - 存在 cloudflare 的5秒盾
+BahamutAnime - 存在 cloudflare 的质询防御，非5秒盾，无法突破，需要js动态加载
 ```
 
 ### 地区失效
