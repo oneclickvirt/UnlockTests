@@ -23,6 +23,7 @@ var (
 	IPV4                       = true
 	IPV6                       = true
 	R                          []*model.Result
+	Names                      []string
 	ifaceName, ipAddr, netType string
 )
 
@@ -108,15 +109,23 @@ func FormarPrint(language string) {
 			Length = len(r.Name)
 		}
 	}
+	// 构建一个以 r.Name 为键的字典
+	resultMap := make(map[string]*model.Result)
 	for _, r := range R {
-		if r.Status == "" && r.Name != "" {
-			printCenteredMessage("[ " + r.Name + " ]")
-		} else {
-			result := ShowResult(r)
-			if r.Status == model.StatusYes && strings.HasSuffix(r.Name, "CDN") {
-				result = Blue(r.Region)
+		resultMap[r.Name] = r
+	}
+	// 根据 Names 中的 name 顺序输出结果，重新排序结果
+	for _, name := range Names {
+		if r, found := resultMap[name]; found {
+			if r.Status == "" && r.Name != "" {
+				printCenteredMessage("[ " + r.Name + " ]")
+			} else {
+				result := ShowResult(r)
+				if r.Status == "Yes" && strings.HasSuffix(r.Name, "CDN") {
+					result = Blue(r.Region)
+				}
+				fmt.Printf("%-"+strconv.Itoa(Length)+"s %s\n", r.Name, result)
 			}
-			fmt.Printf("%-"+strconv.Itoa(Length)+"s %s\n", r.Name, result)
 		}
 	}
 }
@@ -128,11 +137,13 @@ func excute(F func(request *gorequest.SuperAgent) model.Result) {
 		defer wg.Done()
 		req, err := utils.ParseInterface(ifaceName, ipAddr, netType)
 		if err == nil {
+			Names = append(Names, F(nil).Name)
 			res := F(req)
 			R = append(R, &res)
 			bar.Describe(res.Name + " " + ShowResult(&res))
 			bar.Add(1)
 		} else {
+			Names = append(Names, F(nil).Name)
 			bar.Describe(err.Error())
 			bar.Add(1)
 		}
