@@ -2,9 +2,10 @@ package us
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Epix
@@ -69,9 +70,9 @@ func Epix(request *gorequest.SuperAgent) model.Result {
 	}
 	switch res2.Movie.Entitlements.Status {
 	case "PROXY_DETECTED":
-		return model.Result{Name: name, Status: model.StatusNo + " Proxy Detected"}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "Proxy Detected"}
 	case "GEO_BLOCKED":
-		return model.Result{Name: name, Status: model.StatusNo + " Unavailable"}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "Unavailable"}
 	case "NOT_SUBSCRIBED":
 		return model.Result{Name: name, Status: model.StatusYes}
 	default:

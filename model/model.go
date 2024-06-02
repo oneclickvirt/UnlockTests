@@ -5,6 +5,7 @@ type Result struct {
 	Status string
 	Err    error
 	Region string
+	Info   string
 }
 
 const (

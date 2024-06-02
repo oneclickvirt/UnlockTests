@@ -2,10 +2,11 @@ package au
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // Stan
@@ -18,10 +19,10 @@ func Stan(request *gorequest.SuperAgent) model.Result {
 	}
 	defer resp.Body.Close()
 	if strings.Contains(string(body), "Access Denied") || resp.StatusCode == 404 || resp.StatusCode == 451 {
-		return model.Result{Name: name, Status: model.StatusNo + " (Unavailable)"}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "Unavailable"}
 	}
 	if strings.Contains(string(body), "VPNDetected") {
-		return model.Result{Name: name, Status: model.StatusNo + " (VPN Detected)"}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "VPN Detected"}
 	}
 	if resp.StatusCode == 400 {
 		return model.Result{Name: name, Status: model.StatusYes}

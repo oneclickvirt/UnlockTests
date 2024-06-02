@@ -1,11 +1,12 @@
 package us
 
 import (
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 	"math/rand"
 	"strconv"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 // FuboTV
@@ -23,7 +24,7 @@ func FuboTV(request *gorequest.SuperAgent) model.Result {
 	if strings.Contains(body, "No Subscription") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	} else if strings.Contains(body, "Forbidden IP") {
-		return model.Result{Name: name, Status: model.StatusYes + " IP Forbidden"}
+		return model.Result{Name: name, Status: model.StatusYes, Info: "IP Forbidden"}
 	} else {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

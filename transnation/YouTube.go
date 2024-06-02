@@ -1,10 +1,11 @@
 package transnation
 
 import (
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 	"strings"
 	"time"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 // Youtube
@@ -65,13 +66,13 @@ func YoutubeCDN(request *gorequest.SuperAgent) model.Result {
 	if i == -1 {
 		i = strings.Index(body, ".")
 		return model.Result{
-			Name: name, Status: model.StatusYes + " (Youtube Video Server)",
+			Name: name, Status: model.StatusYes, Info: "Youtube Video Server",
 			Region: findAirCode(body[i+1:]),
 		}
 	} else {
 		isp := body[:i]
 		return model.Result{
-			Name: name, Status: model.StatusYes + " Google Global CacheCDN (ISP Cooperation)",
+			Name: name, Status: model.StatusYes, Info: "Google Global CacheCDN - ISP Cooperation",
 			Region: isp + " - " + findAirCode(body[i+1:]),
 		}
 	}

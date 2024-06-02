@@ -1,9 +1,10 @@
 package us
 
 import (
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // PlutoTV
@@ -20,8 +21,8 @@ func PlutoTV(request *gorequest.SuperAgent) model.Result {
 	if strings.Contains(body, "thanks-for-watching") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	//if resp.StatusCode == 429 {
-	//	return model.Result{Name: name, Status: model.StatusUnexpected + " Rate Limit"}
-	//}
+	if resp.StatusCode == 429 {
+		return model.Result{Name: name, Status: model.StatusUnexpected, Info: "Rate Limit"}
+	}
 	return model.Result{Name: name, Status: model.StatusYes}
 }

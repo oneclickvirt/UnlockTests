@@ -3,10 +3,11 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 	"regexp"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 func parseSonyLivToken(body string) string {
@@ -30,7 +31,7 @@ func SonyLiv(request *gorequest.SuperAgent) model.Result {
 	}
 	defer resp1.Body.Close()
 	if strings.Contains(body1, "geolocation_notsupported") {
-		return model.Result{Name: name, Status: model.StatusNo + " (Unavailable)"}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "Unavailable"}
 	}
 	jwtToken := parseSonyLivToken(body1)
 
@@ -79,7 +80,7 @@ func SonyLiv(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
 	}
 	if res2.ResultCode == "KO" {
-		return model.Result{Name: name, Status: model.StatusNo + " (Proxy Detected)", Region: strings.ToLower(region)}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "Proxy Detected", Region: strings.ToLower(region)}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get apiv2.sonyliv.com failed with code: %d", resp3.StatusCode)}

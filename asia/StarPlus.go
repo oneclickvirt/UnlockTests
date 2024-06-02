@@ -43,7 +43,7 @@ func StarPlus(request *gorequest.SuperAgent) model.Result {
 				if anotherCheck.Err == nil && anotherCheck.Status == model.StatusYes {
 					return model.Result{Name: name, Status: model.StatusYes, Region: loc}
 				} else {
-					anotherCheck.Status += " (Website: " + model.StatusYes + ")"
+					anotherCheck.Info = "Website: " + model.StatusYes
 					return anotherCheck
 				}
 			}

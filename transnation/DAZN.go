@@ -2,6 +2,7 @@ package transnation
 
 import (
 	"encoding/json"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
@@ -37,6 +38,6 @@ func DAZN(request *gorequest.SuperAgent) model.Result {
 		}
 	}
 	return model.Result{
-		Name: name, Status: model.StatusNo + " " + daznRes.Region.DisallowedReason,
+		Name: name, Status: model.StatusNo, Info: daznRes.Region.DisallowedReason,
 	}
 }

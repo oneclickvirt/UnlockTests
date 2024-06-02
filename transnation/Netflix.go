@@ -3,9 +3,10 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // NetflixCDN
@@ -20,7 +21,7 @@ func NetflixCDN(request *gorequest.SuperAgent) model.Result {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
-		return model.Result{Name: name, Status: model.StatusNo + " (IP Banned By Netflix)"}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "IP Banned By Netflix"}
 	}
 	type netflixCdnTarget struct {
 		Name     string `json:"name"`

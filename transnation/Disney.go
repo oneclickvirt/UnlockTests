@@ -2,10 +2,11 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 	"net/url"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 // DisneyPlus
@@ -68,7 +69,7 @@ func requestDisney(request *gorequest.SuperAgent, URL string, method string) mod
 			}
 		} else if location == "https://preview.disneyplus.com/unavailable/" {
 			return model.Result{
-				Name: name, Status: model.StatusNo + " (unavailable)",
+				Name: name, Status: model.StatusNo, Info: "unavailable",
 			}
 		}
 	}

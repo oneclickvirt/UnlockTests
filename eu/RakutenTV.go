@@ -2,10 +2,11 @@ package eu
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
-	"strings"
 )
 
 // RakutenTV
@@ -24,10 +25,10 @@ func RakutenTV(request *gorequest.SuperAgent) model.Result {
 	}
 	bodyString := string(body)
 	if strings.Contains(bodyString, "forbidden_market") {
-		return model.Result{Name: name, Status: model.StatusNo + " (Not Available)"}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "Not Available"}
 	}
 	if strings.Contains(bodyString, "forbidden_vpn") {
-		return model.Result{Name: name, Status: model.StatusNo + " (VPN Forbidden)"}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "VPN Forbidden"}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get gizmo.rakuten.tv failed with code: %d", resp.StatusCode)}
