@@ -10,7 +10,7 @@ import (
 )
 
 // ESPNPlus
-// espn.api.edge.bamgrid.com 双栈 且 post 请求 且有 cloudflare 的5秒盾
+// espn.api.edge.bamgrid.com 双栈 且 post 请求 可能 有 cloudflare 的5秒盾
 func ESPNPlus(request *gorequest.SuperAgent) model.Result {
 	name := "ESPN+"
 	url1 := "https://espn.api.edge.bamgrid.com/token"
@@ -32,7 +32,7 @@ func ESPNPlus(request *gorequest.SuperAgent) model.Result {
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	
+
 	url2 := "https://espn.api.edge.bamgrid.com/graph/v1/device/graphql"
 	data2 := `{"query":"mutation registerDevice($input: RegisterDeviceInput!) {\n            registerDevice(registerDevice: $input) {\n                grant {\n                    grantType\n                    assertion\n                }\n            }\n        }","variables":{"input":{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","deviceLanguage":"zh-CN","attributes":{"osDeviceIds":[],"manufacturer":"microsoft","model":null,"operatingSystem":"windows","operatingSystemVersion":"10.0","browserName":"chrome","browserVersion":"96.0.4664"}}}}`
 	resp2, body2, errs2 := request.Post(url2).Type("json").
