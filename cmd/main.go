@@ -8,9 +8,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/oneclickvirt/UnlockTests/asia"
 	. "github.com/oneclickvirt/UnlockTests/defaultset"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/transnation"
+	"github.com/oneclickvirt/UnlockTests/us"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
 	pb "github.com/schollz/progressbar/v3"
@@ -172,14 +174,28 @@ func Multination(ifaceName, ipAddr, netType string) {
 	}
 }
 
+func SouthAmerica(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		asia.StarPlus,
+		us.HBOMax,
+		us.DirecTVGO,
+	}
+	for _, f := range FuncList {
+		Names = append(Names, f(nil).Name)
+	}
+	for _, f := range FuncList {
+		excute(f)
+	}
+}
+
 func main() {
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
-	Multination("", "", "tcp4")
+	SouthAmerica("", "", "tcp4")
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
 	fmt.Println()
-	FormarPrint("zh", "Multination")
+	FormarPrint("zh", "South America")
 	fmt.Println()
 }
