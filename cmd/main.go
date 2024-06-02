@@ -2,9 +2,20 @@ package main
 
 import (
 	"strings"
+	"sync"
 
 	. "github.com/oneclickvirt/UnlockTests/defaultset"
 	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
+	pb "github.com/schollz/progressbar/v3"
+)
+
+var (
+	tot int64
+	bar *pb.ProgressBar
+	wg *sync.WaitGroup
+	IPV4 = true
+	IPV6 = true
 )
 
 func ShowResult(r model.Result) (s string) {
@@ -18,7 +29,6 @@ func ShowResult(r model.Result) (s string) {
 		}
 		return s
 	}
-
 	switch r.Status {
 	case model.StatusYes:
 		return formatResult(Green, "YES", r)
@@ -41,7 +51,7 @@ func ShowResult(r model.Result) (s string) {
 		}
 		return s
 	case model.StatusUnexpected:
-		s = Purple("Unexpected")
+		s = Purple("Unknown")
 		if r.Err != nil {
 			s += ": " + r.Err.Error()
 		}
@@ -49,4 +59,15 @@ func ShowResult(r model.Result) (s string) {
 	default:
 		return ""
 	}
+}
+
+func excute(F func(request *gorequest.SuperAgent) model.Result, request *gorequest.SuperAgent) {
+	wg.Add(1)
+	tot++
+	go func() {
+		defer wg.Done()
+		res := F(request)
+		bar.Describe(res.Name + " " + ShowResult(res))
+		bar.Add(1)
+	}()
 }
