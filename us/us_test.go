@@ -166,12 +166,12 @@ func Test(t *testing.T) {
 	}
 	fmt.Println(res.Name, ": ", res.Status, res.Region)
 
-	req, _ = utils.ParseInterface("", "", "tcp4")
-	res = Starz(req)
-	if res.Err != nil {
-		fmt.Println(res.Err)
+	req1, _ := utils.ParseInterface("", "", "tcp4")
+	res1 := Starz(req1)
+	if res1.Err != nil {
+		fmt.Println(res1.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res1.Name, ": ", res1.Status, res1.Region)
 }
 
 // func Test(t *testing.T) {
