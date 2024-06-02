@@ -97,7 +97,7 @@ func printCenteredMessage(message string) {
 	fmt.Println(leftPadding + message + rightPadding)
 }
 
-func FormarPrint(language string) {
+func FormarPrint(language, message string) {
 	if language == "zh" {
 		fmt.Println("测试时间: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
 	} else {
@@ -109,6 +109,7 @@ func FormarPrint(language string) {
 			Length = len(r.Name)
 		}
 	}
+	printCenteredMessage("[ " + message + " ]")
 	// 构建一个以 r.Name 为键的字典
 	resultMap := make(map[string]*model.Result)
 	for _, r := range R {
@@ -174,11 +175,10 @@ func main() {
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
 	Multination("", "", "tcp4")
-	printCenteredMessage("[ " + "Multination" + " ]")
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
 	fmt.Println()
-	FormarPrint("zh")
+	FormarPrint("zh", "Multination")
 	fmt.Println()
 }
