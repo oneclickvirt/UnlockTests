@@ -83,6 +83,19 @@ func ShowResult(r *model.Result) (s string) {
 	}
 }
 
+func printCenteredMessage(message string) {
+	totalLength := 40
+	messageLength := len(message)
+	if messageLength > totalLength {
+		message = message[:totalLength]
+		messageLength = totalLength
+	}
+	paddingLength := (totalLength - messageLength) / 2
+	leftPadding := strings.Repeat("=", paddingLength)
+	rightPadding := strings.Repeat("=", totalLength-messageLength-paddingLength)
+	fmt.Println(leftPadding + message + rightPadding)
+}
+
 func FormarPrint(language string) {
 	if language == "zh" {
 		fmt.Println("测试时间: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
@@ -97,23 +110,7 @@ func FormarPrint(language string) {
 	}
 	for _, r := range R {
 		if r.Status == "" && r.Name != "" {
-			s := ""
-			check := false
-			realLength := Length - len(r.Name) + 6
-			if realLength %2 != 0 {
-				realLength += 1
-			}
-			for i := realLength; i >= 0; i-- {
-				s += "="
-				if i < (realLength/2) && !check {
-					s += " [ " + r.Name + " ] "
-					check = true
-				}
-			}
-			if r.Name == "" {
-				s = "\n"
-			}
-			fmt.Println(s)
+			printCenteredMessage("[ " + r.Name + " ]")
 		} else {
 			result := ShowResult(r)
 			if r.Status == model.StatusYes && strings.HasSuffix(r.Name, "CDN") {
