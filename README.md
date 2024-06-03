@@ -23,13 +23,8 @@ GYAO 和 LINE VOOM
 需要重新构建检测逻辑
 
 ```
-HBO_Nordic
-
-HBO_Portugal
 
 ElevenSportsTW
-
-MathsSpot
 
 MegogoTV
 
@@ -43,12 +38,6 @@ TV360 - 登录认证已过期
 
 Crackle - Platform Key is not specified
 
-Eurosport - Tokem 已过期 且 api 官网已升级至于 v3
-
-HBOGOEurope - api.ugw.hbogo.eu 已经 host 为空了 查询不到内容
-
-HBOSpain - api-discovery.hbo.eu 的 host 已经为空了
-
 Salto - Get remote error: tls: unrecognized name
 
 PCRJP - stream error: stream ID 1; INTERNAL_ERROR; received from peer
@@ -60,16 +49,6 @@ WorldFlipper - stream error: stream ID 1; INTERNAL_ERROR; received from peer
 Catchplay - unauthorized 原 token 已过期
 
 BahamutAnime - 存在 cloudflare 的质询防御，非5秒盾，无法突破，需要js动态加载
-```
-
-### 地区失效
-
-不需要再做支持
-
-```
-KBSAmerican - 不再支持本地区
-
-Paravi - 已迁移并集成到 U-NEXT 中。由于整合，除了传统的Paravi作品外，现在还有电影、动漫、亚洲和外国戏剧等等可以无限观看。
 ```
 
 ### 部分失效
@@ -86,6 +65,24 @@ BilibiliTH - 对应URL请求无论如何都返回为空 {"code":10004001,"messag
 BilibiliVN - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
 
 TVer - get platform-api.tver.jp failed with code: 400
+```
+
+### 无需支持
+
+不需要再做支持
+
+```
+KBSAmerican - 不再支持本地区
+
+Paravi - 已迁移并集成到 U-NEXT 中。由于整合，除了传统的Paravi作品外，现在还有电影、动漫、亚洲和外国戏剧等等可以无限观看。
+
+HBOGOEurope - api.ugw.hbogo.eu 已经 host 为空了 查询不到内容
+
+HBOSpain - api-discovery.hbo.eu 的 host 已经为空了
+
+HBO_Nordic - 被合并了
+
+HBO_Portugal - 被合并了
 ```
 
 </details>
