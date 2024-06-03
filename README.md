@@ -15,8 +15,6 @@
 可能需要拆分检测
 
 ```
-TLCGO 和 NBCTV
-
 GYAO 和 LINE VOOM
 ```
 

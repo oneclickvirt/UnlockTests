@@ -484,7 +484,7 @@ func Sport(ifaceName, ipAddr, netType string) {
 		eu.SetantaSports,
 		au.OptusSports,
 		africa.BeinConnect,
-		// eu.Eurosport,
+		eu.Eurosport,
 	}
 	processFunction(FuncList)
 }
