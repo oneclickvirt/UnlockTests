@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/imroc/req/v3"
@@ -35,7 +36,12 @@ func NBCTV(request *gorequest.SuperAgent) model.Result {
 	client.Headers.Set("sec-fetch-dest", "empty")
 	client.Headers.Set("sec-fetch-mode", "cors")
 	client.Headers.Set("sec-fetch-site", "cross-site")
-	resp, err := client.R().SetBodyJsonString(`{"adobeMvpdId":null,"serviceZip":null,"device":"web"}`).Post(url)
+	resp, err := client.R().
+		SetRetryCount(2).
+		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
+		SetRetryFixedInterval(2 * time.Second).
+		SetBodyJsonString(`{"adobeMvpdId":null,"serviceZip":null,"device":"web"}`).
+		Post(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
