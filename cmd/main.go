@@ -237,6 +237,7 @@ func Oceania(ifaceName, ipAddr, netType string) {
 		uk.BritBox,
 		transnation.ParamountPlus,
 		transnation.SonyLiv,
+		// 继续
 	}
 	processFunction(FuncList)
 }
@@ -381,6 +382,7 @@ func Taiwan(ifaceName, ipAddr, netType string) {
 	processFunction(FuncList)
 }
 
+// 部分有问题，待解决
 func Japan(ifaceName, ipAddr, netType string) {
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
 		jp.DMM,
@@ -419,8 +421,6 @@ func Japan(ifaceName, ipAddr, netType string) {
 func main() {
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
-	// Oceania("", "", "tcp4")
-
 	// NorthAmerica("", "", "tcp4")
 	// Europe("", "", "tcp4")
 	// HongKong("", "", "tcp4")
@@ -430,12 +430,11 @@ func main() {
 	Japan("", "", "tcp4")
 	// Multination("", "", "tcp4")
 	// SouthAmerica("", "", "tcp4")
+	// Oceania("", "", "tcp4")
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
 	fmt.Println()
-	// FormarPrint("zh", "Oceania")
-
 	// FormarPrint("zh", "North America")
 	// FormarPrint("zh", "Europe")
 	// FormarPrint("zh", "HongKong")
@@ -445,5 +444,6 @@ func main() {
 	FormarPrint("zh", "Japan")
 	// FormarPrint("zh", "Multination")
 	// FormarPrint("zh", "South America")
+	// FormarPrint("zh", "Oceania")
 	fmt.Println()
 }
