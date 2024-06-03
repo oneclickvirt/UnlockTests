@@ -2,8 +2,9 @@ package hk
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"testing"
+
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 func Test(t *testing.T) {
@@ -16,12 +17,6 @@ func Test(t *testing.T) {
 	fmt.Println("BilibiliHKMO", ": ", res.Status, res.Region)
 
 	res = MyTvSuper(req)
-	if res.Err != nil {
-		fmt.Println(res.Err)
-	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
-
-	res = ViuCom(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}

@@ -217,8 +217,8 @@ func NorthAmerica(ifaceName, ipAddr, netType string) {
 		us.Shudder,
 		uk.BritBox,
 		// us.Crackle,
-		us.CWTV,
 		us.AETV,
+		us.CWTV,
 		us.NBATV,
 		us.FuboTV,
 		us.TubiTV,
@@ -229,13 +229,11 @@ func NorthAmerica(ifaceName, ipAddr, netType string) {
 		us.SHOWTIME,
 		us.EncoreTVB,
 		us.DiscoveryPlus,
-		transnation.ParamountPlus,
 		us.PeacockTV,
 		us.Popcornflix,
 		us.Crunchyroll,
 		us.DirectvStream,
-		transnation.KOCOWA,
-		transnation.SonyLiv,
+		// CA
 		utils.PrintCA,
 		asia.Hotstar,
 		ca.CBCGem,
@@ -250,7 +248,6 @@ func Europe(ifaceName, ipAddr, netType string) {
 		eu.SkyShowTime,
 		us.HBOMax,
 		eu.SetantaSports,
-		transnation.SonyLiv,
 		// GB
 		utils.PrintGB,
 		asia.Hotstar,
@@ -294,11 +291,9 @@ func Europe(ifaceName, ipAddr, netType string) {
 func HongKong(ifaceName, ipAddr, netType string) {
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
 		hk.NowE,
-		hk.ViuCom,
 		hk.ViuTV,
 		hk.MyTvSuper,
 		asia.HBOGO,
-		transnation.SonyLiv,
 		hk.BilibiliHKMO,
 	}
 	processFunction(FuncList)
@@ -317,7 +312,6 @@ func India(ifaceName, ipAddr, netType string) {
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
 		asia.Hotstar,
 		in.Zee5,
-		transnation.SonyLiv,
 		in.JioCinema,
 		in.MXPlayer,
 		us.NBATV,
@@ -334,9 +328,8 @@ func Taiwan(ifaceName, ipAddr, netType string) {
 		tw.LineTV,
 		tw.HamiVideo,
 		// tw.Catchplay,
-		asia.HBOGO,
 		// tw.BahamutAnime,
-		transnation.SonyLiv,
+		asia.HBOGO,
 		tw.BilibiliTW,
 	}
 	processFunction(FuncList)
@@ -357,6 +350,8 @@ func Japan(ifaceName, ipAddr, netType string) {
 		jp.VideoMarket,
 		jp.DAnimeStore,
 		jp.FOD,
+		jp.Radiko,
+		jp.RakutenTV,
 		jp.J_COM_ON_DEMAND,
 		// Game
 		utils.PrintGame,
@@ -370,6 +365,7 @@ func Japan(ifaceName, ipAddr, netType string) {
 		utils.PrintMusic,
 		jp.Mora,
 		jp.MusicBook,
+		jp.KaraokeDam,
 		// Forum
 		utils.PrintForum,
 		jp.EroGameSpace,
@@ -382,21 +378,24 @@ func Multination(ifaceName, ipAddr, netType string) {
 		transnation.DAZN,
 		transnation.DisneyPlus,
 		transnation.Netflix,
+		transnation.NetflixCDN,
 		transnation.Youtube,
+		transnation.YoutubeCDN,
 		transnation.PrimeVideo,
+		transnation.ParamountPlus,
 		transnation.TVBAnywhere,
 		transnation.IQiYi,
-		transnation.YoutubeCDN,
-		transnation.NetflixCDN,
+		transnation.ViuCom,
 		transnation.Spotify,
-		transnation.OpenAI,
-		transnation.Bing,
-		transnation.WikipediaEditable,
-		transnation.Instagram,
 		transnation.Steam,
-		// Forum
-		utils.PrintRForum,
+		transnation.OpenAI,
+		transnation.WikipediaEditable,
 		transnation.Reddit,
+		transnation.TikTok,
+		transnation.Bing,
+		transnation.Instagram,
+		transnation.KOCOWA,
+		transnation.SonyLiv,
 	}
 	processFunction(FuncList)
 }
@@ -415,8 +414,6 @@ func Oceania(ifaceName, ipAddr, netType string) {
 		us.NBATV,
 		us.AcornTV,
 		uk.BritBox,
-		transnation.ParamountPlus,
-		transnation.SonyLiv,
 		// AU
 		utils.PrintAU,
 		au.Stan,
@@ -449,17 +446,14 @@ func Korean(ifaceName, ipAddr, netType string) {
 		kr.NaverTV,
 		kr.Afreeca,
 		kr.KBSDomestic,
-		// transnation.KOCOWA,
 	}
 	processFunction(FuncList)
 }
 
 func SouthEastAsia(ifaceName, ipAddr, netType string) {
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
-		hk.ViuCom,
 		asia.Hotstar,
 		asia.HBOGO,
-		transnation.SonyLiv,
 		asia.BilibiliSEA,
 		// SG
 		utils.PrintSG,
@@ -486,7 +480,7 @@ func Sport(ifaceName, ipAddr, netType string) {
 		eu.SetantaSports,
 		au.OptusSports,
 		africa.BeinConnect,
-		// eu.Eurosport, 
+		// eu.Eurosport,
 	}
 	processFunction(FuncList)
 }
