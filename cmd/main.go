@@ -234,6 +234,7 @@ func NorthAmerica(ifaceName, ipAddr, netType string) {
 		us.Popcornflix,
 		us.Crunchyroll,
 		us.DirectvStream,
+		eu.MathsSpot,
 		// CA
 		utils.PrintCA,
 		asia.HotStar,
@@ -249,6 +250,7 @@ func Europe(ifaceName, ipAddr, netType string) {
 		eu.SkyShowTime,
 		us.HBOMax,
 		eu.SetantaSports,
+		eu.MathsSpot,
 		// GB
 		utils.PrintGB,
 		asia.HotStar,
