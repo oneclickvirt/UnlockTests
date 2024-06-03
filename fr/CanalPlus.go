@@ -21,8 +21,9 @@ func CanalPlus(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	if strings.Contains(body, "othercountry") || resp.StatusCode == 000 || resp.StatusCode == 302 ||
-		resp.StatusCode == 403 || resp.StatusCode == 451 {
+	if strings.Contains(body, "othercountry") ||
+		strings.Contains(resp.Request.URL.String(), "other-country-blocking") ||
+		resp.StatusCode == 302 || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusYes}

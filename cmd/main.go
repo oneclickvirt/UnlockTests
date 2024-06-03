@@ -235,7 +235,7 @@ func NorthAmerica(ifaceName, ipAddr, netType string) {
 		us.DirectvStream,
 		// CA
 		utils.PrintCA,
-		asia.Hotstar,
+		asia.HotStar,
 		ca.CBCGem,
 		ca.Crave,
 	}
@@ -250,7 +250,7 @@ func Europe(ifaceName, ipAddr, netType string) {
 		eu.SetantaSports,
 		// GB
 		utils.PrintGB,
-		asia.Hotstar,
+		asia.HotStar,
 		uk.SkyGo,
 		uk.BritBox,
 		uk.ITVX,
@@ -310,7 +310,7 @@ func Africa(ifaceName, ipAddr, netType string) {
 
 func India(ifaceName, ipAddr, netType string) {
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
-		asia.Hotstar,
+		asia.HotStar,
 		in.Zee5,
 		in.JioCinema,
 		in.MXPlayer,
@@ -452,7 +452,7 @@ func Korean(ifaceName, ipAddr, netType string) {
 
 func SouthEastAsia(ifaceName, ipAddr, netType string) {
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
-		asia.Hotstar,
+		asia.HotStar,
 		asia.HBOGO,
 		asia.BilibiliSEA,
 		// SG
@@ -487,7 +487,7 @@ func Sport(ifaceName, ipAddr, netType string) {
 
 func IPV6Multination(ifaceName, ipAddr, netType string) {
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
-		asia.Hotstar,
+		asia.HotStar,
 		transnation.DisneyPlus,
 		transnation.Netflix,
 		transnation.NetflixCDN,

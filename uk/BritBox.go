@@ -21,7 +21,8 @@ func BritBox(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	if strings.Contains(body, "locationnotsupported") || resp.StatusCode == 403 || resp.StatusCode == 451 {
+	if strings.Contains(body, "locationnotsupported") || strings.Contains(body, "locationnotvalidated") ||
+		resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if resp.StatusCode == 200 {

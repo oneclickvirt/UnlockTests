@@ -27,12 +27,15 @@ func RakutenTV(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	bodyString := string(body)
-	if strings.Contains(bodyString, "forbidden_market") {
-		return model.Result{Name: name, Status: model.StatusNo, Info: "Not Available"}
-	}
+	//fmt.Println(bodyString)
 	if strings.Contains(bodyString, "forbidden_vpn") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "VPN Forbidden"}
 	}
+	if strings.Contains(bodyString, "forbidden_market") || strings.Contains(bodyString, "is not available") {
+		return model.Result{Name: name, Status: model.StatusNo, Info: "Not Available"}
+	}
+	// TODO 识别地区
+	// iso3166_code  streaming_drm_types
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get gizmo.rakuten.tv failed with code: %d", resp.StatusCode)}
 }

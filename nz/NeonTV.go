@@ -28,7 +28,7 @@ func NeonTV(request *gorequest.SuperAgent) model.Result {
 	defer resp.Body.Close()
 	if strings.Contains(body, "Access Denied") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 200 {
+	} else if resp.StatusCode == 200 || strings.Contains(body, "RESTRICTED_GEOLOCATION") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

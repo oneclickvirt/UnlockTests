@@ -1,6 +1,7 @@
 package ca
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -23,5 +24,9 @@ func Crave(request *gorequest.SuperAgent) model.Result {
 	if strings.Contains(body, "Geo Constraint Restrictions") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	return model.Result{Name: name, Status: model.StatusYes}
+	if strings.Contains(body, "video.9c9media.com") {
+		return model.Result{Name: name, Status: model.StatusYes}
+	}
+	return model.Result{Name: name, Status: model.StatusUnexpected,
+		Err: fmt.Errorf("get capi.9c9media.com with code: %d", resp.StatusCode)}
 }

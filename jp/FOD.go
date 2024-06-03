@@ -22,7 +22,8 @@ func FOD(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	if strings.Contains(body, "false") || resp.StatusCode == 403 || resp.StatusCode == 451 {
+	// fmt.Println(body)
+	if strings.Contains(body, "FLAG TYPE=\"false\"") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 || strings.Contains(body, "true") {
 		return model.Result{Name: name, Status: model.StatusYes}

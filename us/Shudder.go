@@ -1,6 +1,7 @@
 package us
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -21,11 +22,11 @@ func Shudder(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	if strings.Contains(body, "not available") { // || resp.StatusCode == 403 || resp.StatusCode == 451
+	if strings.Contains(body, "not available") {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else { // if resp.StatusCode == 200
+	} else if strings.Contains(body, "movies") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
-	//return model.Result{Name: name, Status: model.StatusUnexpected,
-	//	Err: fmt.Errorf("get www.shudder.com failed with code: %d", resp.StatusCode)}
+	return model.Result{Name: name, Status: model.StatusUnexpected,
+		Err: fmt.Errorf("get www.shudder.com failed with code: %d", resp.StatusCode)}
 }

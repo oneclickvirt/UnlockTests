@@ -3,6 +3,7 @@ package jp
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
@@ -22,6 +23,7 @@ func RakutenTV(request *gorequest.SuperAgent) model.Result {
 		Set("Cookie", "alt_id=kdPG3ErDszsWchi~f3P7Y3Mk; _ra=1716693934724|fbf06bf6-0e63-49bc-b5ae-ea8e785126ba; sec_token=6d518581124ba17c1b9968dca83aba7d441dcf88s%3A40%3A%220f817994db4925695da3375e3248a7552d981647%22%3B").
 		Set("origin", "https://tv.rakuten.co.jp").
 		Set("referer", "https://tv.rakuten.co.jp/").
+		Timeout(10 * time.Second).
 		End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}

@@ -24,7 +24,7 @@ func AcornTV(request *gorequest.SuperAgent) model.Result {
 	if strings.Contains(body, "Not yet available in your country") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == 200 || strings.Contains(body, "signup.acorn.tv") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

@@ -22,9 +22,11 @@ func RaiPlay(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	if strings.Contains(body, "no_available") || resp.StatusCode == 403 || resp.StatusCode == 451 {
+	if strings.Contains(body, "video_no_available") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
+		// TODO 识别地区
+		// <geoprotection>
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

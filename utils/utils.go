@@ -93,11 +93,11 @@ func GetRegion(loc string, locationList []string) bool {
 
 // 通过Info标记要被插入的行的下一行包含什么文本内容
 func PrintCA(request *gorequest.SuperAgent) model.Result {
-	return model.Result{Name: "Canada", Status: model.PrintHead, Info: "Hotstar"}
+	return model.Result{Name: "Canada", Status: model.PrintHead, Info: "HotStar"}
 }
 
 func PrintGB(request *gorequest.SuperAgent) model.Result {
-	return model.Result{Name: "England", Status: model.PrintHead, Info: "Hotstar"}
+	return model.Result{Name: "England", Status: model.PrintHead, Info: "HotStar"}
 }
 
 func PrintFR(request *gorequest.SuperAgent) model.Result {

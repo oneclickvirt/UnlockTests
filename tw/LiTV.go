@@ -33,10 +33,12 @@ func LiTV(request *gorequest.SuperAgent) model.Result {
 	}
 	bodyString := string(body)
 	if resp.StatusCode == 200 {
-		if strings.Contains(bodyString, "OutsideRegionError") {
+		if strings.Contains(bodyString, "OutsideRegionError") || strings.Contains(bodyString, "42000087") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		return model.Result{Name: name, Status: model.StatusYes}
+		if strings.Contains(bodyString, "42000075") {
+			return model.Result{Name: name, Status: model.StatusYes}
+		}
 	}
 	return AnotherLiTV()
 }

@@ -8,10 +8,10 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
-// Hotstar
+// HotStar
 // api.hotstar.com 双栈 get 请求
-func Hotstar(request *gorequest.SuperAgent) model.Result {
-	name := "Hotstar"
+func HotStar(request *gorequest.SuperAgent) model.Result {
+	name := "HotStar"
 	if request == nil {
 		return model.Result{Name: name}
 	}

@@ -1,6 +1,7 @@
 package us
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -23,7 +24,9 @@ func FXNOW(request *gorequest.SuperAgent) model.Result {
 	defer resp.Body.Close()
 	if strings.Contains(body, "is not accessible") {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else {
+	} else if strings.Contains(body, "FX Movies") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
+	return model.Result{Name: name, Status: model.StatusUnexpected,
+		Err: fmt.Errorf("get fxnow.fxnetworks.com with code: %d", resp.StatusCode)}
 }

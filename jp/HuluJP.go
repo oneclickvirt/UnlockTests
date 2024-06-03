@@ -1,6 +1,8 @@
 package jp
 
 import (
+	"time"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
 )
@@ -28,7 +30,7 @@ func Hulu(request *gorequest.SuperAgent) model.Result {
 		Set("Sec-Fetch-Site", "none").
 		Set("Sec-Fetch-User", "?1").
 		Set("Upgrade-Insecure-Requests", "1")
-	resp, _, errs := request.Get("https://id.hulu.jp").End()
+	resp, _, errs := request.Get("https://id.hulu.jp").Timeout(10 * time.Second).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
