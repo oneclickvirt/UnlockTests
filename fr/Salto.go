@@ -9,7 +9,10 @@ package fr
 // 	client := req.DefaultClient()
 // 	client.ImpersonateChrome()
 // 	client.Headers.Set("User-Agent", model.UA_Browser)
-// 	resp, err := req.R().Get(url)
+// 	resp, err := req.R().
+		// SetRetryCount(2).
+		// SetRetryBackoffInterval(1*time.Second, 5*time.Second).
+		// SetRetryFixedInterval(2 * time.Second).Get(url)
 // 	if err != nil {
 // 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 // 	}

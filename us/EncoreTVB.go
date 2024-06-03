@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -24,7 +25,10 @@ func EncoreTVB(request *gorequest.SuperAgent) model.Result {
 	client.Headers.Set("User-Agent", model.UA_Browser)
 	client.Headers.Set("Accept", "application/json;pk=BCpkADawqM2Gpjj8SlY2mj4FgJJMfUpxTNtHWXOItY1PvamzxGstJbsgc-zFOHkCVcKeeOhPUd9MNHEGJoVy1By1Hrlh9rOXArC5M5MTcChJGU6maC8qhQ4Y8W-QYtvi8Nq34bUb9IOvoKBLeNF4D9Avskfe9rtMoEjj6ImXu_i4oIhYS0dx7x1AgHvtAaZFFhq3LBGtR-ZcsSqxNzVg-4PRUI9zcytQkk_YJXndNSfhVdmYmnxkgx1XXisGv1FG5GOmEK4jZ_Ih0riX5icFnHrgniADr4bA2G7TYh4OeGBrYLyFN_BDOvq3nFGrXVWrTLhaYyjxOr4rZqJPKK2ybmMsq466Ke1ZtE-wNQ")
 	client.Headers.Set("Origin", "https://www.encoretvb.com")
-	resp, err := client.R().Get(url)
+	resp, err := client.R().
+		SetRetryCount(2).
+		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
+		SetRetryFixedInterval(2 * time.Second).Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}

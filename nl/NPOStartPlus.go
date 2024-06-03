@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -22,7 +23,11 @@ func NPOStartPlus(request *gorequest.SuperAgent) model.Result {
 	referrerURL := "https://npo.nl/start/live?channel=NPO1"
 	client := req.DefaultClient()
 	client.ImpersonateChrome()
-	resp, err := client.R().Get(tokenURL)
+	resp, err := client.R().
+		SetRetryCount(2).
+		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
+		SetRetryFixedInterval(2 * time.Second).
+		Get(tokenURL)
 	defer resp.Body.Close()
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}

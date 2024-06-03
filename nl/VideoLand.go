@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -27,7 +28,11 @@ func VideoLand(request *gorequest.SuperAgent) model.Result {
 	client.Headers.Set("origin", "https://www.videoland.com")
 	client.Headers.Set("referer", "https://www.videoland.com/")
 	client.Headers.Set("accept", "application/json, text/plain, */*")
-	resp, err := client.R().SetBodyString(payload).Post(url)
+	resp, err := client.R().
+		SetRetryCount(2).
+		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
+		SetRetryFixedInterval(2 * time.Second).
+		SetBodyString(payload).Post(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}

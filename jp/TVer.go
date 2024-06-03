@@ -266,7 +266,11 @@ func FirstTVer(request *gorequest.SuperAgent) model.Result {
 //	client.ImpersonateChrome()
 //	client.Headers.Set("User-Agent", model.UA_Browser)
 //	client.Headers.Set("Accept", "application/json;pk=BCpkADawqM0_rzsjsYbC1k1wlJLU4HiAtfzjxdUmfvvLUQB-Ax6VA-p-9wOEZbCEm3u95qq2Y1CQQW1K9tPaMma9iAqUqhpISCmyXrgnlpx9soEmoVNuQpiyGsTpePGumWxSs1YoKziYB6Wz")
-//	resp, err := client.R().Get("https://edge.api.brightcove.com/playback/v1/accounts/5102072605001/videos/ref%3Akaguyasama_01")
+//	resp, err := client.R().
+// SetRetryCount(2).
+// SetRetryBackoffInterval(1*time.Second, 5*time.Second).
+// SetRetryFixedInterval(2 * time.Second).
+// Get("https://edge.api.brightcove.com/playback/v1/accounts/5102072605001/videos/ref%3Akaguyasama_01")
 //	if err != nil {
 //		return model.Result{Status: model.StatusNetworkErr, Err: err}
 //	}

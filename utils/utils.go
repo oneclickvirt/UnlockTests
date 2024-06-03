@@ -143,3 +143,7 @@ func PrintMusic(request *gorequest.SuperAgent) model.Result {
 func PrintForum(request *gorequest.SuperAgent) model.Result {
 	return model.Result{Name: "Forum", Status: model.PrintHead, Info: "EroGameSpace"}
 }
+
+func PrintRForum(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Forum", Status: model.PrintHead, Info: "Reddit"}
+}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -23,7 +24,10 @@ func Starz(request *gorequest.SuperAgent) model.Result {
 	client.Headers.Set("Referer", "https://www.starz.com/us/en/")
 	// client.Headers.Set("Authtokenauthorization", "")
 	url := "https://www.starz.com/sapi/header/v1/starz/us/09b397fc9eb64d5080687fc8a218775b" // 请求有tls校验
-	resp, err := client.R().Get(url)
+	resp, err := client.R().
+		SetRetryCount(2).
+		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
+		SetRetryFixedInterval(2 * time.Second).Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}

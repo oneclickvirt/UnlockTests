@@ -214,6 +214,8 @@ func Multination(ifaceName, ipAddr, netType string) {
 		transnation.WikipediaEditable,
 		transnation.Instagram,
 		transnation.Steam,
+		// Forum
+		utils.PrintRForum,
 		transnation.Reddit,
 	}
 	processFunction(FuncList)
@@ -417,8 +419,6 @@ func Japan(ifaceName, ipAddr, netType string) {
 func main() {
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
-	// Multination("", "", "tcp4")
-	// SouthAmerica("", "", "tcp4")
 	// Oceania("", "", "tcp4")
 
 	// NorthAmerica("", "", "tcp4")
@@ -426,13 +426,14 @@ func main() {
 	// HongKong("", "", "tcp4")
 	// Africa("", "", "tcp4")
 	// India("", "", "tcp4")
-	Taiwan("", "", "tcp4")
+	// Taiwan("", "", "tcp4")
+	Japan("", "", "tcp4")
+	// Multination("", "", "tcp4")
+	// SouthAmerica("", "", "tcp4")
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
 	fmt.Println()
-	// FormarPrint("zh", "Multination")
-	// FormarPrint("zh", "South America")
 	// FormarPrint("zh", "Oceania")
 
 	// FormarPrint("zh", "North America")
@@ -440,6 +441,9 @@ func main() {
 	// FormarPrint("zh", "HongKong")
 	// FormarPrint("zh", "Africa")
 	// FormarPrint("zh", "India")
-	FormarPrint("zh", "Taiwan")
+	// FormarPrint("zh", "Taiwan")
+	FormarPrint("zh", "Japan")
+	// FormarPrint("zh", "Multination")
+	// FormarPrint("zh", "South America")
 	fmt.Println()
 }

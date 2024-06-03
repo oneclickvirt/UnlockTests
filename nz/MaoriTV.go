@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -25,7 +26,10 @@ func MaoriTV(request *gorequest.SuperAgent) model.Result {
 	client.Headers.Set("User-Agent", model.UA_Browser)
 	client.Headers.Set("Accept", "application/json;pk=BCpkADawqM2E9yW4lLgKIEIV5majz5djzZCIqJiYMkP5yYaYdF6AQYq4isPId1ZLtQdGnK1ErLYG0-r1N-3DzAEdbfvw9SFdDWz_i09pLp8Njx1ybslyIXid-X_Dx31b7-PLdQhJCws-vk6Y")
 	client.Headers.Set("Origin", "https://www.maoritelevision.com")
-	resp, err := client.R().Get(url)
+	resp, err := client.R().
+		SetRetryCount(2).
+		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
+		SetRetryFixedInterval(2 * time.Second).Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
