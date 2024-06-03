@@ -27,7 +27,7 @@ func Tving(request *gorequest.SuperAgent) model.Result {
 		strings.Contains(body, "making efforts to deliver our service to global audience soon") ||
 		resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 200 {
+	} else if strings.Contains(body, "vod_type") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

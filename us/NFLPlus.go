@@ -23,7 +23,9 @@ func NFLPlus(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	if strings.Contains(body, "nflgamepass") {
+	lowBody := strings.ToLower(body)
+	if strings.Contains(lowBody, "nflgamepass") || strings.Contains(lowBody, "nfl-game-pass") ||
+		strings.Contains(lowBody, "gpi.nfl.com") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusYes}

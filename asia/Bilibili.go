@@ -31,7 +31,8 @@ func Bilibili(request *gorequest.SuperAgent, name, url string) model.Result {
 		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	if strings.Contains(body, "抱歉您所在地区不可观看") || strings.Contains(body, "The area is inaccessible") {
+	if strings.Contains(body, "抱歉您所在地区不可观看") || strings.Contains(body, "The area is inaccessible") ||
+		res.Code == 10004001 || res.Code == 10003003 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if res.Code == 0 {

@@ -1,4 +1,4 @@
-package asia
+package transnation
 
 import (
 	"strings"
@@ -7,10 +7,9 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
-// TLCGO
-// NBCTV 检测同上
+// OneTrust
 // geolocation.onetrust.com 双栈 get 请求
-func TLCGO(request *gorequest.SuperAgent) model.Result {
+func OneTrust(request *gorequest.SuperAgent) model.Result {
 	name := "TLC GO"
 	if request == nil {
 		return model.Result{Name: name}
