@@ -97,21 +97,37 @@ func GetRegion(loc string, locationList []string) bool {
 
 // 通过Info标记要被插入的行的下一行包含什么文本内容
 func PrintCA(request *gorequest.SuperAgent) model.Result {
-	return model.Result{Name: "CA", Status: model.PrintHead, Info: "Hotstar"}
+	return model.Result{Name: "Canada", Status: model.PrintHead, Info: "Hotstar"}
 }
 
 func PrintGB(request *gorequest.SuperAgent) model.Result {
-	return model.Result{Name: "GB", Status: model.PrintHead, Info: "Hotstar"}
+	return model.Result{Name: "England", Status: model.PrintHead, Info: "Hotstar"}
 }
 
 func PrintFR(request *gorequest.SuperAgent) model.Result {
-	return model.Result{Name: "FR", Status: model.PrintHead, Info: "Canal+"}
+	return model.Result{Name: "France", Status: model.PrintHead, Info: "Canal+"}
 }
 
 func PrintDE(request *gorequest.SuperAgent) model.Result {
-	return model.Result{Name: "DE", Status: model.PrintHead, Info: "Joyn"}
+	return model.Result{Name: "Germany", Status: model.PrintHead, Info: "Joyn"}
 }
 
 func PrintNL(request *gorequest.SuperAgent) model.Result {
-	return model.Result{Name: "NL", Status: model.PrintHead, Info: "Joyn"}
+	return model.Result{Name: "Netherlands", Status: model.PrintHead, Info: "NLZIET"}
+}
+
+func PrintES(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Spain", Status: model.PrintHead, Info: "Movistar+"}
+}
+
+func PrintIT(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Italy", Status: model.PrintHead, Info: "Rai Play"}
+}
+
+func PrintCH(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Switzerland", Status: model.PrintHead, Info: "SKY CH"}
+}
+
+func PrintRU(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Russia", Status: model.PrintHead, Info: "Amediateka"}
 }

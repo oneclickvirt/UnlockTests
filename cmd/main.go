@@ -10,12 +10,16 @@ import (
 
 	"github.com/oneclickvirt/UnlockTests/asia"
 	"github.com/oneclickvirt/UnlockTests/ca"
+	"github.com/oneclickvirt/UnlockTests/ch"
 	"github.com/oneclickvirt/UnlockTests/de"
 	. "github.com/oneclickvirt/UnlockTests/defaultset"
+	"github.com/oneclickvirt/UnlockTests/es"
 	"github.com/oneclickvirt/UnlockTests/eu"
 	"github.com/oneclickvirt/UnlockTests/fr"
+	"github.com/oneclickvirt/UnlockTests/it"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/nl"
+	"github.com/oneclickvirt/UnlockTests/ru"
 	"github.com/oneclickvirt/UnlockTests/transnation"
 	"github.com/oneclickvirt/UnlockTests/uk"
 	"github.com/oneclickvirt/UnlockTests/us"
@@ -142,7 +146,7 @@ func FormarPrint(language, message string) {
 			anotherList := []string{}
 			for _, i := range tempList {
 				if strings.Contains(i, r.Info) {
-					tpHead := printCenteredMessage("[ "+r.Name+" ]", 10)
+					tpHead := printCenteredMessage("[ "+r.Name+" ]", 20)
 					anotherList = append(anotherList, tpHead)
 				}
 				anotherList = append(anotherList, i)
@@ -177,7 +181,10 @@ func excute(F func(request *gorequest.SuperAgent) model.Result) {
 func processFunction(FuncList [](func(request *gorequest.SuperAgent) model.Result)) {
 	// 生成顺序输出的名字
 	for _, f := range FuncList {
-		Names = append(Names, f(nil).Name)
+		tp := f(nil)
+		if tp.Status != model.PrintHead {
+			Names = append(Names, tp.Name)
+		}
 	}
 	// 实际开始任务
 	for _, f := range FuncList {
@@ -298,6 +305,20 @@ func Europe(ifaceName, ipAddr, netType string) {
 		// NL
 		utils.PrintNL,
 		nl.NLZIET,
+		nl.VideoLand,
+		nl.NPOStartPlus,
+		// ES
+		utils.PrintES,
+		es.MoviStarPlus,
+		// IT
+		utils.PrintIT,
+		it.RaiPlay,
+		// ch
+		utils.PrintCH,
+		ch.SkyCh,
+		// ru
+		utils.PrintRU,
+		ru.Amediateka,
 	}
 	processFunction(FuncList)
 }
@@ -306,17 +327,19 @@ func main() {
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
 	// Multination("", "", "tcp4")
-	NorthAmerica("", "", "tcp4")
+	// NorthAmerica("", "", "tcp4")
 	// SouthAmerica("", "", "tcp4")
 	// Oceania("", "", "tcp4")
+	Europe("", "", "tcp4")
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
 	fmt.Println()
 	// FormarPrint("zh", "Multination")
+	// FormarPrint("zh", "North America")
 	// FormarPrint("zh", "South America")
 	// FormarPrint("zh", "Oceania")
-	FormarPrint("zh", "North America")
+	FormarPrint("zh", "Europe")
 
 	fmt.Println()
 }
