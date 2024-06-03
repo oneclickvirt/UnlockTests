@@ -22,19 +22,21 @@ func Abema(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
+	// fmt.Println(body)
 	var abemaRes struct {
-		IsoCountryCode string `json:"message"`
+		Message        string `json:"message"`
+		IsoCountryCode string `json:"isoCountryCode"`
 	}
 	if err := json.Unmarshal([]byte(body), &abemaRes); err != nil {
-		if strings.Contains(body, "blocked_location") {
+		if strings.Contains(body, "blocked_location") || strings.Contains(body, "anonymous_ip") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	if abemaRes.IsoCountryCode == "JP" {
-		return model.Result{Name: name, Status: model.StatusYes}
+	if abemaRes.IsoCountryCode == "JP" || strings.Contains(body, "JP") {
+		return model.Result{Name: name, Status: model.StatusYes, Region: "JP"}
 	}
-	if abemaRes.IsoCountryCode == "blocked_location" {
+	if abemaRes.Message == "blocked_location" || abemaRes.Message == "anonymous_ip" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	return model.Result{Name: name, Status: model.StatusYes + " (Oversea Only)"}

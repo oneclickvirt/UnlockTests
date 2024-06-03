@@ -23,7 +23,7 @@ func ITVX(request *gorequest.SuperAgent) model.Result {
 	if resp.StatusCode == 403 || strings.Contains(body, "Outside Of Allowed Geographic Region") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if resp.StatusCode == 404 {
+	if strings.Contains(body, "Playlist") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

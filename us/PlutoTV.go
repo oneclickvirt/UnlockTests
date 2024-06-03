@@ -21,7 +21,9 @@ func PlutoTV(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	if strings.Contains(body, "thanks-for-watching") || resp.StatusCode == 403 || resp.StatusCode == 451 {
+	if strings.Contains(body, "thanks-for-watching") || strings.Contains(body, "plutotv-is-not-available") ||
+		strings.Contains(resp.Request.URL.String(), "plutotv-is-not-available") ||
+		resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if resp.StatusCode == 429 {

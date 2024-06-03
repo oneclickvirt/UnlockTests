@@ -26,7 +26,9 @@ func BBCiPlayer(request *gorequest.SuperAgent) model.Result {
 		if strings.Contains(body, "geolocation") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		return model.Result{Name: name, Status: model.StatusYes}
+		if strings.Contains(body, "vs-hls-push-uk") {
+			return model.Result{Name: name, Status: model.StatusYes}
+		}
 	} else if resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
