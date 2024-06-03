@@ -131,3 +131,15 @@ func PrintCH(request *gorequest.SuperAgent) model.Result {
 func PrintRU(request *gorequest.SuperAgent) model.Result {
 	return model.Result{Name: "Russia", Status: model.PrintHead, Info: "Amediateka"}
 }
+
+func PrintGame(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Game", Status: model.PrintHead, Info: "Kancolle Japan"}
+}
+
+func PrintMusic(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Music", Status: model.PrintHead, Info: "Mora"}
+}
+
+func PrintForum(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Forum", Status: model.PrintHead, Info: "EroGameSpace"}
+}

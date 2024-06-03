@@ -20,6 +20,7 @@ import (
 	"github.com/oneclickvirt/UnlockTests/hk"
 	"github.com/oneclickvirt/UnlockTests/in"
 	"github.com/oneclickvirt/UnlockTests/it"
+	"github.com/oneclickvirt/UnlockTests/jp"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/nl"
 	"github.com/oneclickvirt/UnlockTests/ru"
@@ -374,6 +375,41 @@ func Taiwan(ifaceName, ipAddr, netType string) {
 		// tw.BahamutAnime,
 		transnation.SonyLiv,
 		tw.BilibiliTW,
+	}
+	processFunction(FuncList)
+}
+
+func Japan(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		jp.DMM,
+		jp.DMMTV,
+		jp.Abema,
+		jp.Niconico,
+		jp.Telasa,
+		jp.UNext,
+		jp.Hulu,
+		jp.TVer,
+		jp.Lemino,
+		jp.Wowow,
+		jp.VideoMarket,
+		jp.DAnimeStore,
+		jp.FOD,
+		jp.J_COM_ON_DEMAND,
+		// Game
+		utils.PrintGame,
+		jp.Kancolle,
+		jp.PrettyDerby,
+		jp.KonosubaFD,
+		jp.PCRJP,
+		jp.WorldFlipper,
+		jp.ProjectSekai,
+		// Music
+		utils.PrintMusic,
+		jp.Mora,
+		jp.MusicBook,
+		// Forum
+		utils.PrintForum,
+		jp.EroGameSpace,
 	}
 	processFunction(FuncList)
 }
