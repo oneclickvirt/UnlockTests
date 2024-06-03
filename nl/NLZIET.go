@@ -34,9 +34,9 @@ func ZIETCDN() model.Result {
 	return model.Result{Name: name, Status: model.StatusNo}
 }
 
-// ZIET
+// NLZIET
 // nlziet.nl 仅 ipv4 且 get 请求 cookie 有效期非常短
-func ZIET(request *gorequest.SuperAgent) model.Result {
+func NLZIET(request *gorequest.SuperAgent) model.Result {
 	name := "NLZIET"
 	if request == nil {
 		return model.Result{Name: name}

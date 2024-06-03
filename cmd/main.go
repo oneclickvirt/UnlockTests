@@ -10,8 +10,12 @@ import (
 
 	"github.com/oneclickvirt/UnlockTests/asia"
 	"github.com/oneclickvirt/UnlockTests/ca"
+	"github.com/oneclickvirt/UnlockTests/de"
 	. "github.com/oneclickvirt/UnlockTests/defaultset"
+	"github.com/oneclickvirt/UnlockTests/eu"
+	"github.com/oneclickvirt/UnlockTests/fr"
 	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/nl"
 	"github.com/oneclickvirt/UnlockTests/transnation"
 	"github.com/oneclickvirt/UnlockTests/uk"
 	"github.com/oneclickvirt/UnlockTests/us"
@@ -88,8 +92,10 @@ func ShowResult(r *model.Result) (s string) {
 	}
 }
 
-func printCenteredMessage(message string) {
-	totalLength := 40
+func printCenteredMessage(message string, totalLength int) string {
+	if totalLength == 0 {
+		totalLength = 40
+	}
 	messageLength := len(message)
 	if messageLength > totalLength {
 		message = message[:totalLength]
@@ -98,7 +104,7 @@ func printCenteredMessage(message string) {
 	paddingLength := (totalLength - messageLength) / 2
 	leftPadding := strings.Repeat("=", paddingLength)
 	rightPadding := strings.Repeat("=", totalLength-messageLength-paddingLength)
-	fmt.Println(leftPadding + message + rightPadding)
+	return (leftPadding + message + rightPadding + "\n")
 }
 
 func FormarPrint(language, message string) {
@@ -113,21 +119,40 @@ func FormarPrint(language, message string) {
 			Length = len(r.Name)
 		}
 	}
-	printCenteredMessage("[ " + message + " ]")
+	head := printCenteredMessage("[ "+message+" ]", 0)
 	// 构建一个以 r.Name 为键的字典
 	resultMap := make(map[string]*model.Result)
 	for _, r := range R {
 		resultMap[r.Name] = r
 	}
 	// 根据 Names 中的 name 顺序输出结果，重新排序结果
+	tempList := []string{head}
 	for _, name := range Names {
 		if r, found := resultMap[name]; found {
 			result := ShowResult(r)
 			if r.Status == "Yes" && strings.HasSuffix(r.Name, "CDN") {
 				result = Blue(r.Region)
 			}
-			fmt.Printf("%-"+strconv.Itoa(Length)+"s %s\n", r.Name, result)
+			tempList = append(tempList, fmt.Sprintf("%-"+strconv.Itoa(Length)+"s %s\n", r.Name, result))
 		}
+	}
+	// 插入小分区的head行
+	for _, r := range R {
+		if r.Status == model.PrintHead {
+			anotherList := []string{}
+			for _, i := range tempList {
+				if strings.Contains(i, r.Info) {
+					tpHead := printCenteredMessage("[ "+r.Name+" ]", 10)
+					anotherList = append(anotherList, tpHead)
+				}
+				anotherList = append(anotherList, i)
+			}
+			tempList = anotherList
+		}
+	}
+	// 打印整体文本
+	for _, i := range tempList {
+		fmt.Printf(i)
 	}
 }
 
@@ -236,9 +261,43 @@ func NorthAmerica(ifaceName, ipAddr, netType string) {
 		us.DirectvStream,
 		transnation.KOCOWA,
 		transnation.SonyLiv,
+		utils.PrintCA,
 		asia.Hotstar,
 		ca.CBCGem,
 		ca.Crave,
+	}
+	processFunction(FuncList)
+}
+
+func Europe(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		eu.RakutenTV,
+		eu.SkyShowTime,
+		us.HBOMax,
+		eu.SetantaSports,
+		transnation.SonyLiv,
+		// GB
+		utils.PrintGB,
+		asia.Hotstar,
+		uk.SkyGo,
+		uk.BritBox,
+		uk.ITVX,
+		uk.Channel4,
+		uk.Channel5,
+		uk.BBCiPlayer,
+		uk.DiscoveryPlus,
+		// FR
+		utils.PrintFR,
+		fr.CanalPlus,
+		fr.Molotov,
+		// DE
+		utils.PrintDE,
+		de.Joyn,
+		de.SkyDe,
+		de.ZDF,
+		// NL
+		utils.PrintNL,
+		nl.NLZIET,
 	}
 	processFunction(FuncList)
 }
@@ -258,5 +317,6 @@ func main() {
 	// FormarPrint("zh", "South America")
 	// FormarPrint("zh", "Oceania")
 	FormarPrint("zh", "North America")
+
 	fmt.Println()
 }

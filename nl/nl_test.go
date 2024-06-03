@@ -2,14 +2,15 @@ package nl
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"testing"
+
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 func Test(t *testing.T) {
 	req, _ := utils.ParseInterface("", "", "tcp4")
 
-	res := ZIET(req)
+	res := NLZIET(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}

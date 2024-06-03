@@ -3,10 +3,12 @@ package utils
 import (
 	"context"
 	"fmt"
-	"github.com/parnurzeal/gorequest"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/parnurzeal/gorequest"
 )
 
 // ParseInterface 解析网卡IP地址
@@ -91,4 +93,25 @@ func GetRegion(loc string, locationList []string) bool {
 		}
 	}
 	return false
+}
+
+// 通过Info标记要被插入的行的下一行包含什么文本内容
+func PrintCA(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "CA", Status: model.PrintHead, Info: "Hotstar"}
+}
+
+func PrintGB(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "GB", Status: model.PrintHead, Info: "Hotstar"}
+}
+
+func PrintFR(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "FR", Status: model.PrintHead, Info: "Canal+"}
+}
+
+func PrintDE(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "DE", Status: model.PrintHead, Info: "Joyn"}
+}
+
+func PrintNL(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "NL", Status: model.PrintHead, Info: "Joyn"}
 }
