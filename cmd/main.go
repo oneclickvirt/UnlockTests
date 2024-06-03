@@ -213,7 +213,6 @@ func NorthAmerica(ifaceName, ipAddr, netType string) {
 		us.Philo,
 		us.FXNOW,
 		us.HBOMax,
-		asia.TLCGO,
 		us.Shudder,
 		uk.BritBox,
 		// us.Crackle,
@@ -361,6 +360,7 @@ func Japan(ifaceName, ipAddr, netType string) {
 		jp.PCRJP,
 		jp.WorldFlipper,
 		jp.ProjectSekai,
+		jp.NETRIDE,
 		// Music
 		utils.PrintMusic,
 		jp.Mora,
@@ -396,6 +396,7 @@ func Multination(ifaceName, ipAddr, netType string) {
 		transnation.Instagram,
 		transnation.KOCOWA,
 		transnation.SonyLiv,
+		transnation.OneTrust,
 	}
 	processFunction(FuncList)
 }
