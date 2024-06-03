@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"net/http"
 	"time"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -40,10 +39,8 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*gorequest.SuperAgent, e
 		}
 	}
 	request = gorequest.New()
-	defaultTransport := http.DefaultTransport.(*http.Transport)
-	customTransport := defaultTransport.Clone()
 	if localIP != nil {
-		customTransport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+		request.Transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			return (&net.Dialer{
 				Timeout:   20 * time.Second,
 				KeepAlive: 20 * time.Second,
@@ -52,12 +49,10 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*gorequest.SuperAgent, e
 				},
 			}).DialContext(ctx, netType, addr)
 		}
-		request.Client.Transport = customTransport
 	} else {
-		customTransport.DialContext = func(ctx context.Context, network string, addr string) (net.Conn, error) {
+		request.Transport.DialContext = func(ctx context.Context, network string, addr string) (net.Conn, error) {
 			return (&net.Dialer{}).DialContext(ctx, netType, addr)
 		}
-		request.Client.Transport = customTransport
 	}
 	request.Timeout(20 * time.Second)
 	return request, nil
