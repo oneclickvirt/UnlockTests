@@ -3,8 +3,10 @@ module github.com/oneclickvirt/UnlockTests
 go 1.21.5
 
 require (
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/imroc/req/v3 v3.43.7
 	github.com/parnurzeal/gorequest v0.3.0
+	github.com/schollz/progressbar/v3 v3.14.3
 )
 
 require (
@@ -24,7 +26,6 @@ require (
 	github.com/quic-go/quic-go v0.41.0 // indirect
 	github.com/refraction-networking/utls v1.6.3 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/schollz/progressbar/v3 v3.14.3 // indirect
 	github.com/smartystreets/goconvey v1.8.1 // indirect
 	go.uber.org/mock v0.4.0 // indirect
 	golang.org/x/crypto v0.23.0 // indirect
