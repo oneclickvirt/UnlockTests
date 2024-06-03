@@ -485,6 +485,20 @@ func Sport(ifaceName, ipAddr, netType string) {
 	processFunction(FuncList)
 }
 
+func IPV6Multination(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		asia.Hotstar,
+		transnation.DisneyPlus,
+		transnation.Netflix,
+		transnation.NetflixCDN,
+		transnation.Youtube,
+		transnation.YoutubeCDN,
+		transnation.WikipediaEditable,
+		transnation.Bing,
+	}
+	processFunction(FuncList)
+}
+
 func main() {
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
@@ -500,7 +514,8 @@ func main() {
 	// Oceania("", "", "tcp4")
 	// Korean("", "", "tcp4")
 	// SouthEastAsia("", "", "tcp4")
-	Sport("", "", "tcp4")
+	// Sport("", "", "tcp4")
+	IPV6Multination("", "", "tcp6")
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
@@ -517,6 +532,7 @@ func main() {
 	// FormarPrint("zh", "Oceania")
 	// FormarPrint("zh", "Korean")
 	// FormarPrint("zh", "South East Asia")
-	FormarPrint("zh", "Sport")
+	// FormarPrint("zh", "Sport")
+	FormarPrint("zh", "IPV6 Multination")
 	fmt.Println()
 }
