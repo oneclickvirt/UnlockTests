@@ -11,8 +11,8 @@ import (
 
 // Bilibili
 // B站主体请求逻辑
-func Bilibili(request *gorequest.SuperAgent, url string) model.Result {
-	name := "Bilibili"
+func Bilibili(request *gorequest.SuperAgent, url, name string) model.Result {
+	// name := "Bilibili"
 	if request == nil {
 		return model.Result{Name: name}
 	}
