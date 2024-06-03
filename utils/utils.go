@@ -45,8 +45,8 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*gorequest.SuperAgent, e
 	if localIP != nil {
 		customTransport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			return (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
+				Timeout:   20 * time.Second,
+				KeepAlive: 20 * time.Second,
 				LocalAddr: &net.TCPAddr{
 					IP: localIP,
 				},
@@ -59,6 +59,7 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*gorequest.SuperAgent, e
 		}
 		request.Client.Transport = customTransport
 	}
+	request.Timeout(20 * time.Second)
 	return request, nil
 }
 
@@ -130,6 +131,22 @@ func PrintCH(request *gorequest.SuperAgent) model.Result {
 
 func PrintRU(request *gorequest.SuperAgent) model.Result {
 	return model.Result{Name: "Russia", Status: model.PrintHead, Info: "Amediateka"}
+}
+
+func PrintAU(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Australia", Status: model.PrintHead, Info: "Stan"}
+}
+
+func PrintNZ(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "New Zealand", Status: model.PrintHead, Info: "Neon TV"}
+}
+
+func PrintSG(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Singapore", Status: model.PrintHead, Info: "MeWatch"}
+}
+
+func PrintTH(request *gorequest.SuperAgent) model.Result {
+	return model.Result{Name: "Thailand", Status: model.PrintHead, Info: "AIS Play"}
 }
 
 func PrintGame(request *gorequest.SuperAgent) model.Result {

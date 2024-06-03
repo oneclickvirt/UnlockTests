@@ -10,6 +10,7 @@ import (
 
 	"github.com/oneclickvirt/UnlockTests/africa"
 	"github.com/oneclickvirt/UnlockTests/asia"
+	"github.com/oneclickvirt/UnlockTests/au"
 	"github.com/oneclickvirt/UnlockTests/ca"
 	"github.com/oneclickvirt/UnlockTests/ch"
 	"github.com/oneclickvirt/UnlockTests/de"
@@ -21,9 +22,13 @@ import (
 	"github.com/oneclickvirt/UnlockTests/in"
 	"github.com/oneclickvirt/UnlockTests/it"
 	"github.com/oneclickvirt/UnlockTests/jp"
+	"github.com/oneclickvirt/UnlockTests/kr"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/nl"
+	"github.com/oneclickvirt/UnlockTests/nz"
 	"github.com/oneclickvirt/UnlockTests/ru"
+	"github.com/oneclickvirt/UnlockTests/sg"
+	"github.com/oneclickvirt/UnlockTests/th"
 	"github.com/oneclickvirt/UnlockTests/transnation"
 	"github.com/oneclickvirt/UnlockTests/tw"
 	"github.com/oneclickvirt/UnlockTests/uk"
@@ -197,51 +202,6 @@ func processFunction(FuncList [](func(request *gorequest.SuperAgent) model.Resul
 	}
 }
 
-func Multination(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
-		transnation.DAZN,
-		transnation.DisneyPlus,
-		transnation.Netflix,
-		transnation.Youtube,
-		transnation.PrimeVideo,
-		transnation.TVBAnywhere,
-		transnation.IQiYi,
-		transnation.YoutubeCDN,
-		transnation.NetflixCDN,
-		transnation.Spotify,
-		transnation.OpenAI,
-		transnation.Bing,
-		transnation.WikipediaEditable,
-		transnation.Instagram,
-		transnation.Steam,
-		// Forum
-		utils.PrintRForum,
-		transnation.Reddit,
-	}
-	processFunction(FuncList)
-}
-
-func SouthAmerica(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
-		asia.StarPlus,
-		us.HBOMax,
-		us.DirecTVGO,
-	}
-	processFunction(FuncList)
-}
-
-func Oceania(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
-		us.NBATV,
-		us.AcornTV,
-		uk.BritBox,
-		transnation.ParamountPlus,
-		transnation.SonyLiv,
-		// 继续
-	}
-	processFunction(FuncList)
-}
-
 func NorthAmerica(ifaceName, ipAddr, netType string) {
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
 		us.Fox,
@@ -382,7 +342,6 @@ func Taiwan(ifaceName, ipAddr, netType string) {
 	processFunction(FuncList)
 }
 
-// 部分有问题，待解决
 func Japan(ifaceName, ipAddr, netType string) {
 	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
 		jp.DMM,
@@ -418,6 +377,120 @@ func Japan(ifaceName, ipAddr, netType string) {
 	processFunction(FuncList)
 }
 
+func Multination(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		transnation.DAZN,
+		transnation.DisneyPlus,
+		transnation.Netflix,
+		transnation.Youtube,
+		transnation.PrimeVideo,
+		transnation.TVBAnywhere,
+		transnation.IQiYi,
+		transnation.YoutubeCDN,
+		transnation.NetflixCDN,
+		transnation.Spotify,
+		transnation.OpenAI,
+		transnation.Bing,
+		transnation.WikipediaEditable,
+		transnation.Instagram,
+		transnation.Steam,
+		// Forum
+		utils.PrintRForum,
+		transnation.Reddit,
+	}
+	processFunction(FuncList)
+}
+
+func SouthAmerica(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		asia.StarPlus,
+		us.HBOMax,
+		us.DirecTVGO,
+	}
+	processFunction(FuncList)
+}
+
+func Oceania(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		us.NBATV,
+		us.AcornTV,
+		uk.BritBox,
+		transnation.ParamountPlus,
+		transnation.SonyLiv,
+		// AU
+		utils.PrintAU,
+		au.Stan,
+		au.Binge,
+		au.Au7plus,
+		au.Channel9,
+		au.Channel10,
+		au.ABCiView,
+		au.OptusSports,
+		au.SBSonDemand,
+		eu.Docplay,
+		au.KayoSports,
+		// NZ
+		utils.PrintNZ,
+		nz.NeonTV,
+		nz.SkyGO,
+		nz.ThreeNow,
+		nz.MaoriTV,
+	}
+	processFunction(FuncList)
+}
+
+func Korean(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		kr.Wavve,
+		kr.Tving,
+		kr.Watcha,
+		kr.CoupangPlay,
+		kr.SPOTVNOW,
+		kr.NaverTV,
+		kr.Afreeca,
+		kr.KBSDomestic,
+		// transnation.KOCOWA,
+	}
+	processFunction(FuncList)
+}
+
+func SouthEastAsia(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		hk.ViuCom,
+		asia.Hotstar,
+		asia.HBOGO,
+		transnation.SonyLiv,
+		asia.BilibiliSEA,
+		// SG
+		utils.PrintSG,
+		sg.MeWatch,
+		// TH
+		utils.PrintTH,
+		th.AISPlay,
+		th.TrueID,
+		// th.BilibiliTH, 失效 - 不做检测
+		// ID 全失效 - 不做检测
+		// VN 全失效 - 不做检测
+	}
+	processFunction(FuncList)
+}
+
+func Sport(ifaceName, ipAddr, netType string) {
+	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+		transnation.DAZN,
+		asia.StarPlus,
+		us.ESPNPlus,
+		us.NBATV,
+		us.FuboTV,
+		asia.MolaTV,
+		eu.SetantaSports,
+		au.OptusSports,
+		africa.BeinConnect,
+		// eu.Eurosport, 
+	}
+	processFunction(FuncList)
+}
+
 func main() {
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
@@ -427,10 +500,13 @@ func main() {
 	// Africa("", "", "tcp4")
 	// India("", "", "tcp4")
 	// Taiwan("", "", "tcp4")
-	Japan("", "", "tcp4")
+	// Japan("", "", "tcp4")
 	// Multination("", "", "tcp4")
 	// SouthAmerica("", "", "tcp4")
 	// Oceania("", "", "tcp4")
+	// Korean("", "", "tcp4")
+	// SouthEastAsia("", "", "tcp4")
+	Sport("", "", "tcp4")
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
@@ -441,9 +517,12 @@ func main() {
 	// FormarPrint("zh", "Africa")
 	// FormarPrint("zh", "India")
 	// FormarPrint("zh", "Taiwan")
-	FormarPrint("zh", "Japan")
+	// FormarPrint("zh", "Japan")
 	// FormarPrint("zh", "Multination")
 	// FormarPrint("zh", "South America")
 	// FormarPrint("zh", "Oceania")
+	// FormarPrint("zh", "Korean")
+	// FormarPrint("zh", "South East Asia")
+	FormarPrint("zh", "Sport")
 	fmt.Println()
 }
