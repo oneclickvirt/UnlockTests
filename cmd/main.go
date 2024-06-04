@@ -520,14 +520,13 @@ func GetIpv4Info() {
 	if err != nil {
 		IPV4 = false
 		log.Println(err)
-		fmt.Println("No IPv4 support")
-		return
+		fmt.Println("Can not detect IPv4 Address")
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		IPV4 = false
-		fmt.Println("No IPv4 support")
+		fmt.Println("Can not detect IPv4 Address")
 	}
 	s := string(b)
 	i := strings.Index(s, "ip=")
@@ -543,13 +542,12 @@ func GetIpv6Info() {
 	resp, err := utils.Ipv6HttpClient.Do(req)
 	if err != nil {
 		IPV6 = false
-		fmt.Println("No IPv6 support")
-		return
+		fmt.Println("Can not detect IPv6 Address")
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("No IPv6 support")
+		fmt.Println("Can not detect IPv6 Address")
 	}
 	s := string(b)
 	i := strings.Index(s, "ip=")
