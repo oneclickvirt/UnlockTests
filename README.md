@@ -6,6 +6,26 @@
 
 开发中，勿要使用
 
+## 使用
+
+更新时间：2024.06.04
+
+安装
+
+```shell
+curl https://raw.githubusercontent.com/oneclickvirt/UnlockTests/main/ut_install.sh -sSf | sh
+```
+
+以后需要使用时使用
+
+```
+UT
+```
+
+唤起菜单
+
+无环境依赖，理论上适配所有系统和主流架构，更多架构请查看 https://github.com/oneclickvirt/UnlockTests/releases/tag/output
+
 ## TODO
 
 <details>
