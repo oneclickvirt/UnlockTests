@@ -734,6 +734,9 @@ var setSocketOptions = func(network, address string, c syscall.RawConn, interfac
 }
 
 func main() {
+	go func() {
+		http.Get("https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false")
+	}()
 	client := utils.AutoHttpClient
 	mode := 0
 	showVersion := false
