@@ -17,13 +17,16 @@ import (
 var ClientProxy = http.ProxyFromEnvironment
 var AutoTransport = &http.Transport{
 	Proxy:       ClientProxy,
-	DialContext: (&net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
+	DialContext: (&net.Dialer{Timeout: 10 * time.Second, KeepAlive: 10 * time.Second}).DialContext,
 }
 var AutoHttpClient = &http.Client{
-	Timeout:   30 * time.Second,
+	Timeout:   10 * time.Second,
 	Transport: AutoTransport,
 }
-var Dialer = &net.Dialer{}
+var Dialer = &net.Dialer{
+	Timeout:   10 * time.Second,
+	KeepAlive: 10 * time.Second,
+}
 var Ipv4Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -37,7 +40,7 @@ var Ipv4Transport = &http.Transport{
 	ExpectContinueTimeout: 1 * time.Second,
 }
 var Ipv4HttpClient = &http.Client{
-	Timeout:   30 * time.Second,
+	Timeout:   12 * time.Second,
 	Transport: Ipv4Transport,
 }
 var Ipv6Transport = &http.Transport{
@@ -89,8 +92,8 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*http.Client, error) {
 	if localIP != nil {
 		dialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			return (&net.Dialer{
-				Timeout:   12 * time.Second,
-				KeepAlive: 12 * time.Second,
+				Timeout:   10 * time.Second,
+				KeepAlive: 10 * time.Second,
 				LocalAddr: &net.TCPAddr{
 					IP: localIP,
 				},
@@ -129,7 +132,7 @@ func Gorequest(c *http.Client) *gorequest.SuperAgent {
 	request := gorequest.New()
 	request.Transport.DialContext = c.Transport.(*http.Transport).DialContext
 	request.Transport.Proxy = c.Transport.(*http.Transport).Proxy
-	request.Retry(2, 3)
+	request.Retry(2, 3*time.Second)
 	request.Timeout(6 * time.Second)
 	return request
 }
