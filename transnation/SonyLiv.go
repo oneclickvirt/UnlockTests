@@ -3,35 +3,52 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // SonyLiv
-// www.sonyliv.com 双栈 且 get 请求
+// www.sonyliv.com 双栈 且 get 请求 - 获取不到地区
 func SonyLiv(c *http.Client) model.Result {
 	name := "SonyLiv"
 	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://www.sonyliv.com/"
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp1, body1, errs1 := request.Get(url).End()
-	if len(errs1) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
+	client := utils.Req(c)
+	resp1, err1 := client.R().Get(url)
+	if err1 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}
 	}
 	defer resp1.Body.Close()
+	b, err := io.ReadAll(resp1.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	body1 := string(b)
 	if strings.Contains(body1, "geolocation_notsupported") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Unavailable"}
 	}
-	jwtToken := utils.ReParse(body1, `resultObj:"([^"]+)`)
+	tempList := strings.Split(body1, "\n")
+	var jwtToken string
+	for _, l := range tempList {
+		if strings.Contains(l, "securityToken") {
+			ls := strings.Split(l, "securityToken")[1]
+			if strings.Contains(ls, "resultObj") {
+				tp := strings.Split(ls, "resultObj")[1]
+				jwtToken = strings.Split(tp, "\"")[1]
+			}
+		}
+	}
+	if jwtToken == "" {
+		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("can not find jwtToken")}
+	}
 
+	// 获取不到region
 	headers2 := map[string]string{
 		"accept":         "application/json, text/plain, */*",
 		"referer":        "https://www.sonyliv.com/",
@@ -40,24 +57,33 @@ func SonyLiv(c *http.Client) model.Result {
 		"security_token": jwtToken,
 	}
 	url2 := "https://apiv2.sonyliv.com/AGL/1.4/A/ENG/WEB/ALL/USER/ULD"
-	request2 := utils.Gorequest(c)
-	request2 = utils.SetGoRequestHeaders(request2, headers2)
-	resp2, body2, errs2 := request2.Get(url2).End()
-	if len(errs2) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+	client = utils.SetReqHeaders(client, headers2)
+	resp2, err2 := client.R().Get(url2)
+	if err2 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 	}
 	defer resp2.Body.Close()
-	var res1 struct {
-		ResultObj struct {
-			CountryCode string `json:"country_code"`
-		} `json:"resultObj"`
+	b, err = io.ReadAll(resp1.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	if err := json.Unmarshal([]byte(body2), &res1); err != nil {
-		return model.Result{Name: name, Status: model.StatusErr, Err: err}
-	}
-	region := res1.ResultObj.CountryCode
-	if region == "" {
-		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("can not found region")}
+	body2 := string(b)
+	var region string
+	if body2 != "" && strings.Contains(body2, "country_code") {
+		var res1 struct {
+			ResultObj struct {
+				CountryCode string `json:"country_code"`
+			} `json:"resultObj"`
+		}
+		if err := json.Unmarshal([]byte(body2), &res1); err != nil {
+			return model.Result{Name: name, Status: model.StatusErr, Err: err}
+		}
+		region = res1.ResultObj.CountryCode
+		if region == "" {
+			return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("can not found region")}
+		}
+	} else {
+		region = "US"
 	}
 
 	headers3 := map[string]string{
@@ -69,13 +95,18 @@ func SonyLiv(c *http.Client) model.Result {
 		"security_token":            jwtToken,
 	}
 	url3 := "https://apiv2.sonyliv.com/AGL/3.8/A/ENG/WEB/" + region + "/ALL/CONTENT/VIDEOURL/VOD/1000273613/prefetch"
-	request3 := utils.Gorequest(c)
-	request3 = utils.SetGoRequestHeaders(request3, headers3)
-	resp3, body3, errs3 := request3.Get(url3).End()
-	if len(errs3) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs3[0]}
+	client = utils.SetReqHeaders(client, headers3)
+	resp3, err3 := client.R().Get(url3)
+	if err3 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
 	}
 	defer resp3.Body.Close()
+	b, err = io.ReadAll(resp1.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	body3 := string(b)
+	fmt.Println(body3)
 	var res2 struct {
 		ResultCode string `json:"resultCode"`
 	}
