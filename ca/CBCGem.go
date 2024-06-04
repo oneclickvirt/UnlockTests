@@ -2,21 +2,22 @@ package ca
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // CBCGem
 // www.cbc.ca 仅 ipv4 且 get 请求
-func CBCGem(request *gorequest.SuperAgent) model.Result {
+func CBCGem(c *http.Client) model.Result {
 	name := "CBC Gem"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://www.cbc.ca/g/stats/js/cbc-stats-top.js"
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	request := utils.Gorequest(c)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -31,5 +32,4 @@ func CBCGem(request *gorequest.SuperAgent) model.Result {
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.cbc.ca failed with code: %d", resp.StatusCode)}
-
 }

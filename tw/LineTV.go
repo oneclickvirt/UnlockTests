@@ -3,20 +3,21 @@ package tw
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // LineTV
 // www.linetv.tw 仅 ipv4 且 get 请求
-func LineTV(request *gorequest.SuperAgent) model.Result {
+func LineTV(c *http.Client) model.Result {
 	name := "LineTV.TW"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://www.linetv.tw/api/part/11829/eps/1/part?chocomemberId="
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	request := utils.Gorequest(c)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

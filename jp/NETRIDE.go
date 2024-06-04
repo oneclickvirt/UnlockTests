@@ -2,22 +2,26 @@ package jp
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // NETRIDE
 // trial.net-ride.com 双栈 get 请求
-func NETRIDE(request *gorequest.SuperAgent) model.Result {
+func NETRIDE(c *http.Client) model.Result {
 	name := "NETRIDE"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "http://trial.net-ride.com/free/free_dl.php?R_sm_code=456&R_km_url=cabb"
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

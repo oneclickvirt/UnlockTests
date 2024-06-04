@@ -2,37 +2,33 @@ package nl
 
 import (
 	"encoding/json"
-	"io"
-	"strings"
-	"time"
-
-	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
+	"net/http"
+	"strings"
 )
 
 // VideoLand
 // api.videoland.com 双栈 且 post 请求
-func VideoLand(request *gorequest.SuperAgent) model.Result {
+func VideoLand(c *http.Client) model.Result {
 	name := "Videoland"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://api.videoland.com/subscribe/videoland-account/graphql"
 	payload := `{"operationName":"IsOnboardingGeoBlocked","variables":{},"query":"query IsOnboardingGeoBlocked {\n  isOnboardingGeoBlocked\n}\n"}`
-	client := req.DefaultClient()
-	client.ImpersonateChrome()
-	client.Headers.Set("connection", "keep-alive")
-	client.Headers.Set("apollographql-client-name", "apollo_accounts_base")
-	client.Headers.Set("traceparent", "00-cab2dbd109bf1e003903ec43eb4c067d-623ef8e56174b85a-01")
-	client.Headers.Set("origin", "https://www.videoland.com")
-	client.Headers.Set("referer", "https://www.videoland.com/")
-	client.Headers.Set("accept", "application/json, text/plain, */*")
-	resp, err := client.R().
-		SetRetryCount(2).
-		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
-		SetRetryFixedInterval(2 * time.Second).
-		SetBodyString(payload).Post(url)
+	headers := map[string]string{
+		"connection":                "keep-alive",
+		"apollographql-client-name": "apollo_accounts_base",
+		"traceparent":               "00-cab2dbd109bf1e003903ec43eb4c067d-623ef8e56174b85a-01",
+		"origin":                    "https://www.videoland.com",
+		"referer":                   "https://www.videoland.com/",
+		"accept":                    "application/json, text/plain, */*",
+	}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().SetBodyString(payload).Post(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}

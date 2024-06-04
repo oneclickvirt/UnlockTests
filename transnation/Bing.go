@@ -2,38 +2,32 @@ package transnation
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
-
-func parseBingRegion(responseBody string) string {
-	re := regexp.MustCompile(`Region:"([^"]*)"`)
-	match := re.FindStringSubmatch(responseBody)
-	if len(match) > 1 {
-		return match[1]
-	}
-	return ""
-}
 
 // Bing
 // www.bing.com 双栈 且 post 请求
-func Bing(request *gorequest.SuperAgent) model.Result {
+func Bing(c *http.Client) model.Result {
 	name := "Bing Region"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://www.bing.com/search?q=www.spiritysdx.top"
-	request = request.Set("User-Agent", model.UA_Browser)
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
 	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
-		region := parseBingRegion(body)
+		region := utils.ReParse(body, `Region:"([^"]*)"`)
 		if region == "CN" {
 			return model.Result{Name: name, Status: model.StatusNo, Region: "cn"}
 		}

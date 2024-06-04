@@ -3,32 +3,29 @@ package us
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"strings"
-	"time"
-
-	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
+	"net/http"
+	"strings"
 )
 
 // EncoreTVB
 // edge.api.brightcove.com 仅 ipv4 且 get 请求
-func EncoreTVB(request *gorequest.SuperAgent) model.Result {
+func EncoreTVB(c *http.Client) model.Result {
 	name := "EncoreTVB"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://edge.api.brightcove.com/playback/v1/accounts/5324042807001/videos/6005570109001"
-	client := req.DefaultClient()
-	client.ImpersonateChrome()
-	client.Headers.Set("User-Agent", model.UA_Browser)
-	client.Headers.Set("Accept", "application/json;pk=BCpkADawqM2Gpjj8SlY2mj4FgJJMfUpxTNtHWXOItY1PvamzxGstJbsgc-zFOHkCVcKeeOhPUd9MNHEGJoVy1By1Hrlh9rOXArC5M5MTcChJGU6maC8qhQ4Y8W-QYtvi8Nq34bUb9IOvoKBLeNF4D9Avskfe9rtMoEjj6ImXu_i4oIhYS0dx7x1AgHvtAaZFFhq3LBGtR-ZcsSqxNzVg-4PRUI9zcytQkk_YJXndNSfhVdmYmnxkgx1XXisGv1FG5GOmEK4jZ_Ih0riX5icFnHrgniADr4bA2G7TYh4OeGBrYLyFN_BDOvq3nFGrXVWrTLhaYyjxOr4rZqJPKK2ybmMsq466Ke1ZtE-wNQ")
-	client.Headers.Set("Origin", "https://www.encoretvb.com")
-	resp, err := client.R().
-		SetRetryCount(2).
-		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
-		SetRetryFixedInterval(2 * time.Second).Get(url)
+	client := utils.Req(c)
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+		"Accept":     "application/json;pk=BCpkADawqM2Gpjj8SlY2mj4FgJJMfUpxTNtHWXOItY1PvamzxGstJbsgc-zFOHkCVcKeeOhPUd9MNHEGJoVy1By1Hrlh9rOXArC5M5MTcChJGU6maC8qhQ4Y8W-QYtvi8Nq34bUb9IOvoKBLeNF4D9Avskfe9rtMoEjj6ImXu_i4oIhYS0dx7x1AgHvtAaZFFhq3LBGtR-ZcsSqxNzVg-4PRUI9zcytQkk_YJXndNSfhVdmYmnxkgx1XXisGv1FG5GOmEK4jZ_Ih0riX5icFnHrgniADr4bA2G7TYh4OeGBrYLyFN_BDOvq3nFGrXVWrTLhaYyjxOr4rZqJPKK2ybmMsq466Ke1ZtE-wNQ",
+		"Origin":     "https://www.encoretvb.com",
+	}
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}

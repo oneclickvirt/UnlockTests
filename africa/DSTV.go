@@ -3,7 +3,7 @@ package africa
 import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/ecs/mediatest/utils"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 )
 
@@ -34,4 +34,3 @@ func DSTV(c *http.Client) model.Result {
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get authentication.dstv.com failed with code: %d", resp.StatusCode)}
 }
-

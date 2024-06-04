@@ -3,20 +3,20 @@ package hk
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/parnurzeal/gorequest"
+	"net/http"
 )
 
 // ViuTV
 // api.viu.now.com 双栈 且 post 请求
-func ViuTV(request *gorequest.SuperAgent) model.Result {
+func ViuTV(c *http.Client) model.Result {
 	name := "Viu.TV"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
-	resp, body, errs := utils.PostJson(request, "https://api.viu.now.com/p8/3/getLiveURL",
+	url := "https://api.viu.now.com/p8/3/getLiveURL"
+	resp, body, errs := utils.PostJson(c, url,
 		"{\"callerReferenceNo\":\"20210726112323\",\"contentId\":\"099\",\"contentType\":\"Channel\",\"channelno\":\"099\",\"mode\":\"prod\",\"deviceId\":\"29b3cb117a635d5b56\",\"deviceType\":\"ANDROID_WEB\"}",
 		map[string]string{"User-Agent": model.UA_Browser})
 	if len(errs) > 0 {

@@ -3,23 +3,26 @@ package hk
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // NowE
 // webtvapi.nowe.com 仅 ipv4 且 post 请求
-func NowE(request *gorequest.SuperAgent) model.Result {
+func NowE(c *http.Client) model.Result {
 	name := "Now E"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url1 := "https://webtvapi.nowe.com/16/1/getVodURL"
 	data1 := `{"contentId":"202403181904703","contentType":"Vod","pin":"","deviceName":"Browser","deviceId":"w-663bcc51-913c-913c-913c-913c913c","deviceType":"WEB","secureCookie":null,"callerReferenceNo":"W17151951620081575","profileId":null,"mupId":null}`
-	resp, body, errs := request.Post(url1).
-		Send(data1).
-		Set("Content-Type", "application/json").End()
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Post(url1).Send(data1).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

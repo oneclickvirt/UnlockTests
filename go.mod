@@ -3,7 +3,7 @@ module github.com/oneclickvirt/UnlockTests
 go 1.21.5
 
 require (
-	github.com/gofrs/uuid v4.4.0+incompatible
+	github.com/gofrs/uuid/v5 v5.2.0
 	github.com/imroc/req/v3 v3.43.7
 	github.com/parnurzeal/gorequest v0.3.0
 	github.com/schollz/progressbar/v3 v3.14.3

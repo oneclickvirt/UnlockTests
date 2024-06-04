@@ -2,20 +2,25 @@ package es
 
 import (
 	"fmt"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // MoviStarPlus
 // contratar.movistarplus.es 仅 ipv4 且 get 请求
-func MoviStarPlus(request *gorequest.SuperAgent) model.Result {
+func MoviStarPlus(c *http.Client) model.Result {
 	name := "Movistar+"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, _, errs := request.Get("https://contratar.movistarplus.es/").End()
+	url := "https://contratar.movistarplus.es/"
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

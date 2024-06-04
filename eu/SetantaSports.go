@@ -3,26 +3,28 @@ package eu
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // SetantaSports
 // dce-frontoffice.imggaming.com 仅 ipv4 且 get 请求
-func SetantaSports(request *gorequest.SuperAgent) model.Result {
+func SetantaSports(c *http.Client) model.Result {
 	name := "Setanta Sports"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://dce-frontoffice.imggaming.com/api/v2/consent-prompt"
-	resp, body, errs := request.Get(url).
-		Set("User-Agent", model.UA_Browser).
-		Set("Realm", "dce.adjara").
-		Set("x-api-key", "857a1e5d-e35e-4fdf-805b-a87b6f8364bf").
-		Set("Accept-Language", "en-US").
-		Retry(2, 5).
-		End()
+	headers := map[string]string{
+		"User-Agent":      model.UA_Browser,
+		"Realm":           "dce.adjara",
+		"x-api-key":       "857a1e5d-e35e-4fdf-805b-a87b6f8364bf",
+		"Accept-Language": "en-US",
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

@@ -2,18 +2,17 @@ package tw
 
 import (
 	"encoding/json"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/parnurzeal/gorequest"
+	"net/http"
+	"strings"
 )
 
 // LiTV
 // www.litv.tv 仅 ipv4 且 post 请求
-func LiTV(request *gorequest.SuperAgent) model.Result {
+func LiTV(c *http.Client) model.Result {
 	name := "LiTV"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	headers := []map[string]string{
@@ -22,12 +21,12 @@ func LiTV(request *gorequest.SuperAgent) model.Result {
 		{"Referer": "https://www.litv.tv/drama/watch/VOD00331042"},
 		{"Priority": "u=1, i"},
 	}
-	resp, body, errs := utils.PostJson(request, "https://www.litv.tv/api/get-urls-no-auth",
+	resp, body, errs := utils.PostJson(c, "https://www.litv.tv/api/get-urls-no-auth",
 		`{"AssetId": "vod71211-000001M001_1500K","MediaType": "vod","puid": "d66267c2-9c52-4b32-91b4-3e482943fe7e"}`,
 		headers...,
 	)
 	if len(errs) > 0 {
-		tp := AnotherLiTV()
+		tp := AnotherLiTV(c)
 		tp.Err = errs[0]
 		return tp
 	}
@@ -40,20 +39,22 @@ func LiTV(request *gorequest.SuperAgent) model.Result {
 			return model.Result{Name: name, Status: model.StatusYes}
 		}
 	}
-	return AnotherLiTV()
+	return AnotherLiTV(c)
 }
 
 // AnotherLiTV
 // www.litv.tv 的另一个检测逻辑
-func AnotherLiTV() model.Result {
+func AnotherLiTV(c *http.Client) model.Result {
 	name := "LiTV"
+	if c == nil {
+		return model.Result{Name: name}
+	}
 	url := "https://www.litv.tv/vod/ajax/getUrl"
 	payload := `{"type":"noauth","assetId":"vod44868-010001M001_800K","puid":"6bc49a81-aad2-425c-8124-5b16e9e01337"}`
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
-	request := gorequest.New()
-	resp, body, errs := utils.PostJson(request, url, payload, headers)
+	resp, body, errs := utils.PostJson(c, url, payload, headers)
 	if errs != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

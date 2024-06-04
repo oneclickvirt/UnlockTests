@@ -2,22 +2,26 @@ package jp
 
 import (
 	"fmt"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // PCRJP
 // api-priconne-redive.cygames.jp 仅 ipv4 且 get 请求
 // 有问题 stream error: stream ID 1; INTERNAL_ERROR; received from peer
-func PCRJP(request *gorequest.SuperAgent) model.Result {
+func PCRJP(c *http.Client) model.Result {
 	name := "Princess Connect Re - Dive Japan"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://api-priconne-redive.cygames.jp/"
-	request = request.Set("User-Agent", model.UA_Dalvik)
-	resp, _, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Dalvik,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

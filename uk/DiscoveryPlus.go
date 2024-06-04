@@ -3,22 +3,22 @@ package uk
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/parnurzeal/gorequest"
+	"io"
+	"net/http"
+	"strings"
 )
 
 // DiscoveryPlus
 // disco-api.discoveryplus.co.uk 仅 ipv4 且 get 请求
-func DiscoveryPlus(request *gorequest.SuperAgent) model.Result {
+func DiscoveryPlus(c *http.Client) model.Result {
 	name := "Discovery+ UK"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url1 := "https://disco-api.discoveryplus.co.uk/token?realm=questuk&deviceId=61ee588b07c4df08c02861ecc1366a592c4ad02d08e8228ecfee67501d98bf47&shortlived=true"
+	request := utils.Gorequest(c)
 	resp1, _, errs1 := request.Get(url1).End()
 	if len(errs1) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}

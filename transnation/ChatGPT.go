@@ -2,56 +2,66 @@ package transnation
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/parnurzeal/gorequest"
+	"net/http"
+	"strings"
 )
 
 // OpenAI
 // api.openai.com 仅 ipv4 且 get 请求
-func OpenAI(request *gorequest.SuperAgent) model.Result {
+func OpenAI(c *http.Client) model.Result {
 	name := "ChatGPT"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url1 := "https://api.openai.com/compliance/cookie_requirements"
-	resp1, body1, errs1 := request.Get(url1).
-		Set("User-Agent", model.UA_Browser).
-		Set("authority", "api.openai.com").
-		Set("accept", "*/*").
-		Set("accept-language", "zh-CN,zh;q=0.9").
-		Set("authorization", "Bearer null").
-		Set("content-type", "application/json").
-		Set("origin", "https://platform.openai.com").
-		Set("referer", "https://platform.openai.com/").
-		Set("sec-ch-ua", model.UA_SecCHUA).
-		Set("sec-ch-ua-mobile", "?0").
-		Set("sec-ch-ua-platform", "Windows").
-		Set("sec-fetch-dest", "empty").
-		Set("sec-fetch-mode", "cors").
-		Set("sec-fetch-site", "same-site").
-		End()
+	headers1 := map[string]string{
+		"User-Agent":         model.UA_Browser,
+		"authority":          "api.openai.com",
+		"accept":             "*/*",
+		"accept-language":    "zh-CN,zh;q=0.9",
+		"authorization":      "Bearer null",
+		"content-type":       "application/json",
+		"origin":             "https://platform.openai.com",
+		"referer":            "https://platform.openai.com/",
+		"sec-ch-ua":          model.UA_SecCHUA,
+		"sec-ch-ua-mobile":   "?0",
+		"sec-ch-ua-platform": "Windows",
+		"sec-fetch-dest":     "empty",
+		"sec-fetch-mode":     "cors",
+		"sec-fetch-site":     "same-site",
+	}
+	request1 := utils.Gorequest(c)
+	request1 = utils.SetGoRequestHeaders(request1, headers1)
+	resp1, body1, errs1 := request1.Get(url1).End()
 
 	url2 := "https://ios.chat.openai.com/"
-	resp2, body2, errs2 := request.Get(url2).
-		Set("User-Agent", model.UA_Browser).
-		Set("authority", "ios.chat.openai.com").
-		Set("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7").
-		Set("accept-language", "zh-CN,zh;q=0.9").
-		Set("sec-ch-ua", model.UA_SecCHUA).
-		Set("sec-ch-ua-mobile", "?0").
-		Set("sec-ch-ua-platform", "Windows").
-		Set("sec-fetch-dest", "document").
-		Set("sec-fetch-mode", "navigate").
-		Set("sec-fetch-site", "none").
-		Set("sec-fetch-user", "?1").
-		Set("upgrade-insecure-requests", "1").
-		End()
+	headers2 := map[string]string{
+		"User-Agent":                model.UA_Browser,
+		"authority":                 "ios.chat.openai.com",
+		"accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+		"accept-language":           "zh-CN,zh;q=0.9",
+		"sec-ch-ua":                 model.UA_SecCHUA,
+		"sec-ch-ua-mobile":          "?0",
+		"sec-ch-ua-platform":        "Windows",
+		"sec-fetch-dest":            "document",
+		"sec-fetch-mode":            "navigate",
+		"sec-fetch-site":            "none",
+		"sec-fetch-user":            "?1",
+		"upgrade-insecure-requests": "1",
+	}
+	request2 := utils.Gorequest(c)
+	request2 = utils.SetGoRequestHeaders(request2, headers2)
+	resp2, body2, errs2 := request2.Get(url2).End()
 
 	url3 := "https://chat.openai.com/cdn-cgi/trace"
-	resp3, body3, errs3 := request.Get(url3).End()
+	headers3 := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request3 := utils.Gorequest(c)
+	request3 = utils.SetGoRequestHeaders(request3, headers3)
+	resp3, body3, errs3 := request3.Get(url3).End()
 
 	var reqStatus1, reqStatus2, reqStatus3 bool
 	if len(errs1) > 0 {

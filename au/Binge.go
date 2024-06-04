@@ -2,20 +2,25 @@ package au
 
 import (
 	"fmt"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // Binge
 // auth.streamotion.com.au 双栈 get 请求
-func Binge(request *gorequest.SuperAgent) model.Result {
+func Binge(c *http.Client) model.Result {
 	name := "Binge"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://auth.streamotion.com.au"
-	resp, _, errs := request.Get(url).Retry(2, 5).End()
+	request := utils.Gorequest(c)
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

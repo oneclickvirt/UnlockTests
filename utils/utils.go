@@ -3,17 +3,18 @@ package utils
 import (
 	"context"
 	"fmt"
-	"net"
-	"time"
-
+	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/parnurzeal/gorequest"
+	"net"
+	"net/http"
+	"regexp"
+	"time"
 )
 
 // ParseInterface 解析网卡IP地址
-func ParseInterface(ifaceName, ipAddr, netType string) (*gorequest.SuperAgent, error) {
+func ParseInterface(ifaceName, ipAddr, netType string) (*http.Client, error) {
 	var localIP net.IP
-	var request *gorequest.SuperAgent
 	if ifaceName != "" {
 		// 获取指定网卡的 IP 地址
 		iface, err := net.InterfaceByName(ifaceName)
@@ -38,24 +39,87 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*gorequest.SuperAgent, e
 			return nil, fmt.Errorf("IP address does not match the specified netType")
 		}
 	}
-	request = gorequest.New()
+	var dialContext func(ctx context.Context, network, addr string) (net.Conn, error)
 	if localIP != nil {
-		request.Transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+		dialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			return (&net.Dialer{
-				Timeout:   20 * time.Second,
-				KeepAlive: 20 * time.Second,
+				Timeout:   12 * time.Second,
+				KeepAlive: 12 * time.Second,
 				LocalAddr: &net.TCPAddr{
 					IP: localIP,
 				},
 			}).DialContext(ctx, netType, addr)
 		}
 	} else {
-		request.Transport.DialContext = func(ctx context.Context, network string, addr string) (net.Conn, error) {
+		dialContext = func(ctx context.Context, network string, addr string) (net.Conn, error) {
 			return (&net.Dialer{}).DialContext(ctx, netType, addr)
 		}
 	}
-	request.Timeout(20 * time.Second)
-	return request, nil
+	c := &http.Client{
+		Timeout: 12 * time.Second,
+		Transport: &http.Transport{
+			DialContext: dialContext,
+		}}
+	return c, nil
+}
+
+// Req
+// 为 req 设置请求
+func Req(c *http.Client) *req.Client {
+	client := req.DefaultClient()
+	client.ImpersonateChrome()
+	client.Transport.DialContext = c.Transport.(*http.Transport).DialContext
+	client.R().
+		SetRetryCount(2).
+		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
+		SetRetryFixedInterval(2 * time.Second)
+	return client
+}
+
+// Gorequest
+// 为 gorequest 设置请求
+func Gorequest(c *http.Client) *gorequest.SuperAgent {
+	request := gorequest.New()
+	request.Transport.DialContext = c.Transport.(*http.Transport).DialContext
+	request.Retry(2, 5)
+	request.Timeout(12 * time.Second)
+	return request
+}
+
+// SetGoRequestHeaders
+func SetGoRequestHeaders(request *gorequest.SuperAgent, headers map[string]string) *gorequest.SuperAgent {
+	for _, i := range headers {
+		request = request.Set(i, headers[i])
+	}
+	return request
+}
+
+// SetReqHeaders
+func SetReqHeaders(client *req.Client, headers map[string]string) *req.Client {
+	for _, i := range headers {
+		client.Headers.Set(i, headers[i])
+	}
+	return client
+}
+
+// PostJson 向指定的 URL 发送 JSON 格式的 POST 请求，并返回响应、响应体和错误信息
+// url: 目标 URL
+// payload: 要发送的 JSON 格式的请求体
+// headers: 可选的 HTTP 头信息
+func PostJson(c *http.Client, url string, payload string, headers ...map[string]string) (gorequest.Response, []byte, []error) {
+	// 构建 POST 请求，设置请求类型为 JSON 并添加请求体
+	request := Gorequest(c)
+	request = request.Post(url).
+		Type("json").
+		Send(payload)
+	// 添加可选的 HTTP 头信息
+	for _, header := range headers {
+		request = SetGoRequestHeaders(request, header)
+	}
+	// 发送请求并接收响应、响应体和错误信息
+	resp, body, errs := request.EndBytes()
+	// 返回响应、响应体和错误信息
+	return resp, body, errs
 }
 
 // GetRegion
@@ -69,96 +133,78 @@ func GetRegion(loc string, locationList []string) bool {
 	return false
 }
 
-// PostJson 向指定的 URL 发送 JSON 格式的 POST 请求，并返回响应、响应体和错误信息
-// request: gorequest.SuperAgent 实例，用于构建请求
-// url: 目标 URL
-// payload: 要发送的 JSON 格式的请求体
-// headers: 可选的 HTTP 头信息
-func PostJson(request *gorequest.SuperAgent, url string, payload string, headers ...map[string]string) (gorequest.Response, []byte, []error) {
-	// 构建 POST 请求，设置请求类型为 JSON 并添加请求体
-	req := request.Post(url).
-		Type("json").
-		Send(payload)
-	// 添加可选的 HTTP 头信息
-	for _, header := range headers {
-		req = SetHeaders(req, header)
+// ReParse
+// 根据正则表达式提取内容
+func ReParse(responseBody, rex string) string {
+	re := regexp.MustCompile(rex)
+	match := re.FindStringSubmatch(responseBody)
+	if len(match) > 1 {
+		return match[1]
 	}
-	// 发送请求并接收响应、响应体和错误信息
-	resp, body, errs := req.EndBytes()
-	// 返回响应、响应体和错误信息
-	return resp, body, errs
-}
-
-// SetHeaders
-// 设置 gorequest 的请求头
-func SetHeaders(request *gorequest.SuperAgent, headers map[string]string) *gorequest.SuperAgent {
-	for _, i := range headers {
-		request = request.Set(i, headers[i])
-	}
-	return request
+	return ""
 }
 
 // 通过Info标记要被插入的行的下一行包含什么文本内容
-func PrintCA(request *gorequest.SuperAgent) model.Result {
+func PrintCA(c *http.Client) model.Result {
 	return model.Result{Name: "Canada", Status: model.PrintHead, Info: "HotStar"}
 }
 
-func PrintGB(request *gorequest.SuperAgent) model.Result {
+func PrintGB(c *http.Client) model.Result {
 	return model.Result{Name: "England", Status: model.PrintHead, Info: "HotStar"}
 }
 
-func PrintFR(request *gorequest.SuperAgent) model.Result {
+func PrintFR(c *http.Client) model.Result {
 	return model.Result{Name: "France", Status: model.PrintHead, Info: "Canal+"}
 }
 
-func PrintDE(request *gorequest.SuperAgent) model.Result {
+func PrintDE(c *http.Client) model.Result {
 	return model.Result{Name: "Germany", Status: model.PrintHead, Info: "Joyn"}
 }
 
-func PrintNL(request *gorequest.SuperAgent) model.Result {
+func PrintNL(c *http.Client) model.Result {
 	return model.Result{Name: "Netherlands", Status: model.PrintHead, Info: "NLZIET"}
 }
 
-func PrintES(request *gorequest.SuperAgent) model.Result {
+func PrintES(c *http.Client) model.Result {
 	return model.Result{Name: "Spain", Status: model.PrintHead, Info: "Movistar+"}
 }
 
-func PrintIT(request *gorequest.SuperAgent) model.Result {
+func PrintIT(c *http.Client) model.Result {
 	return model.Result{Name: "Italy", Status: model.PrintHead, Info: "Rai Play"}
 }
 
-func PrintCH(request *gorequest.SuperAgent) model.Result {
+func PrintCH(c *http.Client) model.Result {
 	return model.Result{Name: "Switzerland", Status: model.PrintHead, Info: "SKY CH"}
 }
 
-func PrintRU(request *gorequest.SuperAgent) model.Result {
+func PrintRU(c *http.Client) model.Result {
 	return model.Result{Name: "Russia", Status: model.PrintHead, Info: "Amediateka"}
 }
 
-func PrintAU(request *gorequest.SuperAgent) model.Result {
+func PrintAU(c *http.Client) model.Result {
 	return model.Result{Name: "Australia", Status: model.PrintHead, Info: "Stan"}
 }
 
-func PrintNZ(request *gorequest.SuperAgent) model.Result {
+func PrintNZ(c *http.Client) model.Result {
 	return model.Result{Name: "New Zealand", Status: model.PrintHead, Info: "Neon TV"}
 }
 
-func PrintSG(request *gorequest.SuperAgent) model.Result {
+func PrintSG(c *http.Client) model.Result {
 	return model.Result{Name: "Singapore", Status: model.PrintHead, Info: "MeWatch"}
 }
 
-func PrintTH(request *gorequest.SuperAgent) model.Result {
+func PrintTH(c *http.Client) model.Result {
 	return model.Result{Name: "Thailand", Status: model.PrintHead, Info: "AIS Play"}
 }
 
-func PrintGame(request *gorequest.SuperAgent) model.Result {
+func PrintGame(c *http.Client) model.Result {
 	return model.Result{Name: "Game", Status: model.PrintHead, Info: "Kancolle Japan"}
 }
 
-func PrintMusic(request *gorequest.SuperAgent) model.Result {
+func PrintMusic(c *http.Client) model.Result {
 	return model.Result{Name: "Music", Status: model.PrintHead, Info: "Mora"}
 }
 
-func PrintForum(request *gorequest.SuperAgent) model.Result {
+func PrintForum(c *http.Client) model.Result {
 	return model.Result{Name: "Forum", Status: model.PrintHead, Info: "EroGameSpace"}
 }

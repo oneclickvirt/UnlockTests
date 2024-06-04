@@ -2,9 +2,8 @@ package transnation
 
 import (
 	"fmt"
-	"testing"
-
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"testing"
 )
 
 func Test(t *testing.T) {
@@ -148,30 +147,3 @@ func Test(t *testing.T) {
 	}
 	fmt.Println(res.Name, ": ", res.Status, res.Region)
 }
-
-// func Test(t *testing.T) {
-// 	req, _ := utils.ParseInterface("", "", "tcp4")
-// 	// res := Steam(req)
-// 	// if res.Err != nil {
-// 	// 	fmt.Println(res.Err)
-// 	// }
-// 	// fmt.Println(res.Name, ": ", res.Status, res.Region)
-
-// 	// res := OneTrust(req)
-// 	// if res.Err != nil {
-// 	// 	fmt.Println(res.Err)
-// 	// }
-// 	// fmt.Println(res.Name, ": ", res.Status, res.Region)
-
-// 	// res := MetaAI(req)
-// 	// if res.Err != nil {
-// 	// 	fmt.Println(res.Err)
-// 	// }
-// 	// fmt.Println(res.Name, ": ", res.Status, res.Region)
-
-// 	res := GoogleSearch(req)
-// 	if res.Err != nil {
-// 		fmt.Println(res.Err)
-// 	}
-// 	fmt.Println(res.Name, ": ", res.Status, res.Region)
-// }

@@ -2,21 +2,25 @@ package us
 
 import (
 	"fmt"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // Popcornflix
 // popcornflix-prod.cloud.seachange.com 仅 ipv4 且 get 请求
-func Popcornflix(request *gorequest.SuperAgent) model.Result {
+func Popcornflix(c *http.Client) model.Result {
 	name := "Popcornflix"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://popcornflix-prod.cloud.seachange.com/cms/popcornflix/clientconfiguration/versions/2"
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, _, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

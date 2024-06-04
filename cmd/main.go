@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -34,7 +35,6 @@ import (
 	"github.com/oneclickvirt/UnlockTests/uk"
 	"github.com/oneclickvirt/UnlockTests/us"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/parnurzeal/gorequest"
 	pb "github.com/schollz/progressbar/v3"
 )
 
@@ -170,7 +170,7 @@ func FormarPrint(language, message string) {
 	}
 }
 
-func excute(F func(request *gorequest.SuperAgent) model.Result) {
+func excute(F func(c *http.Client) model.Result) {
 	wg.Add(1)
 	total++
 	go func() {
@@ -188,7 +188,7 @@ func excute(F func(request *gorequest.SuperAgent) model.Result) {
 	}()
 }
 
-func processFunction(FuncList [](func(request *gorequest.SuperAgent) model.Result)) {
+func processFunction(FuncList [](func(c *http.Client) model.Result)) {
 	// 生成顺序输出的名字
 	for _, f := range FuncList {
 		tp := f(nil)
@@ -203,7 +203,7 @@ func processFunction(FuncList [](func(request *gorequest.SuperAgent) model.Resul
 }
 
 func NorthAmerica(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		us.Fox,
 		us.Hulu,
 		us.NFLPlus,
@@ -245,7 +245,7 @@ func NorthAmerica(ifaceName, ipAddr, netType string) {
 }
 
 func Europe(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		eu.RakutenTV,
 		eu.SkyShowTime,
 		us.HBOMax,
@@ -292,18 +292,19 @@ func Europe(ifaceName, ipAddr, netType string) {
 }
 
 func HongKong(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		hk.NowE,
 		hk.ViuTV,
 		hk.MyTvSuper,
 		asia.HBOGO,
 		hk.BilibiliHKMO,
+		tw.BahamutAnime,
 	}
 	processFunction(FuncList)
 }
 
 func Africa(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		africa.DSTV,
 		africa.Showmax,
 		africa.BeinConnect,
@@ -312,7 +313,7 @@ func Africa(ifaceName, ipAddr, netType string) {
 }
 
 func India(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
 		in.Zee5,
 		in.JioCinema,
@@ -323,15 +324,15 @@ func India(ifaceName, ipAddr, netType string) {
 }
 
 func Taiwan(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		tw.KKTV,
 		tw.LiTV,
 		tw.MyVideo,
 		tw.Tw4gtv,
 		tw.LineTV,
 		tw.HamiVideo,
-		// tw.Catchplay,
-		// tw.BahamutAnime,
+		tw.Catchplay,
+		tw.BahamutAnime,
 		asia.HBOGO,
 		tw.BilibiliTW,
 	}
@@ -339,7 +340,7 @@ func Taiwan(ifaceName, ipAddr, netType string) {
 }
 
 func Japan(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		jp.DMM,
 		jp.DMMTV,
 		jp.Abema,
@@ -378,7 +379,7 @@ func Japan(ifaceName, ipAddr, netType string) {
 }
 
 func Multination(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		transnation.DAZN,
 		transnation.DisneyPlus,
 		transnation.Netflix,
@@ -407,7 +408,7 @@ func Multination(ifaceName, ipAddr, netType string) {
 }
 
 func SouthAmerica(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		asia.StarPlus,
 		us.HBOMax,
 		us.DirecTVGO,
@@ -416,7 +417,7 @@ func SouthAmerica(ifaceName, ipAddr, netType string) {
 }
 
 func Oceania(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		us.NBATV,
 		us.AcornTV,
 		uk.BritBox,
@@ -443,7 +444,7 @@ func Oceania(ifaceName, ipAddr, netType string) {
 }
 
 func Korean(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		kr.Wavve,
 		kr.Tving,
 		kr.Watcha,
@@ -457,7 +458,7 @@ func Korean(ifaceName, ipAddr, netType string) {
 }
 
 func SouthEastAsia(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
 		asia.HBOGO,
 		asia.BilibiliSEA,
@@ -476,7 +477,7 @@ func SouthEastAsia(ifaceName, ipAddr, netType string) {
 }
 
 func Sport(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		transnation.DAZN,
 		asia.StarPlus,
 		us.ESPNPlus,
@@ -493,7 +494,7 @@ func Sport(ifaceName, ipAddr, netType string) {
 }
 
 func IPV6Multination(ifaceName, ipAddr, netType string) {
-	var FuncList = [](func(request *gorequest.SuperAgent) model.Result){
+	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
 		transnation.DisneyPlus,
 		transnation.Netflix,

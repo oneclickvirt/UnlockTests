@@ -2,27 +2,31 @@ package jp
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // FOD
 // geocontrol1.stream.ne.jp 仅 ipv4 且 get 请求
-func FOD(request *gorequest.SuperAgent) model.Result {
+func FOD(c *http.Client) model.Result {
 	name := "FOD(Fuji TV)"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://geocontrol1.stream.ne.jp/fod-geo/check.xml?time=1624504256"
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	// fmt.Println(body)
+	//fmt.Println(body)
 	if strings.Contains(body, "FLAG TYPE=\"false\"") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 || strings.Contains(body, "true") {

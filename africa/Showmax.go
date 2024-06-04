@@ -2,18 +2,17 @@ package africa
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/parnurzeal/gorequest"
+	"net/http"
+	"strings"
 )
 
 // Showmax
 // www.showmax.com 双栈 且 get 请求
-func Showmax(request *gorequest.SuperAgent) model.Result {
+func Showmax(c *http.Client) model.Result {
 	name := "Showmax"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://www.showmax.com/"
@@ -32,12 +31,14 @@ func Showmax(request *gorequest.SuperAgent) model.Result {
 		"Sec-Fetch-Dest":            "document",
 		"Accept-Language":           "zh-CN,zh;q=0.9",
 	}
-	request = utils.SetHeaders(request, headers)
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
+	//fmt.Println(body)
 	regionStart := strings.Index(body, "activeTerritory")
 	if regionStart == -1 {
 		return model.Result{Name: name, Status: model.StatusNo}

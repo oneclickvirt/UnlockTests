@@ -3,36 +3,41 @@ package eu
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Eurosport
 // www.eurosport.com 双栈
-func Eurosport(request *gorequest.SuperAgent) model.Result {
+func Eurosport(c *http.Client) model.Result {
 	name := "Eurosport RO"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	fakeUuid, _ := uuid.NewV4()
-	resp1, body1, errs1 := request.Get("https://eu3-prod-direct.eurosport.ro/token?realm=eurosport").
-		Set("accept", "*/*").
-		Set("accept-language", "en-US,en;q=0.9").
-		Set("origin", "https://www.eurosport.ro").
-		Set("referer", "https://www.eurosport.ro/").
-		Set("sec-ch-ua", model.UA_SecCHUA).
-		Set("sec-ch-ua-mobile", "?0").
-		Set("sec-ch-ua-platform", "\"Windows\"").
-		Set("sec-fetch-dest", "empty").
-		Set("sec-fetch-mode", "cors").
-		Set("sec-fetch-site", "same-site").
-		Set("x-device-info", fmt.Sprintf("escom/0.295.1 (unknown/unknown; Windows/10; %s)", fakeUuid)).
-		Set("x-disco-client", "WEB:UNKNOWN:escom:0.295.1").
-		Set("User-Agent", model.UA_Browser).
-		End()
+	url := "https://eu3-prod-direct.eurosport.ro/token?realm=eurosport"
+	headers := map[string]string{
+		"User-Agent":         model.UA_Browser,
+		"accept":             "*/*",
+		"accept-language":    "en-US,en;q=0.9",
+		"origin":             "https://www.eurosport.ro",
+		"referer":            "https://www.eurosport.ro/",
+		"sec-ch-ua":          model.UA_SecCHUA,
+		"sec-ch-ua-mobile":   "?0",
+		"sec-ch-ua-platform": "\"Windows\"",
+		"sec-fetch-dest":     "empty",
+		"sec-fetch-mode":     "cors",
+		"sec-fetch-site":     "same-site",
+		"x-device-info":      fmt.Sprintf("escom/0.295.1 (unknown/unknown; Windows/10; %s)", fakeUuid),
+		"x-disco-client":     "WEB:UNKNOWN:escom:0.295.1",
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp1, body1, errs1 := request.Get(url).End()
 	if len(errs1) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
 	}

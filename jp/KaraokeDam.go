@@ -2,21 +2,25 @@ package jp
 
 import (
 	"fmt"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // KaraokeDam
 // cds1.clubdam.com 仅 ipv4 且 get 请求
-func KaraokeDam(request *gorequest.SuperAgent) model.Result {
+func KaraokeDam(c *http.Client) model.Result {
 	name := "Karaoke@DAM"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "http://cds1.clubdam.com/vhls-cds1/site/xbox/sample_1.mp4.m3u8"
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, _, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

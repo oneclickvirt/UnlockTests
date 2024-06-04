@@ -4,12 +4,13 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/gofrs/uuid/v5"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"github.com/parnurzeal/gorequest"
+	"net/http"
 	"strings"
 	"time"
-
-	"github.com/gofrs/uuid"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 )
 
 func genUUID() string {
@@ -44,8 +45,11 @@ func extractHeaderValue(resp gorequest.Response, headerName string) string {
 }
 
 // AISPlay
-func AISPlay(request *gorequest.SuperAgent) model.Result {
+func AISPlay(c *http.Client) model.Result {
 	name := "AIS Play"
+	if c == nil {
+		return model.Result{Name: name}
+	}
 	userId := "09e8b25510"
 	userPasswd := "e49e9f9e7f"
 	fakeApiKey := generateMD5(genUUID())
@@ -70,9 +74,8 @@ func AISPlay(request *gorequest.SuperAgent) model.Result {
 		"time":               timestamp,
 		"udid":               fakeUdid,
 	}
-	for _, h := range headers {
-		request = request.Set(h, headers[h])
-	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
 	resp, body, errs := request.Post(url).Send("------WebKitFormBoundaryBj2RhUIW7BtRvfK0--").End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
@@ -83,7 +86,7 @@ func AISPlay(request *gorequest.SuperAgent) model.Result {
 	if sId == "" || datAuth == "" {
 		// fmt.Println(body)
 		// return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("sid or datauth is null")}
-		return AnotherAISPlay(request)
+		return AnotherAISPlay(c)
 	}
 
 	timestamp = fmt.Sprint(time.Now().Unix())
@@ -102,7 +105,7 @@ func AISPlay(request *gorequest.SuperAgent) model.Result {
 	tmpLiveUrl := extractValue(body, `"live" : "`, `"`)
 	if tmpLiveUrl == "" {
 		// return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("tmpLiveUrl is null")}
-		return AnotherAISPlay(request)
+		return AnotherAISPlay(c)
 	}
 
 	mediaId := "B0006"
@@ -121,10 +124,9 @@ func AISPlay(request *gorequest.SuperAgent) model.Result {
 		"sec-ch-ua-mobile":   "?0",
 		"sec-ch-ua-platform": "\"Windows\"",
 	}
-	for _, i := range headers2 {
-		request = request.Set(i, headers2[i])
-	}
-	resp, body, errs = request.Get(realLiveUrl).End()
+	request2 := utils.Gorequest(c)
+	request2 = utils.SetGoRequestHeaders(request2, headers2)
+	resp, body, errs = request2.Get(realLiveUrl).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -144,10 +146,9 @@ func AISPlay(request *gorequest.SuperAgent) model.Result {
 		"sec-ch-ua-mobile":   "?0",
 		"sec-ch-ua-platform": "\"Windows\"",
 	}
-	for _, j := range headers3 {
-		request = request.Set(j, headers2[j])
-	}
-	resp, body, errs = request.Get(playUrl).End()
+	request3 := utils.Gorequest(c)
+	request3 = utils.SetGoRequestHeaders(request3, headers3)
+	resp, body, errs = request3.Get(playUrl).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -156,7 +157,7 @@ func AISPlay(request *gorequest.SuperAgent) model.Result {
 	if baseRequstCheckStatus == "INCORRECT" {
 		// return model.Result{Name: name, Status: model.StatusErr,
 		// 	Err: fmt.Errorf("X-Base-Request-Check-Status is INCORRECT")}
-		return AnotherAISPlay(request)
+		return AnotherAISPlay(c)
 	}
 
 	result := extractHeaderValue(resp, "X-Geo-Protection-System-Status")
@@ -167,20 +168,24 @@ func AISPlay(request *gorequest.SuperAgent) model.Result {
 	case "SUCCESS":
 		return model.Result{Name: name, Status: model.StatusYes}
 	default:
-		return AnotherAISPlay(request)
+		return AnotherAISPlay(c)
 	}
 }
 
 // AnotherAISPlay
 // 49-231-37-237-rewriter.ais-vidnt.com 双栈 get 请求
-func AnotherAISPlay(request *gorequest.SuperAgent) model.Result {
+func AnotherAISPlay(c *http.Client) model.Result {
 	name := "AIS Play"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://49-231-37-237-rewriter.ais-vidnt.com/ais/play/origin/VOD/playlist/ais-yMzNH1-bGUxc/index.m3u8"
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

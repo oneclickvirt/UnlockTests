@@ -3,21 +3,20 @@ package jp
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/parnurzeal/gorequest"
+	"net/http"
+	"strings"
 )
 
 // DMMTV
 // api.beacon.dmm.com 双栈 且 post 请求
-func DMMTV(request *gorequest.SuperAgent) model.Result {
+func DMMTV(c *http.Client) model.Result {
 	name := "DMM TV"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
-	resp, bodyBytes, errs := utils.PostJson(request, "https://api.beacon.dmm.com/v1/streaming/start",
+	resp, bodyBytes, errs := utils.PostJson(c, "https://api.beacon.dmm.com/v1/streaming/start",
 		`{"player_name":"dmmtv_browser","player_version":"0.0.0","content_type_detail":"VOD_SVOD","content_id":"11uvjcm4fw2wdu7drtd1epnvz","purchase_product_id":null}`,
 		map[string]string{"User-Agent": model.UA_Browser},
 	)

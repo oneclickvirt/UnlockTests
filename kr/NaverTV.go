@@ -6,19 +6,19 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 )
 
 // NaverTV
 // apis.naver.com 仅 ipv4 且 get 请求
-func NaverTV(request *gorequest.SuperAgent) model.Result {
+func NaverTV(c *http.Client) model.Result {
 	name := "Naver TV"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	ts := time.Now().UnixNano() / int64(time.Millisecond)
@@ -33,15 +33,17 @@ func NaverTV(request *gorequest.SuperAgent) model.Result {
 	signatureEncoded := url.QueryEscape(signature)
 	reqURL := fmt.Sprintf("%snow_web2/now_web_api/v1/clips/31030608/play-info?msgpad=%d&md=%s", baseURL, ts, signatureEncoded)
 	// 进行请求
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, body, errs := request.Get(reqURL).
-		Set("Host", "apis.naver.com").
-		Set("Connection", "keep-alive").
-		Set("Accept", "application/json, text/plain, */*").
-		Set("User-Agent", "your-user-agent-here").
-		Set("Origin", "https://tv.naver.com").
-		Set("Referer", "https://tv.naver.com/v/31030608").
-		End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+		"Host":       "apis.naver.com",
+		"Connection": "keep-alive",
+		"Accept":     "application/json, text/plain, */*",
+		"Origin":     "https://tv.naver.com",
+		"Referer":    "https://tv.naver.com/v/31030608",
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(reqURL).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

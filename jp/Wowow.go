@@ -5,11 +5,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 	"strings"
 	"time"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 )
 
 func getFirstLink(jsonStr string) string {
@@ -90,28 +90,30 @@ func getMetaId(htmlStr string) string {
 
 // Wowow
 // www.wowow.co.jp 仅 ipv4 且 get 请求
-func Wowow(request *gorequest.SuperAgent) model.Result {
+func Wowow(c *http.Client) model.Result {
 	name := "WOWOW"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	// 获取当前时间戳
 	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
 	// 第一次请求：获取原创剧集列表
 	url := fmt.Sprintf("https://www.wowow.co.jp/drama/original/json/lineup.json?_=%d", timestamp)
-	resp, body, errs := request.Get(url).
-		Set("Accept", "application/json, text/javascript, */*; q=0.01").
-		Set("Referer", "https://www.wowow.co.jp/drama/original/").
-		Set("Sec-Fetch-Dest", "empty").
-		Set("Sec-Fetch-Mode", "cors").
-		Set("Sec-Fetch-Site", "same-origin").
-		Set("X-Requested-With", "XMLHttpRequest").
-		Set("sec-ch-ua", model.UA_SecCHUA).
-		Set("sec-ch-ua-mobile", "?0").
-		Set("sec-ch-ua-platform", "\"Windows\"").
-		Set("User-Agent", model.UA_Browser).
-		Timeout(10 * time.Second).
-		End()
+	headers := map[string]string{
+		"Accept":             "application/json, text/javascript, */*; q=0.01",
+		"Referer":            "https://www.wowow.co.jp/drama/original/",
+		"Sec-Fetch-Dest":     "empty",
+		"Sec-Fetch-Mode":     "cors",
+		"Sec-Fetch-Site":     "same-origin",
+		"X-Requested-With":   "XMLHttpRequest",
+		"sec-ch-ua":          model.UA_SecCHUA,
+		"sec-ch-ua-mobile":   "?0",
+		"sec-ch-ua-platform": "\"Windows\"",
+		"User-Agent":         model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr + " 1", Err: errs[0]}
 	}
@@ -123,10 +125,12 @@ func Wowow(request *gorequest.SuperAgent) model.Result {
 	}
 
 	// 第二次请求：获取真实链接
-	resp, body, errs = request.Get(playUrl).
-		Set("User-Agent", model.UA_Browser).
-		Timeout(10 * time.Second).
-		End()
+	headers2 := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request2 := utils.Gorequest(c)
+	request2 = utils.SetGoRequestHeaders(request2, headers2)
+	resp, body, errs = request2.Get(playUrl).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr + " 2", Err: errs[0]}
 	}
@@ -136,10 +140,12 @@ func Wowow(request *gorequest.SuperAgent) model.Result {
 	if wodUrl == "" {
 		programUrl := getProgramUrl(body)
 		// 第二次请求的二次请求：获取真实链接
-		resp, body, errs = request.Get(programUrl).
-			Set("User-Agent", model.UA_Browser).
-			Timeout(10 * time.Second).
-			End()
+		headers3 := map[string]string{
+			"User-Agent": model.UA_Browser,
+		}
+		request3 := utils.Gorequest(c)
+		request3 = utils.SetGoRequestHeaders(request3, headers3)
+		resp, body, errs = request3.Get(programUrl).End()
 		if len(errs) > 0 {
 			return model.Result{Name: name, Status: model.StatusNetworkErr + " 2-2", Err: errs[0]}
 		}
@@ -179,22 +185,23 @@ func Wowow(request *gorequest.SuperAgent) model.Result {
 	// 最终测试请求
 	authUrl := "https://mapi.wowow.co.jp/api/v1/playback/auth"
 	data := fmt.Sprintf(`{"meta_id":"%s","vuid":"%s","device_code":1,"app_id":1,"ua":"%s"}`, metaId, vUid, model.UA_Browser)
-	resp, body, errs = request.Post(authUrl).
-		Set("accept", "application/json, text/plain, */*").
-		Set("content-type", "application/json;charset=UTF-8").
-		Set("origin", "https://wod.wowow.co.jp").
-		Set("referer", "https://wod.wowow.co.jp/").
-		Set("sec-ch-ua", model.UA_SecCHUA).
-		Set("sec-ch-ua-mobile", "?0").
-		Set("sec-ch-ua-platform", "\"Windows\"").
-		Set("sec-fetch-dest", "empty").
-		Set("sec-fetch-mode", "cors").
-		Set("sec-fetch-site", "same-site").
-		Set("x-requested-with", "XMLHttpRequest").
-		Send(data).
-		Set("User-Agent", model.UA_Browser).
-		Timeout(10 * time.Second).
-		End()
+	headers4 := map[string]string{
+		"accept":             "application/json, text/plain, */*",
+		"content-type":       "application/json;charset=UTF-8",
+		"origin":             "https://wod.wowow.co.jp",
+		"referer":            "https://wod.wowow.co.jp/",
+		"sec-ch-ua":          model.UA_SecCHUA,
+		"sec-ch-ua-mobile":   "?0",
+		"sec-ch-ua-platform": "\"Windows\"",
+		"sec-fetch-dest":     "empty",
+		"sec-fetch-mode":     "cors",
+		"sec-fetch-site":     "same-site",
+		"x-requested-with":   "XMLHttpRequest",
+		"User-Agent":         model.UA_Browser,
+	}
+	request4 := utils.Gorequest(c)
+	request4 = utils.SetGoRequestHeaders(request4, headers4)
+	resp, body, errs = request.Post(authUrl).Send(data).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr + " 4", Err: errs[0]}
 	}

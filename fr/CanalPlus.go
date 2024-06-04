@@ -2,21 +2,22 @@ package fr
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // CanalPlus
 // canalplus.com 双栈 get 请求
-func CanalPlus(request *gorequest.SuperAgent) model.Result {
+func CanalPlus(c *http.Client) model.Result {
 	name := "Canal+"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://boutique-tunnel.canalplus.com/"
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	request := utils.Gorequest(c)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

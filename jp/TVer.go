@@ -3,12 +3,11 @@ package jp
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"strings"
-
-	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
+	"net/http"
+	"strings"
 )
 
 type PlatformResponse struct {
@@ -62,42 +61,43 @@ func getDeliveryConfigID(body string) string {
 // TVer
 // edge.api.brightcove.com 仅 ipv4 且 get 请求
 // 双重检测逻辑
-func TVer(request *gorequest.SuperAgent) model.Result {
-	firstCheck := FirstTVer(request)
-	//if firstCheck.Status == model.StatusNetworkErr {
-	//	secondCheck := AnotherTVer()
-	//	if secondCheck.Status == model.StatusNetworkErr {
-	//		return firstCheck
-	//	} else {
-	//		return secondCheck
-	//	}
-	//} else {
-	//	return firstCheck
-	//}
+func TVer(c *http.Client) model.Result {
+	firstCheck := FirstTVer(c)
+	if firstCheck.Status == model.StatusNetworkErr || firstCheck.Status == model.StatusErr {
+		secondCheck := AnotherTVer(c)
+		if secondCheck.Status == model.StatusNetworkErr || secondCheck.Status == model.StatusErr {
+			return firstCheck
+		} else {
+			return secondCheck
+		}
+	}
 	return firstCheck
 }
 
 // FirstTVer
 // 主要的检测逻辑
-func FirstTVer(request *gorequest.SuperAgent) model.Result {
+func FirstTVer(c *http.Client) model.Result {
 	name := "TVer"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	// 创建平台用户
+	headers := map[string]string{
+		"content-type":       "application/x-www-form-urlencoded",
+		"origin":             "https://s.tver.jp",
+		"referer":            "https://s.tver.jp/",
+		"sec-ch-ua":          model.UA_SecCHUA,
+		"sec-ch-ua-mobile":   "?0",
+		"sec-ch-ua-platform": "Windows",
+		"sec-fetch-dest":     "empty",
+		"sec-fetch-mode":     "cors",
+		"sec-fetch-site":     "same-site",
+		"user-agent":         model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
 	res, body, errs := request.Post("https://platform-api.tver.jp/v2/api/platform_users/browser/create").
-		Set("content-type", "application/x-www-form-urlencoded").
-		Set("origin", "https://s.tver.jp").
-		Set("referer", "https://s.tver.jp/").
-		Set("sec-ch-ua", model.UA_SecCHUA).
-		Set("sec-ch-ua-mobile", "?0").
-		Set("sec-ch-ua-platform", "Windows").
-		Set("sec-fetch-dest", "empty").
-		Set("sec-fetch-mode", "cors").
-		Set("sec-fetch-site", "same-site").
-		Set("user-agent", model.UA_Browser).
-		Send("device_type=pc").
-		End()
+		Send("device_type=pc").End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -115,18 +115,21 @@ func FirstTVer(request *gorequest.SuperAgent) model.Result {
 	url := fmt.Sprintf("https://platform-api.tver.jp/service/api/v1/callHome?"+
 		"platform_uid=%s&platform_token=%s&require_data=mylist%%2Cresume%%2Clater", platformResp.PlatformUID,
 		platformResp.PlatformToken)
-	res, body, errs = request.Get(url).
-		Set("origin", "https://tver.jp").
-		Set("referer", "https://tver.jp/").
-		Set("sec-ch-ua", model.UA_SecCHUA).
-		Set("sec-ch-ua-mobile", "?0").
-		Set("sec-ch-ua-platform", "Windows").
-		Set("sec-fetch-dest", "empty").
-		Set("sec-fetch-mode", "cors").
-		Set("sec-fetch-site", "same-site").
-		Set("x-tver-platform-type", "web").
-		Set("user-agent", model.UA_Browser).
-		End()
+	headers2 := map[string]string{
+		"origin":               "https://tver.jp",
+		"referer":              "https://tver.jp/",
+		"sec-ch-ua":            model.UA_SecCHUA,
+		"sec-ch-ua-mobile":     "?0",
+		"sec-ch-ua-platform":   "Windows",
+		"sec-fetch-dest":       "empty",
+		"sec-fetch-mode":       "cors",
+		"sec-fetch-site":       "same-site",
+		"x-tver-platform-type": "web",
+		"user-agent":           model.UA_Browser,
+	}
+	request2 := utils.Gorequest(c)
+	request2 = utils.SetGoRequestHeaders(request2, headers2)
+	res, body, errs = request2.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -142,17 +145,20 @@ func FirstTVer(request *gorequest.SuperAgent) model.Result {
 
 	// 获取剧集的信息
 	url = fmt.Sprintf("https://statics.tver.jp/content/episode/%s.json", episodeId)
-	res, body, errs = request.Get(url).
-		Set("origin", "https://tver.jp").
-		Set("referer", "https://tver.jp/").
-		Set("sec-ch-ua", model.UA_SecCHUA).
-		Set("sec-ch-ua-mobile", "?0").
-		Set("sec-ch-ua-platform", "Windows").
-		Set("sec-fetch-dest", "empty").
-		Set("sec-fetch-mode", "cors").
-		Set("sec-fetch-site", "same-site").
-		Set("user-agent", model.UA_Browser).
-		End()
+	headers3 := map[string]string{
+		"origin":             "https://tver.jp",
+		"referer":            "https://tver.jp/",
+		"sec-ch-ua":          model.UA_SecCHUA,
+		"sec-ch-ua-mobile":   "?0",
+		"sec-ch-ua-platform": "Windows",
+		"sec-fetch-dest":     "empty",
+		"sec-fetch-mode":     "cors",
+		"sec-fetch-site":     "same-site",
+		"user-agent":         model.UA_Browser,
+	}
+	request3 := utils.Gorequest(c)
+	request3 = utils.SetGoRequestHeaders(request3, headers3)
+	res, body, errs = request3.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -169,16 +175,19 @@ func FirstTVer(request *gorequest.SuperAgent) model.Result {
 	// 获取 Brightcove 播放器信息
 	url = fmt.Sprintf("https://players.brightcove.net/%s/%s_default/index.min.js", episode.AccountID,
 		episode.PlayerID)
-	res, body, errs = request.Get(url).
-		Set("Referer", "https://tver.jp/").
-		Set("Sec-Fetch-Dest", "script").
-		Set("Sec-Fetch-Mode", "no-cors").
-		Set("Sec-Fetch-Site", "cross-site").
-		Set("sec-ch-ua", model.UA_SecCHUA).
-		Set("sec-ch-ua-mobile", "?0").
-		Set("sec-ch-ua-platform", "Windows").
-		Set("user-agent", model.UA_Browser).
-		End()
+	headers4 := map[string]string{
+		"Referer":            "https://tver.jp/",
+		"Sec-Fetch-Dest":     "script",
+		"Sec-Fetch-Mode":     "no-cors",
+		"Sec-Fetch-Site":     "cross-site",
+		"sec-ch-ua":          model.UA_SecCHUA,
+		"sec-ch-ua-mobile":   "?0",
+		"sec-ch-ua-platform": "Windows",
+		"user-agent":         model.UA_Browser,
+	}
+	request4 := utils.Gorequest(c)
+	request4 = utils.SetGoRequestHeaders(request4, headers4)
+	res, body, errs = request4.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -209,18 +218,20 @@ func FirstTVer(request *gorequest.SuperAgent) model.Result {
 	}
 
 	// 构建请求
-	client := req.DefaultClient()
-	client.ImpersonateChrome()
-	client.Headers.Set("accept", fmt.Sprintf("application/json;pk=%s", policyKey))
-	client.Headers.Set("origin", "https://tver.jp")
-	client.Headers.Set("referer", "https://tver.jp/")
-	client.Headers.Set("sec-ch-ua", model.UA_SecCHUA)
-	client.Headers.Set("sec-ch-ua-mobile", "?0")
-	client.Headers.Set("sec-ch-ua-platform", "Windows")
-	client.Headers.Set("sec-fetch-dest", "empty")
-	client.Headers.Set("sec-fetch-mode", "cors")
-	client.Headers.Set("sec-fetch-site", "cross-site")
-	client.Headers.Set("user-agent", model.UA_Browser)
+	headers5 := map[string]string{
+		"accept":             fmt.Sprintf("application/json;pk=%s", policyKey),
+		"origin":             "https://tver.jp",
+		"referer":            "https://tver.jp/",
+		"sec-ch-ua":          model.UA_SecCHUA,
+		"sec-ch-ua-mobile":   "?0",
+		"sec-ch-ua-platform": "Windows",
+		"sec-fetch-dest":     "empty",
+		"sec-fetch-mode":     "cors",
+		"sec-fetch-site":     "cross-site",
+		"user-agent":         model.UA_Browser,
+	}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers5)
 	resp, err := client.R().Get(finalURL)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
@@ -260,54 +271,57 @@ func FirstTVer(request *gorequest.SuperAgent) model.Result {
 		Err: fmt.Errorf("get edge.api.brightcove.com failed with code: %d", resp.StatusCode)}
 }
 
-//// AnotherTVer
-//func AnotherTVer() model.Result {
-//	client := req.DefaultClient()
-//	client.ImpersonateChrome()
-//	client.Headers.Set("User-Agent", model.UA_Browser)
-//	client.Headers.Set("Accept", "application/json;pk=BCpkADawqM0_rzsjsYbC1k1wlJLU4HiAtfzjxdUmfvvLUQB-Ax6VA-p-9wOEZbCEm3u95qq2Y1CQQW1K9tPaMma9iAqUqhpISCmyXrgnlpx9soEmoVNuQpiyGsTpePGumWxSs1YoKziYB6Wz")
-//	resp, err := client.R().
-// SetRetryCount(2).
-// SetRetryBackoffInterval(1*time.Second, 5*time.Second).
-// SetRetryFixedInterval(2 * time.Second).
-// Get("https://edge.api.brightcove.com/playback/v1/accounts/5102072605001/videos/ref%3Akaguyasama_01")
-//	if err != nil {
-//		return model.Result{Status: model.StatusNetworkErr, Err: err}
-//	}
-//	defer resp.Body.Close()
-//	b, err := io.ReadAll(resp.Body)
-//	if err != nil {
-//		return model.Result{Status: model.StatusNetworkErr, Err: err}
-//	}
-//	body := string(b)
-//	var res1 struct {
-//		ErrorSubcode string `json:"error_subcode"`
-//		AccountId    string `json:"account_id"`
-//	}
-//	var res2 []struct {
-//		ClientGeo    string `json:"client_geo"`
-//		ErrorSubcode string `json:"error_subcode"`
-//		ErrorCode    string `json:"error_code"`
-//		Message      string `json:"message"`
-//	}
-//	fmt.Println(body)
-//	if err := json.Unmarshal(b, &res1); err != nil {
-//		if err := json.Unmarshal(b, &res2); err != nil {
-//			if strings.Contains(body, "CLIENT_GEO") || strings.Contains(body, "ACCESS_DENIED") {
-//				return model.Result{
-//					Status: model.StatusNo,
-//				}
-//			}
-//			return model.Result{Status: model.StatusErr, Err: err}
-//		}
-//		if res2[0].ErrorSubcode == "CLIENT_GEO" {
-//			return model.Result{Status: model.StatusNo, Region: res2[0].ClientGeo}
-//		}
-//		return model.Result{Status: model.StatusErr, Err: err}
-//	}
-//	if res1.AccountId != "0" {
-//		return model.Result{Status: model.StatusYes, Region: "jp"}
-//	}
-//	return model.Result{Status: model.StatusUnexpected,
-//		Err: fmt.Errorf("get edge.api.brightcove.com failed with code: %d", resp.StatusCode)}
-//}
+// AnotherTVer
+func AnotherTVer(c *http.Client) model.Result {
+	name := "TVer"
+	if c == nil {
+		return model.Result{Name: name}
+	}
+	url := "https://edge.api.brightcove.com/playback/v1/accounts/5102072605001/videos/ref%3Akaguyasama_01"
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+		"Accept":     "application/json;pk=BCpkADawqM0_rzsjsYbC1k1wlJLU4HiAtfzjxdUmfvvLUQB-Ax6VA-p-9wOEZbCEm3u95qq2Y1CQQW1K9tPaMma9iAqUqhpISCmyXrgnlpx9soEmoVNuQpiyGsTpePGumWxSs1YoKziYB6Wz",
+	}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Status: model.StatusNetworkErr, Err: err}
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Status: model.StatusNetworkErr, Err: err}
+	}
+	body := string(b)
+	var res1 struct {
+		ErrorSubcode string `json:"error_subcode"`
+		AccountId    string `json:"account_id"`
+	}
+	var res2 []struct {
+		ClientGeo    string `json:"client_geo"`
+		ErrorSubcode string `json:"error_subcode"`
+		ErrorCode    string `json:"error_code"`
+		Message      string `json:"message"`
+	}
+	fmt.Println(body)
+	if err := json.Unmarshal(b, &res1); err != nil {
+		if err := json.Unmarshal(b, &res2); err != nil {
+			if strings.Contains(body, "CLIENT_GEO") || strings.Contains(body, "ACCESS_DENIED") {
+				return model.Result{
+					Status: model.StatusNo,
+				}
+			}
+			return model.Result{Status: model.StatusErr, Err: err}
+		}
+		if res2[0].ErrorSubcode == "CLIENT_GEO" {
+			return model.Result{Status: model.StatusNo, Region: res2[0].ClientGeo}
+		}
+		return model.Result{Status: model.StatusErr, Err: err}
+	}
+	if res1.AccountId != "0" {
+		return model.Result{Status: model.StatusYes, Region: "jp"}
+	}
+	return model.Result{Status: model.StatusUnexpected,
+		Err: fmt.Errorf("get edge.api.brightcove.com failed with code: %d", resp.StatusCode)}
+}

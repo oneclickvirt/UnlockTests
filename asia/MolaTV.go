@@ -3,22 +3,26 @@ package asia
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // MolaTV
 // mola.tv 仅 ipv4 且 get 请求
-func MolaTV(request *gorequest.SuperAgent) model.Result {
+func MolaTV(c *http.Client) model.Result {
 	name := "Mola TV"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://mola.tv/api/v2/videos/geoguard/check/vd30491025"
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	request := utils.Gorequest(c)
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

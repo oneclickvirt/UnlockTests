@@ -2,21 +2,25 @@ package jp
 
 import (
 	"fmt"
-	"time"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"time"
 )
 
 // WorldFlipper
 // api.worldflipper.jp 双栈 且 get 请求
-func WorldFlipper(request *gorequest.SuperAgent) model.Result {
+func WorldFlipper(c *http.Client) model.Result {
 	name := "World Flipper Japan"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://api.worldflipper.jp/"
-	request = request.Set("User-Agent", model.UA_Dalvik)
+	headers := map[string]string{
+		"User-Agent": model.UA_Dalvik,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
 	resp, _, errs := request.Get(url).Timeout(10*time.Second).Retry(2, 5).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}

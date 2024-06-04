@@ -2,32 +2,26 @@ package nl
 
 import (
 	"encoding/json"
-	"io"
-	"strings"
-	"time"
-
-	"github.com/imroc/req/v3"
+	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
+	"net/http"
+	"strings"
 )
 
 // NPOStartPlus
 // www.npo.nl 双栈 且 get 请求
-func NPOStartPlus(request *gorequest.SuperAgent) model.Result {
+func NPOStartPlus(c *http.Client) model.Result {
 	name := "NPO Start Plus"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	tokenURL := "https://www.npo.nl/start/api/domain/player-token?productId=LI_NL1_4188102"
 	streamURL := "https://prod.npoplayer.nl/stream-link"
 	referrerURL := "https://npo.nl/start/live?channel=NPO1"
-	client := req.DefaultClient()
-	client.ImpersonateChrome()
-	resp, err := client.R().
-		SetRetryCount(2).
-		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
-		SetRetryFixedInterval(2 * time.Second).
-		Get(tokenURL)
+	client := utils.Req(c)
+	resp, err := client.R().Get(tokenURL)
 	defer resp.Body.Close()
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
@@ -44,30 +38,37 @@ func NPOStartPlus(request *gorequest.SuperAgent) model.Result {
 	if err := json.Unmarshal(b, &res1); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	token := res1.Token
-	client.Headers.Set("Origin", "https://npo.nl")
-	client.Headers.Set("Referer", "https://npo.nl/")
-	client.Headers.Set("Content-Type", "application/json")
-	client.Headers.Set("Authorization", token)
-	resp2, err2 := client.R().SetBodyString(`{"profileName":"dash","drmType":"playready","referrerUrl":"` + referrerURL + `"}`).
-		Post(streamURL)
-	if err2 != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	if res1.Token != "" {
+		headers := map[string]string{
+			"Origin":        "https://npo.nl",
+			"Referer":       "https://npo.nl/",
+			"Content-Type":  "application/json",
+			"Authorization": res1.Token,
+		}
+		client1 := utils.Req(c)
+		client1 = utils.SetReqHeaders(client1, headers)
+		resp2, err2 := client1.R().
+			SetBodyString(`{"profileName":"dash","drmType":"playready","referrerUrl":"` + referrerURL + `"}`).
+			Post(streamURL)
+		if err2 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		}
+		defer resp2.Body.Close()
+		b, err = io.ReadAll(resp2.Body)
+		if err != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		}
+		body := string(b)
+		// fmt.Println(body)
+		// fmt.Println(resp2.StatusCode)
+		// {"status":451,"body":"Dit programma mag niet bekeken worden vanaf jouw locatie."}
+		if resp2.StatusCode == 451 || strings.Contains(body, "Dit programma mag niet bekeken worden vanaf jouw locatie.") {
+			return model.Result{Name: name, Status: model.StatusNo}
+		} else if resp2.StatusCode == 200 {
+			return model.Result{Name: name, Status: model.StatusYes}
+		} else {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
 	}
-	defer resp2.Body.Close()
-	b, err = io.ReadAll(resp2.Body)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
-	}
-	body := string(b)
-	// fmt.Println(body)
-	// fmt.Println(resp2.StatusCode)
-	// {"status":451,"body":"Dit programma mag niet bekeken worden vanaf jouw locatie."}
-	if resp2.StatusCode == 451 || strings.Contains(body, "Dit programma mag niet bekeken worden vanaf jouw locatie.") {
-		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp2.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
-	} else {
-		return model.Result{Name: name, Status: model.StatusNo}
-	}
+	return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("Token get null")}
 }

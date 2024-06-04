@@ -2,23 +2,26 @@ package au
 
 import (
 	"fmt"
-	"strings"
-	"time"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // KayoSports
 // kayosports.com.au 实际使用 cf 检测，非澳洲请求将一直超时
-func KayoSports(request *gorequest.SuperAgent) model.Result {
+func KayoSports(c *http.Client) model.Result {
 	name := "Kayo Sports"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://kayosports.com.au"
-	request = request.Set("User-Agent", model.UA_Browser).Timeout(20 * time.Second)
-	resp, _, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		// if strings.Contains(errs[0].Error(), "i/o timeout") {
 		return model.Result{Name: name, Status: model.StatusNo}

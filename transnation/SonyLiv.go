@@ -3,32 +3,26 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
-
-func parseSonyLivToken(body string) string {
-	re := regexp.MustCompile(`resultObj:"([^"]+)`)
-	matches := re.FindStringSubmatch(body)
-	if len(matches) > 1 {
-		return matches[1]
-	}
-	return ""
-}
 
 // SonyLiv
 // www.sonyliv.com 双栈 且 get 请求
-func SonyLiv(request *gorequest.SuperAgent) model.Result {
+func SonyLiv(c *http.Client) model.Result {
 	name := "SonyLiv"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://www.sonyliv.com/"
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp1, body1, errs1 := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp1, body1, errs1 := request.Get(url).End()
 	if len(errs1) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
 	}
@@ -36,14 +30,19 @@ func SonyLiv(request *gorequest.SuperAgent) model.Result {
 	if strings.Contains(body1, "geolocation_notsupported") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Unavailable"}
 	}
-	jwtToken := parseSonyLivToken(body1)
+	jwtToken := utils.ReParse(body1, `resultObj:"([^"]+)`)
 
-	resp2, body2, errs2 := request.Get("https://apiv2.sonyliv.com/AGL/1.4/A/ENG/WEB/ALL/USER/ULD").
-		Set("accept", "application/json, text/plain, */*").
-		Set("referer", "https://www.sonyliv.com/").
-		Set("device_id", "25a417c3b5f246a393fadb022adc82d5-1715309762699").
-		Set("app_version", "3.5.59").
-		Set("security_token", jwtToken).End()
+	headers2 := map[string]string{
+		"accept":         "application/json, text/plain, */*",
+		"referer":        "https://www.sonyliv.com/",
+		"device_id":      "25a417c3b5f246a393fadb022adc82d5-1715309762699",
+		"app_version":    "3.5.59",
+		"security_token": jwtToken,
+	}
+	url2 := "https://apiv2.sonyliv.com/AGL/1.4/A/ENG/WEB/ALL/USER/ULD"
+	request2 := utils.Gorequest(c)
+	request2 = utils.SetGoRequestHeaders(request2, headers2)
+	resp2, body2, errs2 := request2.Get(url2).End()
 	if len(errs2) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
 	}
@@ -61,14 +60,18 @@ func SonyLiv(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("can not found region")}
 	}
 
-	resp3, body3, errs3 := request.Get("https://apiv2.sonyliv.com/AGL/3.8/A/ENG/WEB/"+region+
-		"/ALL/CONTENT/VIDEOURL/VOD/1000273613/prefetch").
-		Set("upgrade-insecure-requests", "1").
-		Set("accept", "application/json, text/plain, */*").
-		Set("origin", "https://www.sonyliv.com").
-		Set("referer", "https://www.sonyliv.com/").
-		Set("device_id", "25a417c3b5f246a393fadb022adc82d5-1715309762699").
-		Set("security_token", jwtToken).End()
+	headers3 := map[string]string{
+		"upgrade-insecure-requests": "1",
+		"accept":                    "application/json, text/plain, */*",
+		"origin":                    "https://www.sonyliv.com",
+		"referer":                   "https://www.sonyliv.com/",
+		"device_id":                 "25a417c3b5f246a393fadb022adc82d5-1715309762699",
+		"security_token":            jwtToken,
+	}
+	url3 := "https://apiv2.sonyliv.com/AGL/3.8/A/ENG/WEB/" + region + "/ALL/CONTENT/VIDEOURL/VOD/1000273613/prefetch"
+	request3 := utils.Gorequest(c)
+	request3 = utils.SetGoRequestHeaders(request3, headers3)
+	resp3, body3, errs3 := request3.Get(url3).End()
 	if len(errs3) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs3[0]}
 	}

@@ -2,21 +2,25 @@ package jp
 
 import (
 	"fmt"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // ProjectSekai
 // game-version.sekai.colorfulpalette.org 仅 ipv4 且 get 请求
-func ProjectSekai(request *gorequest.SuperAgent) model.Result {
+func ProjectSekai(c *http.Client) model.Result {
 	name := "Project Sekai - Colorful Stage"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://game-version.sekai.colorfulpalette.org/1.8.1/3ed70b6a-8352-4532-b819-108837926ff5"
-	request = request.Set("User-Agent", model.UA_Pjsekai)
-	resp, _, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Pjsekai,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

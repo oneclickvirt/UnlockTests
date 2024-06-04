@@ -1,22 +1,27 @@
 package transnation
 
 import (
-	"strings"
-
+	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // Steam
 // store.steampowered.com 仅 ipv4 且 get 请求
-func Steam(request *gorequest.SuperAgent) model.Result {
+func Steam(c *http.Client) model.Result {
 	name := "Steam Currency"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://store.steampowered.com/"
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, _, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -28,4 +33,6 @@ func Steam(request *gorequest.SuperAgent) model.Result {
 	} else {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
+	return model.Result{Name: name, Status: model.StatusUnexpected,
+		Err: fmt.Errorf("get store.steampowered.com failed with code: %d", resp.StatusCode)}
 }

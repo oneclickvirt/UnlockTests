@@ -2,31 +2,26 @@ package transnation
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
-
-func TikTokCountry(body string) string {
-	re := regexp.MustCompile(`"region":"(\w+)"`)
-	matches := re.FindStringSubmatch(body)
-	if len(matches) > 1 {
-		return matches[1]
-	}
-	return ""
-}
 
 // TikTok
 // www.tiktok.com 仅 ipv4 且 get 请求
-func TikTok(request *gorequest.SuperAgent) model.Result {
+func TikTok(c *http.Client) model.Result {
 	name := "TikTok"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, body, errs := request.Get("https://www.tiktok.com/explore").End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	url := "https://www.tiktok.com/explore"
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -34,7 +29,8 @@ func TikTok(request *gorequest.SuperAgent) model.Result {
 	if strings.Contains(body, "https://www.tiktok.com/hk/notfound") {
 		return model.Result{Name: name, Status: model.StatusNo, Region: "hk"}
 	}
-	if region := TikTokCountry(body); region != "" {
+	region := utils.ReParse(body, `"region":"(\w+)"`)
+	if region != "" {
 		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

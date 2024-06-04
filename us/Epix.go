@@ -2,33 +2,37 @@ package us
 
 import (
 	"encoding/json"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // Epix
 // api.epix.com 仅 ipv4 且 post 请求
-func Epix(request *gorequest.SuperAgent) model.Result {
+func Epix(c *http.Client) model.Result {
 	name := "MGM+"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://api.epix.com/v2/sessions"
 	payload := `{"device":{"guid":"7a0baaaf-384c-45cd-a21d-310ca5d3002a","format":"console","os":"web","display_width":1865,"display_height":942,"app_version":"1.0.2","model":"browser","manufacturer":"google"},"apikey":"53e208a9bbaee479903f43b39d7301f7"}`
-	request = request.Set("User-Agent", model.UA_Browser)
+	headers := map[string]string{
+		"User-Agent":                  model.UA_Browser,
+		"Content-Type":                "application/json",
+		"Connection":                  "keep-alive",
+		"traceparent":                 "00-000000000000000015b7efdb572b7bf2-4aefaea90903bd1f-01",
+		"sec-ch-ua-mobile":            "?0",
+		"x-datadog-sampling-priority": "1",
+		"x-datadog-trace-id":          "1564983120873880562",
+		"x-datadog-parent-id":         "5399726519264460063",
+		"Origin":                      "https://www.mgmplus.com",
+		"Referer":                     "https://www.mgmplus.com/",
+		"sec-ch-ua":                   model.UA_SecCHUA,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
 	resp, body, errs := request.Post(url).
-		Set("Content-Type", "application/json").
-		Set("Connection", "keep-alive").
-		Set("traceparent", "00-000000000000000015b7efdb572b7bf2-4aefaea90903bd1f-01").
-		Set("sec-ch-ua-mobile", "?0").
-		Set("x-datadog-sampling-priority", "1").
-		Set("x-datadog-trace-id", "1564983120873880562").
-		Set("x-datadog-parent-id", "5399726519264460063").
-		Set("Origin", "https://www.mgmplus.com").
-		Set("Referer", "https://www.mgmplus.com/").
-		Set("sec-ch-ua", model.UA_SecCHUA).
 		Send(payload).
 		End()
 	if len(errs) > 0 {
@@ -50,13 +54,15 @@ func Epix(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	url2 := "https://api.epix.com/v2/movies/16921/play"
-	resp2, body2, errs2 := request.Post(url2).
-		Set("Content-Type", "application/json").
-		Set("X-Session-Token", res.DeviceSession.SessionToken).
-		Send("{}").
-		Set("sec-ch-ua", model.UA_SecCHUA).
-		Set("sec-ch-ua-mobile", "?0").
-		End()
+	headers2 := map[string]string{
+		"Content-Type":     "application/json",
+		"X-Session-Token":  res.DeviceSession.SessionToken,
+		"sec-ch-ua":        model.UA_SecCHUA,
+		"sec-ch-ua-mobile": "?0",
+	}
+	request2 := utils.Gorequest(c)
+	request2 = utils.SetGoRequestHeaders(request2, headers2)
+	resp2, body2, errs2 := request.Post(url2).Send("{}").End()
 	if len(errs2) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
 	}

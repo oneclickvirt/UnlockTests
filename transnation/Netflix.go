@@ -3,22 +3,26 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // NetflixCDN
 // api.fast.com 双栈 get 请求
-func NetflixCDN(request *gorequest.SuperAgent) model.Result {
+func NetflixCDN(c *http.Client) model.Result {
 	name := "Netflix CDN"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://api.fast.com/netflix/speedtest/v2?https=true&token=YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm&urlCount=5"
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -52,16 +56,20 @@ func NetflixCDN(request *gorequest.SuperAgent) model.Result {
 
 // Netflix
 // www.netflix.com 双栈 且 get 请求
-func Netflix(request *gorequest.SuperAgent) model.Result {
+func Netflix(c *http.Client) model.Result {
 	name := "Netflix"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url1 := "https://www.netflix.com/title/81280792" // 乐高
 	url2 := "https://www.netflix.com/title/70143836" // 绝命毒师
 	url3 := "https://www.netflix.com/title/80018499" // Test Patterns
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp1, _, errs1 := request.Get(url1).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp1, _, errs1 := request.Get(url1).End()
 	if len(errs1) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
 	}
@@ -88,7 +96,7 @@ func Netflix(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
 	if (resp1.StatusCode == 200 || resp1.StatusCode == 301) || (resp2.StatusCode == 200 || resp2.StatusCode == 301) {
-		resp3, _, errs3 := request.Get(url3).Retry(2, 5).End()
+		resp3, _, errs3 := request.Get(url3).End()
 		if len(errs3) > 0 {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs3[0]}
 		}

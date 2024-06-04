@@ -3,45 +3,39 @@ package us
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
-	"strings"
-
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
-
-func extractValue(text, regexPattern string) string {
-	re := regexp.MustCompile(regexPattern)
-	match := re.FindStringSubmatch(text)
-	if len(match) > 1 {
-		return match[1]
-	}
-	return ""
-}
 
 // TLCGO
 // us1-prod-direct.tlc.com 双栈 get 请求
-func TLCGO(request *gorequest.SuperAgent) model.Result {
+func TLCGO(c *http.Client) model.Result {
 	name := "TLC GO"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	fakeDeviceId, _ := uuid.NewV4()
 	url := fmt.Sprintf("https://us1-prod-direct.tlc.com/token?deviceId=%s&realm=go&shortlived=true", fakeDeviceId)
-	request = request.Set("User-Agent", model.UA_Browser).Retry(2, 5).
-		Set("accept-language", "en-US,en;q=0.9").
-		Set("origin", "https://go.tlc.com").
-		Set("referer", "https://go.tlc.com/").
-		Set("sec-ch-ua", "Your_SEC_CH_UA_Here").
-		Set("sec-ch-ua-mobile", "?0").
-		Set("sec-ch-ua-platform", "Windows").
-		Set("sec-fetch-dest", "empty").
-		Set("sec-fetch-mode", "cors").
-		Set("sec-fetch-site", "same-site").
-		Set("x-device-info", fmt.Sprintf("tlc/3.17.0 (desktop/desktop; Windows/NT 10.0; %s)", fakeDeviceId)).
-		Set("x-disco-client", "WEB:UNKNOWN:tlc:3.17.0").
-		Set("x-disco-params", "realm=go,siteLookupKey=tlc,bid=tlc,hn=go.tlc.com,hth=us,features=ar")
+	headers := map[string]string{
+		"User-Agent":         model.UA_Browser,
+		"accept-language":    "en-US,en;q=0.9",
+		"origin":             "https://go.tlc.com",
+		"referer":            "https://go.tlc.com/",
+		"sec-ch-ua":          "Your_SEC_CH_UA_Here",
+		"sec-ch-ua-mobile":   "?0",
+		"sec-ch-ua-platform": "Windows",
+		"sec-fetch-dest":     "empty",
+		"sec-fetch-mode":     "cors",
+		"sec-fetch-site":     "same-site",
+		"x-device-info":      fmt.Sprintf("tlc/3.17.0 (desktop/desktop; Windows/NT 10.0; %s)", fakeDeviceId),
+		"x-disco-client":     "WEB:UNKNOWN:tlc:3.17.0",
+		"x-disco-params":     "realm=go,siteLookupKey=tlc,bid=tlc,hn=go.tlc.com,hth=us,features=ar",
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
 	resp1, body1, errs1 := request.Get(url).End()
 	if len(errs1) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
@@ -59,21 +53,25 @@ func TLCGO(request *gorequest.SuperAgent) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res1.Data.Attributes.Token != "" {
-		// fmt.Println(res1.Data.Attributes.Token)
-		resp2, body2, errs2 := request.Get("https://us1-prod-direct.tlc.com/cms/routes/home?include=default&decorators=viewingHistory,isFavorite,playbackAllowed&page[items.number]=1&page[items.size]=8").
-			Set("accept-language", "en-US,en;q=0.9").
-			Set("Authorization", fmt.Sprintf("Bearer %s", res1.Data.Attributes.Token)).
-			Set("origin", "https://go.tlc.com").
-			Set("referer", "https://go.tlc.com/").
-			Set("sec-ch-ua", "Your_SEC_CH_UA_Here").
-			Set("sec-ch-ua-mobile", "?0").
-			Set("sec-ch-ua-platform", "Windows").
-			Set("sec-fetch-dest", "empty").
-			Set("sec-fetch-mode", "cors").
-			Set("sec-fetch-site", "same-site").
-			Set("x-disco-client", "WEB:UNKNOWN:tlc:3.17.0").
-			Set("x-disco-params", "realm=go,siteLookupKey=tlc,bid=tlc,hn=go.tlc.com,hth=us,features=ar").
-			End()
+		//fmt.Println(res1.Data.Attributes.Token)
+		headers2 := map[string]string{
+			"User-Agent":         model.UA_Browser,
+			"accept-language":    "en-US,en;q=0.9",
+			"Authorization":      fmt.Sprintf("Bearer %s", res1.Data.Attributes.Token),
+			"origin":             "https://go.tlc.com",
+			"referer":            "https://go.tlc.com/",
+			"sec-ch-ua":          "Your_SEC_CH_UA_Here",
+			"sec-ch-ua-mobile":   "?0",
+			"sec-ch-ua-platform": "Windows",
+			"sec-fetch-dest":     "empty",
+			"sec-fetch-mode":     "cors",
+			"sec-fetch-site":     "same-site",
+			"x-disco-client":     "WEB:UNKNOWN:tlc:3.17.0",
+			"x-disco-params":     "realm=go,siteLookupKey=tlc,bid=tlc,hn=go.tlc.com,hth=us,features=ar",
+		}
+		request2 := utils.Gorequest(c)
+		request2 = utils.SetGoRequestHeaders(request2, headers2)
+		resp2, body2, errs2 := request2.Get("https://us1-prod-direct.tlc.com/cms/routes/home?include=default&decorators=viewingHistory,isFavorite,playbackAllowed&page[items.number]=1&page[items.size]=8").End()
 		if len(errs2) > 0 {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
 		}
@@ -81,7 +79,7 @@ func TLCGO(request *gorequest.SuperAgent) model.Result {
 		//fmt.Println(body2)
 		isBlocked := strings.Contains(body2, "is not yet available")
 		isOK := strings.Contains(body2, "Episodes")
-		region := extractValue(body2, `"mainTerritoryCode"\s{0,}:\s{0,}"([^"]+)"`)
+		region := utils.ReParse(body2, `"mainTerritoryCode"\s{0,}:\s{0,}"([^"]+)"`)
 		if !isBlocked && !isOK {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}

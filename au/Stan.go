@@ -2,21 +2,20 @@ package au
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/parnurzeal/gorequest"
+	"net/http"
+	"strings"
 )
 
 // Stan
 // api.stan.com.au 仅 ipv4 且 post 请求
-func Stan(request *gorequest.SuperAgent) model.Result {
+func Stan(c *http.Client) model.Result {
 	name := "Stan"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
-	resp, body, errs := utils.PostJson(request, "https://api.stan.com.au/login/v1/sessions/web/account", "{}")
+	resp, body, errs := utils.PostJson(c, "https://api.stan.com.au/login/v1/sessions/web/account", "{}")
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

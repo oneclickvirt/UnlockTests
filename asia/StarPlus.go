@@ -3,26 +3,27 @@ package asia
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/parnurzeal/gorequest"
+	"net/http"
+	"strings"
 )
 
 // StarPlus
 // www.starplus.com 双栈 且 get 请求
-func StarPlus(request *gorequest.SuperAgent) model.Result {
+func StarPlus(c *http.Client) model.Result {
 	name := "Star+"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://www.starplus.com/"
-	resp, body, errs := request.Get(url).
-		Set("User-Agent", model.UA_Browser).
-		Retry(2, 5).
-		End()
+	request := utils.Gorequest(c)
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
@@ -37,10 +38,9 @@ func StarPlus(request *gorequest.SuperAgent) model.Result {
 		if resp.StatusCode == 302 || resp.Header.Get("Location") == "https://www.preview.starplus.com/unavailable" {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		re := regexp.MustCompile(`Region:\s+([A-Za-z]{2})`)
-		matches := re.FindStringSubmatch(body)
-		if len(matches) >= 2 {
-			loc := strings.ToLower(matches[1])
+		region := utils.ReParse(body, `Region:\s+([A-Za-z]{2})`)
+		if region != "" {
+			loc := strings.ToLower(region)
 			if utils.GetRegion(loc, model.StarPlusSupportCountry) {
 				anotherCheck := AnotherStarPlus()
 				if anotherCheck.Err == nil && anotherCheck.Status == model.StatusYes {

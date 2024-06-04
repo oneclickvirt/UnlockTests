@@ -2,22 +2,26 @@ package jp
 
 import (
 	"encoding/json"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // Abema
 // api.abema.io 仅 ipv4 且 get 请求
-func Abema(request *gorequest.SuperAgent) model.Result {
+func Abema(c *http.Client) model.Result {
 	name := "Abema.TV"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://api.abema.io/v1/ip/check?device=android"
-	request = request.Set("User-Agent", model.UA_Dalvik)
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Dalvik,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

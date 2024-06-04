@@ -3,22 +3,23 @@ package uk
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 	"strings"
 	"time"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 )
 
 // Channel5
 // cassie.channel5.com 仅 ipv4 且 get 请求
-func Channel5(request *gorequest.SuperAgent) model.Result {
+func Channel5(c *http.Client) model.Result {
 	name := "Channel 5"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
 	url := fmt.Sprintf("https://cassie.channel5.com/api/v2/live_media/my5desktopng/C5.json?timestamp=%d&auth=0_rZDiY0hp_TNcDyk2uD-Kl40HqDbXs7hOawxyqPnbI", timestamp)
+	request := utils.Gorequest(c)
 	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}

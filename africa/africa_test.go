@@ -2,11 +2,10 @@ package africa
 
 import (
 	"fmt"
-	"sync"
-	"testing"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"sync"
+	"testing"
 )
 
 func Test(t *testing.T) {

@@ -2,10 +2,10 @@ package th
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 func getStringBetween(value string, a string, b string) string {
@@ -23,9 +23,9 @@ func getStringBetween(value string, a string, b string) string {
 
 // TrueID
 // tv.trueid.net 双栈 get 请求
-func TrueID(request *gorequest.SuperAgent) model.Result {
+func TrueID(c *http.Client) model.Result {
 	name := "TrueID"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://tv.trueid.net/th-en/live/thairathtv-hd"
@@ -40,9 +40,8 @@ func TrueID(request *gorequest.SuperAgent) model.Result {
 		"sec-fetch-user":            "?1",
 		"upgrade-insecure-requests": "1",
 	}
-	for key, value := range headers {
-		request = request.Set(key, value)
-	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
 	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
@@ -56,9 +55,12 @@ func TrueID(request *gorequest.SuperAgent) model.Result {
 	authKey := authUser[10:]
 	apiURL := fmt.Sprintf("https://tv.trueid.net/api/stream/checkedPlay?channelId=%s&lang=en&country=th", channelId)
 	authHeader := fmt.Sprintf("%s:%s", authUser, authKey)
-	request = request.Set("Authorization", authHeader).
-		Set("accept", "application/json, text/plain, */*").
-		Set("referer", url)
+	headers2 := map[string]string{
+		"Authorization": authHeader,
+		"accept":        "application/json, text/plain, */*",
+		"referer":       url,
+	}
+	request = utils.SetGoRequestHeaders(request, headers2)
 	resp, body, errs = request.Get(apiURL).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}

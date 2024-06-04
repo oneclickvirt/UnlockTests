@@ -14,13 +14,13 @@ func Test(t *testing.T) {
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println("BilibiliMainland", ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region)
 
 	res = BilibiliSEA(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println("BilibiliSEA", ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region)
 
 	res = HBOGO(req)
 	if res.Err != nil {

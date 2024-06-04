@@ -1,36 +1,38 @@
 package jp
 
 import (
-	"time"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // Hulu
 // www.hulu.jp 或 id.hulu.jp 仅 ipv4 且 get 请求
 // https://www.hulu.jp/login
-func Hulu(request *gorequest.SuperAgent) model.Result {
+func Hulu(c *http.Client) model.Result {
 	name := "Hulu Japan"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
-	request = request.Set("User-Agent", model.UA_Browser).
-		Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,"+
-			"image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9").
-		Set("Accept-Encoding", "gzip, deflate, br").
-		Set("Cache-Control", "no-cache").
-		Set("DNT", "1").
-		Set("Pragma", "no-cache").
-		Set("Sec-CH-UA", `"Chromium";v="106", "Google Chrome";v="106", "Not;A=Brand";v="99"`).
-		Set("Sec-CH-UA-Mobile", "?0").
-		Set("Sec-CH-UA-Platform", "Windows").
-		Set("Sec-Fetch-Dest", "document").
-		Set("Sec-Fetch-Mode", "navigate").
-		Set("Sec-Fetch-Site", "none").
-		Set("Sec-Fetch-User", "?1").
-		Set("Upgrade-Insecure-Requests", "1")
-	resp, _, errs := request.Get("https://id.hulu.jp").Timeout(10 * time.Second).End()
+	headers := map[string]string{
+		"User-Agent":                model.UA_Browser,
+		"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+		"Accept-Encoding":           "gzip, deflate, br",
+		"Cache-Control":             "no-cache",
+		"DNT":                       "1",
+		"Pragma":                    "no-cache",
+		"Sec-CH-UA":                 `"Chromium";v="106", "Google Chrome";v="106", "Not;A=Brand";v="99"`,
+		"Sec-CH-UA-Mobile":          "?0",
+		"Sec-CH-UA-Platform":        "Windows",
+		"Sec-Fetch-Dest":            "document",
+		"Sec-Fetch-Mode":            "navigate",
+		"Sec-Fetch-Site":            "none",
+		"Sec-Fetch-User":            "?1",
+		"Upgrade-Insecure-Requests": "1",
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, _, errs := request.Get("https://id.hulu.jp").End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

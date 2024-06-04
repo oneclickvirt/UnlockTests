@@ -3,22 +3,27 @@ package hk
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // MyTvSuper
 // www.mytvsuper.com 仅 ipv4 且 get 请求
-func MyTvSuper(request *gorequest.SuperAgent) model.Result {
+func MyTvSuper(c *http.Client) model.Result {
 	name := "MyTVSuper"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://www.mytvsuper.com/api/auth/getSession/self/"
-	request = request.Set("User-Agent", model.UA_Browser).Set("Content-Type", "application/json")
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent":   model.UA_Browser,
+		"Content-Type": "application/json",
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, body, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

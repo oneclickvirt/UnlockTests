@@ -2,9 +2,8 @@ package eu
 
 import (
 	"fmt"
-	"testing"
-
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"testing"
 )
 
 func Test(t *testing.T) {
@@ -29,18 +28,6 @@ func Test(t *testing.T) {
 	fmt.Println(res.Name, ": ", res.Status, res.Region)
 
 	res = SetantaSports(req)
-	if res.Err != nil {
-		fmt.Println(res.Err)
-	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
-
-	res = Eurosport(req)
-	if res.Err != nil {
-		fmt.Println(res.Err)
-	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
-
-	res = MathsSpot(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
