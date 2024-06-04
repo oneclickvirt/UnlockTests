@@ -39,12 +39,12 @@ func TV360(c *http.Client) model.Result {
 	}
 	request := utils.Gorequest(c)
 	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
+	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	fmt.Println(body)
+	// fmt.Println(body)
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
