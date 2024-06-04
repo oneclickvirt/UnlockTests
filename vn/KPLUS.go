@@ -34,7 +34,7 @@ func KPLUS(c *http.Client) model.Result {
 		log.Fatalf("Failed to make first request: %v", errs)
 	}
 	defer resp.Body.Close()
-	fmt.Println(body)
+	// fmt.Println(body)
 	token := ""
 	if strings.Contains(body, "\"token\"") {
 		token = strings.Split(strings.Split(body, "\"token\":\"")[1], "\"")[0]
@@ -53,7 +53,7 @@ func KPLUS(c *http.Client) model.Result {
 		log.Fatalf("Failed to make second request: %v", secondErrs)
 	}
 	defer secondResp.Body.Close()
-	fmt.Println(secondBody)
+	// fmt.Println(secondBody)
 	if strings.Contains(secondBody, "geoblock") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if secondBody != "" {
