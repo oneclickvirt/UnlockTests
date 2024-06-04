@@ -114,6 +114,7 @@ func Req(c *http.Client) *req.Client {
 	client := req.DefaultClient()
 	client.ImpersonateChrome()
 	client.Transport.DialContext = c.Transport.(*http.Transport).DialContext
+	client.SetProxy(c.Transport.(*http.Transport).Proxy)
 	client.R().
 		SetRetryCount(2).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
@@ -126,6 +127,7 @@ func Req(c *http.Client) *req.Client {
 func Gorequest(c *http.Client) *gorequest.SuperAgent {
 	request := gorequest.New()
 	request.Transport.DialContext = c.Transport.(*http.Transport).DialContext
+	request.Transport.Proxy = c.Transport.(*http.Transport).Proxy
 	request.Retry(2, 5)
 	request.Timeout(12 * time.Second)
 	return request
