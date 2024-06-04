@@ -84,7 +84,4 @@ esac
 chmod 777 UT
 if [ ! -f /usr/bin/UT ]; then
   mv UT /usr/bin/
-  UT
-else
-  ./UT
 fi
