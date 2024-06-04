@@ -22,7 +22,7 @@ func Crave(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	if strings.Contains(body, "Geo Constraint Restrictions") {
+	if strings.Contains(body, "Geo Constraint Restrictions") || resp.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if strings.Contains(body, "video.9c9media.com") {
