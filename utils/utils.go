@@ -129,8 +129,8 @@ func Gorequest(c *http.Client) *gorequest.SuperAgent {
 	request := gorequest.New()
 	request.Transport.DialContext = c.Transport.(*http.Transport).DialContext
 	request.Transport.Proxy = c.Transport.(*http.Transport).Proxy
-	request.Retry(2, 5)
-	request.Timeout(12 * time.Second)
+	request.Retry(2, 3)
+	request.Timeout(6 * time.Second)
 	return request
 }
 
