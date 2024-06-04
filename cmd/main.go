@@ -401,6 +401,7 @@ func Multination(ifaceName, ipAddr, netType string) {
 		transnation.KOCOWA,
 		transnation.SonyLiv,
 		transnation.OneTrust,
+		transnation.GoogleSearch,
 	}
 	processFunction(FuncList)
 }
