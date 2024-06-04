@@ -56,6 +56,8 @@ BahamutAnime - 存在 cloudflare 的质询防御，非5秒盾，无法突破，�
 有替代的检测，但仍保留失效检测的部分，未知是否完全失效
 
 ```
+AISPlay - {"head": {"title": "Unidentified device", "itype": "item"}, "error": "Unidentified device", "st": {"code": 60400, "info": "Unidentified device"}, "op": {"cache_time": 600000, "timeout": 3000}}
+
 Au7plus - 7plus-sevennetwork.akamaized.net 无论如何请求都失败
 
 BilibiliID - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
