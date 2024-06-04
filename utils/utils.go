@@ -17,16 +17,13 @@ import (
 var ClientProxy = http.ProxyFromEnvironment
 var AutoTransport = &http.Transport{
 	Proxy:       ClientProxy,
-	DialContext: (&net.Dialer{Timeout: 10 * time.Second, KeepAlive: 10 * time.Second}).DialContext,
+	DialContext: (&net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
 }
 var AutoHttpClient = &http.Client{
-	Timeout:   10 * time.Second,
+	Timeout:   30 * time.Second,
 	Transport: AutoTransport,
 }
-var Dialer = &net.Dialer{
-	Timeout:   10 * time.Second,
-	KeepAlive: 10 * time.Second,
-}
+var Dialer = &net.Dialer{}
 var Ipv4Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -40,7 +37,7 @@ var Ipv4Transport = &http.Transport{
 	ExpectContinueTimeout: 1 * time.Second,
 }
 var Ipv4HttpClient = &http.Client{
-	Timeout:   12 * time.Second,
+	Timeout:   30 * time.Second,
 	Transport: Ipv4Transport,
 }
 var Ipv6Transport = &http.Transport{
@@ -92,8 +89,8 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*http.Client, error) {
 	if localIP != nil {
 		dialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			return (&net.Dialer{
-				Timeout:   10 * time.Second,
-				KeepAlive: 10 * time.Second,
+				Timeout:   12 * time.Second,
+				KeepAlive: 12 * time.Second,
 				LocalAddr: &net.TCPAddr{
 					IP: localIP,
 				},
@@ -132,23 +129,23 @@ func Gorequest(c *http.Client) *gorequest.SuperAgent {
 	request := gorequest.New()
 	request.Transport.DialContext = c.Transport.(*http.Transport).DialContext
 	request.Transport.Proxy = c.Transport.(*http.Transport).Proxy
-	request.Retry(2, 3*time.Second)
-	request.Timeout(6 * time.Second)
+	request.Retry(2, 5)
+	request.Timeout(12 * time.Second)
 	return request
 }
 
 // SetGoRequestHeaders
 func SetGoRequestHeaders(request *gorequest.SuperAgent, headers map[string]string) *gorequest.SuperAgent {
-	for _, i := range headers {
-		request = request.Set(i, headers[i])
+	for key, value := range headers {
+		request = request.Set(key, value)
 	}
 	return request
 }
 
 // SetReqHeaders
 func SetReqHeaders(client *req.Client, headers map[string]string) *req.Client {
-	for _, i := range headers {
-		client.Headers.Set(i, headers[i])
+	for key, value := range headers {
+		client.Headers.Set(key, value)
 	}
 	return client
 }
@@ -157,15 +154,15 @@ func SetReqHeaders(client *req.Client, headers map[string]string) *req.Client {
 // url: 目标 URL
 // payload: 要发送的 JSON 格式的请求体
 // headers: 可选的 HTTP 头信息
-func PostJson(c *http.Client, url string, payload string, headers ...map[string]string) (gorequest.Response, []byte, []error) {
+func PostJson(c *http.Client, url string, payload string, headers map[string]string) (gorequest.Response, []byte, []error) {
 	// 构建 POST 请求，设置请求类型为 JSON 并添加请求体
 	request := Gorequest(c)
 	request = request.Post(url).
 		Type("json").
 		Send(payload)
 	// 添加可选的 HTTP 头信息
-	for _, header := range headers {
-		request = SetGoRequestHeaders(request, header)
+	if headers != nil {
+		request = SetGoRequestHeaders(request, headers)
 	}
 	// 发送请求并接收响应、响应体和错误信息
 	resp, body, errs := request.EndBytes()

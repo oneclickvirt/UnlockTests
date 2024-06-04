@@ -17,7 +17,7 @@ func Joyn(c *http.Client) model.Result {
 	}
 	url := "https://auth.joyn.de/auth/anonymous"
 	payload := `{"client_id":"b74b9f27-a994-4c45-b7eb-5b81b1c856e7","client_name":"web","anon_device_id":"b74b9f27-a994-4c45-b7eb-5b81b1c856e7"}`
-	resp, body, errs := utils.PostJson(c, url, payload)
+	resp, body, errs := utils.PostJson(c, url, payload, nil)
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}

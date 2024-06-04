@@ -2,10 +2,11 @@ package tw
 
 import (
 	"encoding/json"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // LiTV
@@ -15,15 +16,15 @@ func LiTV(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	headers := []map[string]string{
-		{"Cookie": "PUID=34eb9a17-8834-4f83-855c-69382fd656fa; L_PUID=34eb9a17-8834-4f83-855c-69382fd656fa; device-id=f4d7faefc54f476bb2e7e27b7482469a"},
-		{"Origin": "https://www.litv.tv"},
-		{"Referer": "https://www.litv.tv/drama/watch/VOD00331042"},
-		{"Priority": "u=1, i"},
+	headers := map[string]string{
+		"Cookie":   "PUID=34eb9a17-8834-4f83-855c-69382fd656fa; L_PUID=34eb9a17-8834-4f83-855c-69382fd656fa; device-id=f4d7faefc54f476bb2e7e27b7482469a",
+		"Origin":   "https://www.litv.tv",
+		"Referer":  "https://www.litv.tv/drama/watch/VOD00331042",
+		"Priority": "u=1, i",
 	}
 	resp, body, errs := utils.PostJson(c, "https://www.litv.tv/api/get-urls-no-auth",
 		`{"AssetId": "vod71211-000001M001_1500K","MediaType": "vod","puid": "d66267c2-9c52-4b32-91b4-3e482943fe7e"}`,
-		headers...,
+		headers,
 	)
 	if len(errs) > 0 {
 		tp := AnotherLiTV(c)
