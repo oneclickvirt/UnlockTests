@@ -47,17 +47,17 @@ import (
 )
 
 var (
-	total                                    int64
-	bar                                      *pb.ProgressBar
-	wg                                       *sync.WaitGroup
-	IPV4                                     = true
-	IPV6                                     = true
-	R                                        []*model.Result
-	Names                                    []string
-	ifaceName, ipAddr, netType               string
-	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA bool
-	Version                                  = "0.0.1"
-	Force                                    bool
+	total                                           int64
+	bar                                             *pb.ProgressBar
+	wg                                              *sync.WaitGroup
+	IPV4                                            = true
+	IPV6                                            = true
+	R                                               []*model.Result
+	Names                                           []string
+	ifaceName, ipAddr, netType                      string
+	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT bool
+	Version                                         = "0.0.1"
+	Force                                           bool
 )
 
 func NewBar(count int64) *pb.ProgressBar {
@@ -179,10 +179,6 @@ func FormarPrint(language, message string) {
 	for _, i := range tempList {
 		fmt.Printf(i)
 	}
-}
-
-func FinallyPrintResult() {
-	
 }
 
 func excute(F func(c *http.Client) model.Result, c *http.Client) {
@@ -562,18 +558,113 @@ func GetIpv6Info() {
 	fmt.Println("Your IPV6 address:", Blue(s[:i]))
 }
 
+func finallyPrintResult(language string) {
+	getPlatformName := func(multi bool, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT bool) string {
+		if multi {
+			if TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+				return "跨国平台 + 台湾平台"
+			} else if !TW && HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+				return "跨国平台 + 香港平台"
+			} else if !TW && !HK && JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+				return "跨国平台 + 日本平台"
+			} else if !TW && !HK && !JP && KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+				return "跨国平台 + 韩国平台"
+			} else if !TW && !HK && !JP && !KR && NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+				return "跨国平台 + 北美平台"
+			} else if !TW && !HK && !JP && !KR && !NA && SA && !EU && !AFR && !OCEA && !SPORT {
+				return "跨国平台 + 南美平台"
+			} else if !TW && !HK && !JP && !KR && !NA && !SA && EU && !AFR && !OCEA && !SPORT {
+				return "跨国平台 + 欧洲平台"
+			} else if !TW && !HK && !JP && !KR && !NA && !SA && !EU && AFR && !OCEA && !SPORT {
+				return "跨国平台 + 非洲平台"
+			} else if !TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && OCEA && !SPORT {
+				return "跨国平台 + 大洋洲平台"
+			} else if !TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && SPORT {
+				return "跨国平台 + 体育平台"
+			} else {
+				return "跨国平台"
+			}
+		} else {
+			if TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+				return "台湾平台"
+			} else if !TW && HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+				return "香港平台"
+			} else if !TW && !HK && JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+				return "日本平台"
+			} else if !TW && !HK && !JP && KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+				return "韩国平台"
+			} else if !TW && !HK && !JP && !KR && NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+				return "北美平台"
+			} else if !TW && !HK && !JP && !KR && !NA && SA && !EU && !AFR && !OCEA && !SPORT {
+				return "南美平台"
+			} else if !TW && !HK && !JP && !KR && !NA && !SA && EU && !AFR && !OCEA && !SPORT {
+				return "欧洲平台"
+			} else if !TW && !HK && !JP && !KR && !NA && !SA && !EU && AFR && !OCEA && !SPORT {
+				return "非洲平台"
+			} else if !TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && OCEA && !SPORT {
+				return "大洋洲平台"
+			} else if !TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && SPORT {
+				return "体育平台"
+			} else {
+				return ""
+			}
+		}
+	}
+
+	platformName := getPlatformName(M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT)
+
+	if language == "zh" {
+		FormarPrint(language, platformName)
+	} else if language == "en" {
+		enPlatformName := map[string]string{
+			"跨国平台":         "Global",
+			"跨国平台 + 台湾平台":  "Global + Taiwan",
+			"跨国平台 + 香港平台":  "Global + Hong Kong",
+			"跨国平台 + 日本平台":  "Global + Japan",
+			"跨国平台 + 韩国平台":  "Global + Korea",
+			"跨国平台 + 北美平台":  "Global + North America",
+			"跨国平台 + 南美平台":  "Global + South America",
+			"跨国平台 + 欧洲平台":  "Global + Europe",
+			"跨国平台 + 非洲平台":  "Global + Africa",
+			"跨国平台 + 大洋洲平台": "Global + Oceania",
+			"跨国平台 + 体育平台":  "Global + Sports",
+			"台湾平台":         "Taiwan",
+			"香港平台":         "Hong Kong",
+			"日本平台":         "Japan",
+			"韩国平台":         "Korea",
+			"北美平台":         "North America",
+			"南美平台":         "South America",
+			"欧洲平台":         "Europe",
+			"非洲平台":         "Africa",
+			"大洋洲平台":        "Oceania",
+			"体育平台":         "Sports",
+		}
+		FormarPrint(language, enPlatformName[platformName])
+	}
+}
+
 func ReadSelect() {
 	fmt.Println("请选择检测项目,直接按回车将进行全部检测: ")
 	fmt.Println("[0]: 跨国平台")
-	fmt.Println("[1]: 台湾平台")
-	fmt.Println("[2]: 香港平台")
-	fmt.Println("[3]: 日本平台")
-	fmt.Println("[4]: 韩国平台")
-	fmt.Println("[5]: 北美平台")
-	fmt.Println("[6]: 南美平台")
-	fmt.Println("[7]: 欧洲平台")
-	fmt.Println("[8]: 非洲平台")
-	fmt.Println("[9]: 大洋洲平台")
+	fmt.Println("[1]: 跨国平台 + 台湾平台")
+	fmt.Println("[2]: 跨国平台 + 香港平台")
+	fmt.Println("[3]: 跨国平台 + 日本平台")
+	fmt.Println("[4]: 跨国平台 + 韩国平台")
+	fmt.Println("[5]: 跨国平台 + 北美平台")
+	fmt.Println("[6]: 跨国平台 + 南美平台")
+	fmt.Println("[7]: 跨国平台 + 欧洲平台")
+	fmt.Println("[8]: 跨国平台 + 非洲平台")
+	fmt.Println("[9]: 跨国平台 + 大洋洲平台")
+	fmt.Println("[10]: 仅台湾平台")
+	fmt.Println("[11]: 仅香港平台")
+	fmt.Println("[12]: 仅日本平台")
+	fmt.Println("[13]: 仅韩国平台")
+	fmt.Println("[14]: 仅北美平台")
+	fmt.Println("[15]: 仅南美平台")
+	fmt.Println("[16]: 仅欧洲平台")
+	fmt.Println("[17]: 仅非洲平台")
+	fmt.Println("[18]: 仅大洋洲平台")
+	fmt.Println("[19]: 仅体育平台")
 	fmt.Print("请输入对应数字,空格分隔(回车确认): ")
 	r := bufio.NewReader(os.Stdin)
 	l, _, err := r.ReadLine()
@@ -586,25 +677,54 @@ func ReadSelect() {
 		case "0":
 			M = true
 		case "1":
+			M = true
 			TW = true
 		case "2":
+			M = true
 			HK = true
 		case "3":
+			M = true
 			JP = true
 		case "4":
+			M = true
 			KR = true
 		case "5":
+			M = true
 			NA = true
 		case "6":
+			M = true
 			SA = true
 		case "7":
+			M = true
 			EU = true
 		case "8":
+			M = true
 			AFR = true
 		case "9":
+			M = true
 			OCEA = true
+		case "10":
+			TW = true
+		case "11":
+			HK = true
+		case "12":
+			JP = true
+		case "13":
+			KR = true
+		case "14":
+			NA = true
+		case "15":
+			SA = true
+		case "16":
+			EU = true
+		case "17":
+			AFR = true
+		case "18":
+			OCEA = true
+		case "19":
+			SPORT = true
 		default:
-			M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA = true, true, true, true, true, true, true, true, true, true
+			M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = true, true, true, true, true, true, true, true, true, true, true
 		}
 	}
 }
@@ -617,19 +737,17 @@ func main() {
 	client := utils.AutoHttpClient
 	mode := 0
 	showVersion := false
-	nf := false
-	test := false
 	Iface := ""
 	DnsServers := ""
 	httpProxy := ""
+	language := ""
 	flag.IntVar(&mode, "m", 0, "mode 0(default)/4/6")
 	flag.BoolVar(&Force, "f", false, "ipv6 force")
 	flag.BoolVar(&showVersion, "v", false, "show version")
 	flag.StringVar(&Iface, "I", "", "source ip / interface")
 	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
 	flag.StringVar(&httpProxy, "http-proxy", "", "http proxy")
-	flag.BoolVar(&nf, "nf", false, "netflix")
-	flag.BoolVar(&test, "test", false, "test")
+	flag.StringVar(&language, "L", "zh", "language, specify to en or zh")
 	flag.Parse()
 	if showVersion {
 		fmt.Println(Version)
@@ -675,7 +793,11 @@ func main() {
 		M = true
 	}
 
-	fmt.Println("项目地址: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
+	if language == "zh" {
+		fmt.Println("项目地址: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
+	} else {
+		fmt.Println("Github Repo: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
+	}
 	fmt.Println()
 
 	GetIpv4Info()
@@ -716,6 +838,9 @@ func main() {
 		}
 		if OCEA {
 			Oceania(client)
+		}
+		if SPORT {
+			Sport(client)
 		}
 	}
 	if IPV6 {
@@ -759,10 +884,8 @@ func main() {
 	wg.Wait()
 	bar.Finish()
 	fmt.Println()
-	FinallyPrintResult()
+	finallyPrintResult(language)
 	fmt.Println()
-	fmt.Println("检测完毕，感谢您的使用!")
-	showCounts()
 	fmt.Println()
 }
 
