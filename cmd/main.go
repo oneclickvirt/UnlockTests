@@ -1,12 +1,20 @@
 package main
 
 import (
+	"bufio"
+	"context"
+	"flag"
 	"fmt"
+	"io"
+	"log"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/oneclickvirt/UnlockTests/africa"
@@ -39,14 +47,17 @@ import (
 )
 
 var (
-	total                      int64
-	bar                        *pb.ProgressBar
-	wg                         *sync.WaitGroup
-	IPV4                       = true
-	IPV6                       = true
-	R                          []*model.Result
-	Names                      []string
-	ifaceName, ipAddr, netType string
+	total                                    int64
+	bar                                      *pb.ProgressBar
+	wg                                       *sync.WaitGroup
+	IPV4                                     = true
+	IPV6                                     = true
+	R                                        []*model.Result
+	Names                                    []string
+	ifaceName, ipAddr, netType               string
+	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA bool
+	Version                                  = "0.0.1"
+	Force                                    bool
 )
 
 func NewBar(count int64) *pb.ProgressBar {
@@ -170,25 +181,23 @@ func FormarPrint(language, message string) {
 	}
 }
 
-func excute(F func(c *http.Client) model.Result) {
+func FinallyPrintResult() {
+	
+}
+
+func excute(F func(c *http.Client) model.Result, c *http.Client) {
 	wg.Add(1)
 	total++
 	go func() {
 		defer wg.Done()
-		req, err := utils.ParseInterface(ifaceName, ipAddr, netType)
-		if err == nil {
-			res := F(req)
-			R = append(R, &res)
-			bar.Describe(res.Name + " " + ShowResult(&res))
-			bar.Add(1)
-		} else {
-			bar.Describe(err.Error())
-			bar.Add(1)
-		}
+		res := F(c)
+		R = append(R, &res)
+		bar.Describe(res.Name + " " + ShowResult(&res))
+		bar.Add(1)
 	}()
 }
 
-func processFunction(FuncList [](func(c *http.Client) model.Result)) {
+func processFunction(FuncList [](func(c *http.Client) model.Result), c *http.Client) {
 	// 生成顺序输出的名字
 	for _, f := range FuncList {
 		tp := f(nil)
@@ -198,11 +207,11 @@ func processFunction(FuncList [](func(c *http.Client) model.Result)) {
 	}
 	// 实际开始任务
 	for _, f := range FuncList {
-		excute(f)
+		excute(f, c)
 	}
 }
 
-func NorthAmerica(ifaceName, ipAddr, netType string) {
+func NorthAmerica(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		us.Fox,
 		us.Hulu,
@@ -241,10 +250,10 @@ func NorthAmerica(ifaceName, ipAddr, netType string) {
 		ca.CBCGem,
 		ca.Crave,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func Europe(ifaceName, ipAddr, netType string) {
+func Europe(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		eu.RakutenTV,
 		eu.SkyShowTime,
@@ -288,10 +297,10 @@ func Europe(ifaceName, ipAddr, netType string) {
 		utils.PrintRU,
 		ru.Amediateka,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func HongKong(ifaceName, ipAddr, netType string) {
+func HongKong(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		hk.NowE,
 		hk.ViuTV,
@@ -300,19 +309,19 @@ func HongKong(ifaceName, ipAddr, netType string) {
 		hk.BilibiliHKMO,
 		tw.BahamutAnime,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func Africa(ifaceName, ipAddr, netType string) {
+func Africa(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		africa.DSTV,
 		africa.Showmax,
 		africa.BeinConnect,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func India(ifaceName, ipAddr, netType string) {
+func India(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
 		in.Zee5,
@@ -320,10 +329,10 @@ func India(ifaceName, ipAddr, netType string) {
 		in.MXPlayer,
 		us.NBATV,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func Taiwan(ifaceName, ipAddr, netType string) {
+func Taiwan(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		tw.KKTV,
 		tw.LiTV,
@@ -336,10 +345,10 @@ func Taiwan(ifaceName, ipAddr, netType string) {
 		asia.HBOGO,
 		tw.BilibiliTW,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func Japan(ifaceName, ipAddr, netType string) {
+func Japan(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		jp.DMM,
 		jp.DMMTV,
@@ -375,10 +384,10 @@ func Japan(ifaceName, ipAddr, netType string) {
 		utils.PrintForum,
 		jp.EroGameSpace,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func Multination(ifaceName, ipAddr, netType string) {
+func Multination(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		transnation.DAZN,
 		transnation.DisneyPlus,
@@ -404,19 +413,19 @@ func Multination(ifaceName, ipAddr, netType string) {
 		transnation.OneTrust,
 		transnation.GoogleSearch,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func SouthAmerica(ifaceName, ipAddr, netType string) {
+func SouthAmerica(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.StarPlus,
 		us.HBOMax,
 		us.DirecTVGO,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func Oceania(ifaceName, ipAddr, netType string) {
+func Oceania(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		us.NBATV,
 		us.AcornTV,
@@ -440,10 +449,10 @@ func Oceania(ifaceName, ipAddr, netType string) {
 		nz.ThreeNow,
 		nz.MaoriTV,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func Korean(ifaceName, ipAddr, netType string) {
+func Korea(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		kr.Wavve,
 		kr.Tving,
@@ -454,10 +463,10 @@ func Korean(ifaceName, ipAddr, netType string) {
 		kr.Afreeca,
 		kr.KBSDomestic,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func SouthEastAsia(ifaceName, ipAddr, netType string) {
+func SouthEastAsia(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
 		asia.HBOGO,
@@ -473,10 +482,10 @@ func SouthEastAsia(ifaceName, ipAddr, netType string) {
 		// ID 全失效 - 不做检测
 		// VN 全失效 - 不做检测
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func Sport(ifaceName, ipAddr, netType string) {
+func Sport(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		transnation.DAZN,
 		asia.StarPlus,
@@ -490,10 +499,10 @@ func Sport(ifaceName, ipAddr, netType string) {
 		africa.BeinConnect,
 		eu.Eurosport,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
 }
 
-func IPV6Multination(ifaceName, ipAddr, netType string) {
+func IPV6Multination(c *http.Client) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
 		transnation.DisneyPlus,
@@ -504,43 +513,293 @@ func IPV6Multination(ifaceName, ipAddr, netType string) {
 		transnation.WikipediaEditable,
 		transnation.Bing,
 	}
-	processFunction(FuncList)
+	processFunction(FuncList, c)
+}
+
+func GetIpv4Info() {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://www.cloudflare.com/cdn-cgi/trace", nil)
+	resp, err := utils.Ipv4HttpClient.Do(req)
+	if err != nil {
+		IPV4 = false
+		log.Println(err)
+		fmt.Println("No IPv4 support")
+		return
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		IPV4 = false
+		fmt.Println("No IPv4 support")
+	}
+	s := string(b)
+	i := strings.Index(s, "ip=")
+	s = s[i+3:]
+	i = strings.Index(s, "\n")
+	fmt.Println("Your IPV4 address:", Blue(s[:i]))
+}
+
+func GetIpv6Info() {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://www.cloudflare.com/cdn-cgi/trace", nil)
+	resp, err := utils.Ipv6HttpClient.Do(req)
+	if err != nil {
+		IPV6 = false
+		fmt.Println("No IPv6 support")
+		return
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("No IPv6 support")
+	}
+	s := string(b)
+	i := strings.Index(s, "ip=")
+	s = s[i+3:]
+	i = strings.Index(s, "\n")
+	fmt.Println("Your IPV6 address:", Blue(s[:i]))
+}
+
+func ReadSelect() {
+	fmt.Println("请选择检测项目,直接按回车将进行全部检测: ")
+	fmt.Println("[0]: 跨国平台")
+	fmt.Println("[1]: 台湾平台")
+	fmt.Println("[2]: 香港平台")
+	fmt.Println("[3]: 日本平台")
+	fmt.Println("[4]: 韩国平台")
+	fmt.Println("[5]: 北美平台")
+	fmt.Println("[6]: 南美平台")
+	fmt.Println("[7]: 欧洲平台")
+	fmt.Println("[8]: 非洲平台")
+	fmt.Println("[9]: 大洋洲平台")
+	fmt.Print("请输入对应数字,空格分隔(回车确认): ")
+	r := bufio.NewReader(os.Stdin)
+	l, _, err := r.ReadLine()
+	if err != nil {
+		M, TW, HK, JP = true, true, true, true
+		return
+	}
+	for _, c := range strings.Split(string(l), " ") {
+		switch c {
+		case "0":
+			M = true
+		case "1":
+			TW = true
+		case "2":
+			HK = true
+		case "3":
+			JP = true
+		case "4":
+			KR = true
+		case "5":
+			NA = true
+		case "6":
+			SA = true
+		case "7":
+			EU = true
+		case "8":
+			AFR = true
+		case "9":
+			OCEA = true
+		default:
+			M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA = true, true, true, true, true, true, true, true, true, true
+		}
+	}
+}
+
+var setSocketOptions = func(network, address string, c syscall.RawConn, interfaceName string) (err error) {
+	return
 }
 
 func main() {
+	client := utils.AutoHttpClient
+	mode := 0
+	showVersion := false
+	nf := false
+	test := false
+	Iface := ""
+	DnsServers := ""
+	httpProxy := ""
+	flag.IntVar(&mode, "m", 0, "mode 0(default)/4/6")
+	flag.BoolVar(&Force, "f", false, "ipv6 force")
+	flag.BoolVar(&showVersion, "v", false, "show version")
+	flag.StringVar(&Iface, "I", "", "source ip / interface")
+	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
+	flag.StringVar(&httpProxy, "http-proxy", "", "http proxy")
+	flag.BoolVar(&nf, "nf", false, "netflix")
+	flag.BoolVar(&test, "test", false, "test")
+	flag.Parse()
+	if showVersion {
+		fmt.Println(Version)
+		return
+	}
+	if Iface != "" {
+		if IP := net.ParseIP(Iface); IP != nil {
+			utils.Dialer.LocalAddr = &net.TCPAddr{IP: IP}
+		} else {
+			utils.Dialer.Control = func(network, address string, c syscall.RawConn) error {
+				return setSocketOptions(network, address, c, Iface)
+			}
+		}
+	}
+	if DnsServers != "" {
+		utils.Dialer.Resolver = &net.Resolver{
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				return (&net.Dialer{}).DialContext(ctx, "udp", DnsServers)
+			},
+		}
+	}
+	if httpProxy != "" {
+		log.Println(httpProxy)
+		// c := httpproxy.Config{HTTPProxy: httpProxy, CGI: true}
+		// utils.ClientProxy = func(req *http.Request) (*url.URL, error) { return c.ProxyFunc()(req.URL) }
+		if u, err := url.Parse(httpProxy); err == nil {
+			utils.ClientProxy = http.ProxyURL(u)
+			utils.Ipv4Transport.Proxy = utils.ClientProxy
+			utils.Ipv4HttpClient.Transport = utils.Ipv4Transport
+			utils.Ipv6Transport.Proxy = utils.ClientProxy
+			utils.Ipv6HttpClient.Transport = utils.Ipv6Transport
+			utils.AutoTransport.Proxy = utils.ClientProxy
+			utils.AutoHttpClient.Transport = utils.AutoTransport
+		}
+	}
+	if mode == 4 {
+		client = utils.Ipv4HttpClient
+		IPV6 = false
+	}
+	if mode == 6 {
+		client = utils.Ipv6HttpClient
+		IPV4 = false
+		M = true
+	}
+
+	fmt.Println("项目地址: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
+	fmt.Println()
+
+	GetIpv4Info()
+	GetIpv6Info()
+
+	if IPV4 || Force {
+		ReadSelect()
+	}
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
-	// NorthAmerica("", "", "tcp4")
-	// Europe("", "", "tcp4")
-	// HongKong("", "", "tcp4")
-	// Africa("", "", "tcp4")
-	// India("", "", "tcp4")
-	// Taiwan("", "", "tcp4")
-	// Japan("", "", "tcp4")
-	// Multination("", "", "tcp4")
-	// SouthAmerica("", "", "tcp4")
-	// Oceania("", "", "tcp4")
-	// Korean("", "", "tcp4")
-	// SouthEastAsia("", "", "tcp4")
-	// Sport("", "", "tcp4")
-	IPV6Multination("", "", "tcp6")
+	if IPV4 {
+		if M {
+			Multination(client)
+		}
+		if TW {
+			Taiwan(client)
+		}
+		if HK {
+			HongKong(client)
+		}
+		if JP {
+			Japan(client)
+		}
+		if KR {
+			Korea(client)
+		}
+		if NA {
+			NorthAmerica(client)
+		}
+		if SA {
+			SouthAmerica(client)
+		}
+		if EU {
+			Europe(client)
+		}
+		if AFR {
+			Africa(client)
+		}
+		if OCEA {
+			Oceania(client)
+		}
+	}
+	if IPV6 {
+		if Force {
+			if M {
+				Multination(utils.Ipv6HttpClient)
+			}
+			if TW {
+				Taiwan(utils.Ipv6HttpClient)
+			}
+			if HK {
+				HongKong(utils.Ipv6HttpClient)
+			}
+			if JP {
+				Japan(utils.Ipv6HttpClient)
+			}
+			if KR {
+				Korea(utils.Ipv6HttpClient)
+			}
+			if NA {
+				NorthAmerica(utils.Ipv6HttpClient)
+			}
+			if SA {
+				SouthAmerica(utils.Ipv6HttpClient)
+			}
+			if EU {
+				Europe(utils.Ipv6HttpClient)
+			}
+			if AFR {
+				Africa(utils.Ipv6HttpClient)
+			}
+			if OCEA {
+				Oceania(utils.Ipv6HttpClient)
+			}
+		} else {
+			IPV6Multination(utils.Ipv6HttpClient)
+		}
+	}
 	bar.ChangeMax64(total)
+
 	wg.Wait()
 	bar.Finish()
 	fmt.Println()
-	// FormarPrint("zh", "North America")
-	// FormarPrint("zh", "Europe")
-	// FormarPrint("zh", "HongKong")
-	// FormarPrint("zh", "Africa")
-	// FormarPrint("zh", "India")
-	// FormarPrint("zh", "Taiwan")
-	// FormarPrint("zh", "Japan")
-	// FormarPrint("zh", "Multination")
-	// FormarPrint("zh", "South America")
-	// FormarPrint("zh", "Oceania")
-	// FormarPrint("zh", "Korean")
-	// FormarPrint("zh", "South East Asia")
-	// FormarPrint("zh", "Sport")
-	FormarPrint("zh", "IPV6 Multination")
+	FinallyPrintResult()
+	fmt.Println()
+	fmt.Println("检测完毕，感谢您的使用!")
+	showCounts()
 	fmt.Println()
 }
+
+// func main() {
+// 	wg = &sync.WaitGroup{}
+// 	bar = NewBar(0)
+// 	// NorthAmerica("", "", "tcp4")
+// 	// Europe("", "", "tcp4")
+// 	// HongKong("", "", "tcp4")
+// 	// Africa("", "", "tcp4")
+// 	// India("", "", "tcp4")
+// 	// Taiwan("", "", "tcp4")
+// 	// Japan("", "", "tcp4")
+// 	// Multination("", "", "tcp4")
+// 	// SouthAmerica("", "", "tcp4")
+// 	// Oceania("", "", "tcp4")
+// 	// Korea("", "", "tcp4")
+// 	// SouthEastAsia("", "", "tcp4")
+// 	// Sport("", "", "tcp4")
+// 	IPV6Multination("", "", "tcp6")
+// 	bar.ChangeMax64(total)
+// 	wg.Wait()
+// 	bar.Finish()
+// 	fmt.Println()
+// 	// FormarPrint("zh", "North America")
+// 	// FormarPrint("zh", "Europe")
+// 	// FormarPrint("zh", "HongKong")
+// 	// FormarPrint("zh", "Africa")
+// 	// FormarPrint("zh", "India")
+// 	// FormarPrint("zh", "Taiwan")
+// 	// FormarPrint("zh", "Japan")
+// 	// FormarPrint("zh", "Multination")
+// 	// FormarPrint("zh", "South America")
+// 	// FormarPrint("zh", "Oceania")
+// 	// FormarPrint("zh", "Korea")
+// 	// FormarPrint("zh", "South East Asia")
+// 	// FormarPrint("zh", "Sport")
+// 	FormarPrint("zh", "IPV6 Multination")
+// 	fmt.Println()
+// }
