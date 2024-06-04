@@ -94,9 +94,9 @@ func ShowResult(r *model.Result) (s string) {
 		return formatResult(Yellow, "Restricted", *r)
 	case model.StatusErr:
 		s = Yellow("Error")
-		if r.Err != nil {
-			s += ": " + r.Err.Error()
-		}
+		// if r.Err != nil {
+		// 	s += ": " + r.Err.Error()
+		// }
 		return s
 	case model.StatusNo:
 		return formatResult(Red, "NO", *r)
