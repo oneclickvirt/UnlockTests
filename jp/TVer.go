@@ -304,7 +304,7 @@ func AnotherTVer(c *http.Client) model.Result {
 		ErrorCode    string `json:"error_code"`
 		Message      string `json:"message"`
 	}
-	fmt.Println(body)
+	// fmt.Println(body)
 	if err := json.Unmarshal(b, &res1); err != nil {
 		if err := json.Unmarshal(b, &res2); err != nil {
 			if strings.Contains(body, "CLIENT_GEO") || strings.Contains(body, "ACCESS_DENIED") {
