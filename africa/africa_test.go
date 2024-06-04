@@ -15,20 +15,20 @@ func Test(t *testing.T) {
 	results := make(chan model.Result, 3)
 	go func() {
 		defer wg.Done()
-		req, _ := utils.ParseInterface("", "", "tcp4")
-		res := Showmax(req)
+		c, _ := utils.ParseInterface("", "", "tcp4")
+		res := Showmax(c)
 		results <- res
 	}()
 	go func() {
 		defer wg.Done()
-		req, _ := utils.ParseInterface("", "", "tcp4")
-		res := DSTV(req)
+		c, _ := utils.ParseInterface("", "", "tcp4")
+		res := DSTV(c)
 		results <- res
 	}()
 	go func() {
 		defer wg.Done()
-		req, _ := utils.ParseInterface("", "", "tcp4")
-		res := BeinConnect(req)
+		c, _ := utils.ParseInterface("", "", "tcp4")
+		res := BeinConnect(c)
 		results <- res
 	}()
 	go func() {
