@@ -1,12 +1,13 @@
 package utils
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"net/http"
 	"regexp"
 	"time"
+
+	"golang.org/x/net/context"
 
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -26,9 +27,9 @@ var Dialer = &net.Dialer{}
 var Ipv4Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-        // 强制使用IPv4
-        return Dialer.DialContext(ctx, "tcp4", addr)
-    },
+		// 强制使用IPv4
+		return Dialer.DialContext(ctx, "tcp4", addr)
+	},
 	// ForceAttemptHTTP2:     true,
 	MaxIdleConns:          100,
 	IdleConnTimeout:       90 * time.Second,
@@ -36,25 +37,25 @@ var Ipv4Transport = &http.Transport{
 	ExpectContinueTimeout: 1 * time.Second,
 }
 var Ipv4HttpClient = &http.Client{
-	Timeout:       30 * time.Second,
-	Transport:     Ipv4Transport,
+	Timeout:   30 * time.Second,
+	Transport: Ipv4Transport,
 }
 var Ipv6Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-        // 强制使用IPv4
-        return Dialer.DialContext(ctx, "tcp6", addr)
-    },
+		// 强制使用IPv4
+		return Dialer.DialContext(ctx, "tcp6", addr)
+	},
 	// ForceAttemptHTTP2:     true,
-	MaxIdleConns:          100,
-	IdleConnTimeout:       90 * time.Second,
-	TLSHandshakeTimeout:   30 * time.Second,
-	ExpectContinueTimeout: 1 * time.Second,
+	MaxIdleConns:           100,
+	IdleConnTimeout:        90 * time.Second,
+	TLSHandshakeTimeout:    30 * time.Second,
+	ExpectContinueTimeout:  1 * time.Second,
 	MaxResponseHeaderBytes: 262144,
 }
 var Ipv6HttpClient = &http.Client{
-	Timeout:       30 * time.Second,
-	Transport:     Ipv6Transport,
+	Timeout:   30 * time.Second,
+	Transport: Ipv6Transport,
 }
 
 // ParseInterface 解析网卡IP地址
