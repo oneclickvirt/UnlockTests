@@ -44,7 +44,7 @@ func AETV(c *http.Client) model.Result {
 	}
 	defer resp2.Body.Close()
 	if body2 != "" {
-		tp := utils.ReParse(body2, "AETN-Country-Code=\\K[A-Z]+")
+		tp := utils.ReParse(body2, `AETN-Country-Code=([A-Z]+)`)
 		if tp != "" {
 			region := strings.ToLower(tp)
 			if region == "ca" || region == "us" {

@@ -2,10 +2,11 @@ package au
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // KayoSports
@@ -16,19 +17,13 @@ func KayoSports(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://kayosports.com.au"
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, _, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		// if strings.Contains(errs[0].Error(), "i/o timeout") {
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNo}
-		// }
-		// return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
+	// fmt.Println(resp.Header.Get("Set-Cookie"))
 	if strings.Contains(resp.Header.Get("Set-Cookie"), "geoblocked=true") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
