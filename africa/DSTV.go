@@ -3,23 +3,29 @@ package africa
 import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
+	"github.com/oneclickvirt/ecs/mediatest/utils"
+	"net/http"
 )
 
 // DSTV
 // authentication.dstv.com 仅 ipv4 且 get 请求
-func DSTV(request *gorequest.SuperAgent) model.Result {
+func DSTV(c *http.Client) model.Result {
 	name := "DSTV"
-	if request == nil {
+	if c == nil {
 		return model.Result{Name: name}
 	}
 	url := "https://authentication.dstv.com/favicon.ico"
-	request = request.Set("User-Agent", model.UA_Browser)
-	resp, _, errs := request.Get(url).Retry(2, 5).End()
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	request := utils.Gorequest(c)
+	request = utils.SetGoRequestHeaders(request, headers)
+	resp, _, errs := request.Get(url).End()
 	if len(errs) > 0 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
+	//fmt.Println(body)
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 404 {
@@ -28,3 +34,4 @@ func DSTV(request *gorequest.SuperAgent) model.Result {
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get authentication.dstv.com failed with code: %d", resp.StatusCode)}
 }
+
