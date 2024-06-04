@@ -106,7 +106,7 @@ func SonyLiv(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	body3 := string(b)
-	fmt.Println(body3)
+	// fmt.Println(body3)
 	var res2 struct {
 		ResultCode string `json:"resultCode"`
 	}
