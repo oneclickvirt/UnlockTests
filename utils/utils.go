@@ -58,6 +58,17 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*gorequest.SuperAgent, e
 	return request, nil
 }
 
+// GetRegion
+// 判断地址是否在允许的地区范围内
+func GetRegion(loc string, locationList []string) bool {
+	for _, s := range locationList {
+		if loc == s {
+			return true
+		}
+	}
+	return false
+}
+
 // PostJson 向指定的 URL 发送 JSON 格式的 POST 请求，并返回响应、响应体和错误信息
 // request: gorequest.SuperAgent 实例，用于构建请求
 // url: 目标 URL
@@ -70,9 +81,7 @@ func PostJson(request *gorequest.SuperAgent, url string, payload string, headers
 		Send(payload)
 	// 添加可选的 HTTP 头信息
 	for _, header := range headers {
-		for k, v := range header {
-			req = req.Set(k, v)
-		}
+		req = SetHeaders(req, header)
 	}
 	// 发送请求并接收响应、响应体和错误信息
 	resp, body, errs := req.EndBytes()
@@ -80,15 +89,13 @@ func PostJson(request *gorequest.SuperAgent, url string, payload string, headers
 	return resp, body, errs
 }
 
-// GetRegion
-// 判断地址是否在允许的地区范围内
-func GetRegion(loc string, locationList []string) bool {
-	for _, s := range locationList {
-		if loc == s {
-			return true
-		}
+// SetHeaders
+// 设置 gorequest 的请求头
+func SetHeaders(request *gorequest.SuperAgent, headers map[string]string) *gorequest.SuperAgent {
+	for _, i := range headers {
+		request = request.Set(i, headers[i])
 	}
-	return false
+	return request
 }
 
 // 通过Info标记要被插入的行的下一行包含什么文本内容
