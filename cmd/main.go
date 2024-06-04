@@ -724,7 +724,7 @@ func ReadSelect() {
 		case "19":
 			SPORT = true
 		default:
-			M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = true, true, true, true, true, true, true, true, true, true, true
+			M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
 		}
 	}
 }
