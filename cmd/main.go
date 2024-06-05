@@ -49,8 +49,7 @@ var (
 	total                                           int64
 	bar                                             *pb.ProgressBar
 	wg                                              *sync.WaitGroup
-	IPV4                                            = true
-	IPV6                                            = true
+	IPV4, IPV6                                      = true, true
 	R                                               []*model.Result
 	Names                                           []string
 	ifaceName, ipAddr, netType                      string
@@ -759,8 +758,8 @@ func main() {
 	httpProxy := ""
 	language := ""
 	showIP := false
-	flag.IntVar(&mode, "m", 0, "mode 0(both)/4/6, default to 0")
-	flag.BoolVar(&Force, "f", false, "force to use ipv6")
+	flag.IntVar(&mode, "m", 0, "mode 0(both)/4(only)/6(only), default to 0(at this point, ipv6 only detects transnation)")
+	flag.BoolVar(&Force, "f", false, "force use ipv6(enable all detections)")
 	flag.BoolVar(&showVersion, "v", false, "show version")
 	flag.BoolVar(&showIP, "s", true, "show ip address, specify to false or true")
 	flag.StringVar(&Iface, "I", "", "specify source ip / interface")
@@ -810,19 +809,16 @@ func main() {
 		client = utils.Ipv6HttpClient
 		IPV4 = false
 	}
-
 	if language == "zh" {
 		fmt.Println("项目地址: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
 	} else {
 		fmt.Println("Github Repo: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
 	}
-
 	if showIP {
 		GetIpv4Info()
 		GetIpv6Info()
 	}
-
-	if IPV4 || Force {
+	if IPV4 || IPV6 {
 		ReadSelect()
 	}
 	if IPV4 {
@@ -911,7 +907,11 @@ func main() {
 			if SPORT {
 				FuncList = append(FuncList, Sport()...)
 			}
-			processFunction(FuncList, utils.Ipv6HttpClient)
+			if mode == 6 {
+				processFunction(FuncList, client)
+			} else {
+				processFunction(FuncList, utils.Ipv6HttpClient)
+			}
 			bar.ChangeMax64(total)
 			wg.Wait()
 			bar.Finish()
