@@ -6,7 +6,7 @@
 
 ## 使用
 
-更新时间：2024.06.04
+更新时间：2024.06.05
 
 安装
 
@@ -23,6 +23,23 @@ UT
 唤起菜单
 
 无环境依赖，理论上适配所有系统和主流架构，更多架构请查看 https://github.com/oneclickvirt/UnlockTests/releases/tag/output
+
+```
+Usage of UT:
+  -I string
+        specify source ip / interface
+  -L string
+        language, specify to en or zh (default "zh")
+  -dns-servers string
+        specify dns servers
+  -f    force to use ipv6
+  -http-proxy string
+        specify http proxy
+  -m int
+        mode 0(both)/4/6
+  -s    show ip address, specify to en or zh (default true)
+  -v    show version
+```
 
 ## TODO
 
