@@ -620,13 +620,13 @@ func finallyPrintResult(language, netType string) {
 	platformName := getPlatformName(M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT)
 
 	if language == "zh" {
-		if netType == "ipv4" || Force {
+		if netType == "ipv4" || Force || netType == "" {
 			FormarPrint(language, platformName)
 		} else if netType == "ipv6" && !Force {
 			FormarPrint(language, "跨国平台")
 		}
 	} else if language == "en" {
-		if netType == "ipv4" || Force {
+		if netType == "ipv4" || Force || netType == "" {
 			enPlatformName := map[string]string{
 				"跨国平台":         "Global",
 				"跨国平台 + 台湾平台":  "Global + Taiwan",
@@ -873,15 +873,13 @@ func main() {
 		finallyPrintResult(language, "ipv4")
 	}
 	if IPV6 {
-		fmt.Println()
-		fmt.Println()
-		fmt.Println(Blue("IPV6:"))
-		Names = []string{}
-		total = 0
-		wg = &sync.WaitGroup{}
-		bar = NewBar(0)
-		var FuncList [](func(c *http.Client) model.Result)
 		if Force {
+			fmt.Println(Blue("IPV6:"))
+			Names = []string{}
+			total = 0
+			wg = &sync.WaitGroup{}
+			bar = NewBar(0)
+			var FuncList [](func(c *http.Client) model.Result)
 			if M {
 				FuncList = append(FuncList, Multination()...)
 			}
@@ -915,15 +913,27 @@ func main() {
 			if SPORT {
 				FuncList = append(FuncList, Sport()...)
 			}
+			processFunction(FuncList, utils.Ipv6HttpClient)
+			bar.ChangeMax64(total)
+			wg.Wait()
+			bar.Finish()
+			fmt.Println()
+			finallyPrintResult(language, "")
 		} else {
+			fmt.Println(Blue("IPV6:"))
+			Names = []string{}
+			total = 0
+			wg = &sync.WaitGroup{}
+			bar = NewBar(0)
+			var FuncList [](func(c *http.Client) model.Result)
 			FuncList = append(FuncList, IPV6Multination()...)
+			processFunction(FuncList, utils.Ipv6HttpClient)
+			bar.ChangeMax64(total)
+			wg.Wait()
+			bar.Finish()
+			fmt.Println()
+			finallyPrintResult(language, "ipv6")
 		}
-		processFunction(FuncList, utils.Ipv6HttpClient)
-		bar.ChangeMax64(total)
-		wg.Wait()
-		bar.Finish()
-		fmt.Println()
-		finallyPrintResult(language, "ipv6")
 	}
 	fmt.Println()
 }
