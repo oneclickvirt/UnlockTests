@@ -193,7 +193,7 @@ func excute(F func(c *http.Client) model.Result, c *http.Client) {
 	}()
 }
 
-func processFunction(FuncList [](func(c *http.Client) model.Result), c *http.Client) {
+func preProcess(FuncList [](func(c *http.Client) model.Result)) {
 	// 生成顺序输出的名字
 	for _, f := range FuncList {
 		tp := f(nil)
@@ -201,13 +201,16 @@ func processFunction(FuncList [](func(c *http.Client) model.Result), c *http.Cli
 			Names = append(Names, tp.Name)
 		}
 	}
+}
+
+func processFunction(FuncList [](func(c *http.Client) model.Result), c *http.Client) {
 	// 实际开始任务
 	for _, f := range FuncList {
 		excute(f, c)
 	}
 }
 
-func NorthAmerica(c *http.Client) {
+func NorthAmerica() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		us.Fox,
 		us.Hulu,
@@ -246,10 +249,11 @@ func NorthAmerica(c *http.Client) {
 		ca.CBCGem,
 		ca.Crave,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func Europe(c *http.Client) {
+func Europe() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		eu.RakutenTV,
 		eu.SkyShowTime,
@@ -293,10 +297,11 @@ func Europe(c *http.Client) {
 		utils.PrintRU,
 		ru.Amediateka,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func HongKong(c *http.Client) {
+func HongKong() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		hk.NowE,
 		hk.ViuTV,
@@ -305,19 +310,21 @@ func HongKong(c *http.Client) {
 		hk.BilibiliHKMO,
 		tw.BahamutAnime,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func Africa(c *http.Client) {
+func Africa() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		africa.DSTV,
 		africa.Showmax,
 		africa.BeinConnect,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func India(c *http.Client) {
+func India() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
 		in.Zee5,
@@ -325,10 +332,11 @@ func India(c *http.Client) {
 		in.MXPlayer,
 		us.NBATV,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func Taiwan(c *http.Client) {
+func Taiwan() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		tw.KKTV,
 		tw.LiTV,
@@ -341,10 +349,11 @@ func Taiwan(c *http.Client) {
 		asia.HBOGO,
 		tw.BilibiliTW,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func Japan(c *http.Client) {
+func Japan() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		jp.DMM,
 		jp.DMMTV,
@@ -380,10 +389,11 @@ func Japan(c *http.Client) {
 		utils.PrintForum,
 		jp.EroGameSpace,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func Multination(c *http.Client) {
+func Multination() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		transnation.DAZN,
 		transnation.DisneyPlus,
@@ -409,19 +419,21 @@ func Multination(c *http.Client) {
 		transnation.OneTrust,
 		transnation.GoogleSearch,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func SouthAmerica(c *http.Client) {
+func SouthAmerica() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.StarPlus,
 		us.HBOMax,
 		us.DirecTVGO,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func Oceania(c *http.Client) {
+func Oceania() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		us.NBATV,
 		us.AcornTV,
@@ -445,10 +457,11 @@ func Oceania(c *http.Client) {
 		nz.ThreeNow,
 		nz.MaoriTV,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func Korea(c *http.Client) {
+func Korea() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		kr.Wavve,
 		kr.Tving,
@@ -459,10 +472,11 @@ func Korea(c *http.Client) {
 		kr.Afreeca,
 		kr.KBSDomestic,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func SouthEastAsia(c *http.Client) {
+func SouthEastAsia() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
 		asia.HBOGO,
@@ -478,10 +492,11 @@ func SouthEastAsia(c *http.Client) {
 		// ID 全失效 - 不做检测
 		// VN 全失效 - 不做检测
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func Sport(c *http.Client) {
+func Sport() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		transnation.DAZN,
 		asia.StarPlus,
@@ -495,10 +510,11 @@ func Sport(c *http.Client) {
 		africa.BeinConnect,
 		eu.Eurosport,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
-func IPV6Multination(c *http.Client) {
+func IPV6Multination() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
 		transnation.DisneyPlus,
@@ -509,14 +525,15 @@ func IPV6Multination(c *http.Client) {
 		transnation.WikipediaEditable,
 		transnation.Bing,
 	}
-	processFunction(FuncList, c)
+	preProcess(FuncList)
+	return FuncList
 }
 
 func GetIpv4Info() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://www.cloudflare.com/cdn-cgi/trace", nil)
-	resp, err := utils.Ipv4HttpClient.Do(req)
+	req1, err := http.NewRequestWithContext(ctx, "GET", "https://www.cloudflare.com/cdn-cgi/trace", nil)
+	resp, err := utils.Ipv4HttpClient.Do(req1)
 	if err != nil {
 		IPV4 = false
 		log.Println(err)
@@ -538,8 +555,8 @@ func GetIpv4Info() {
 func GetIpv6Info() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://www.cloudflare.com/cdn-cgi/trace", nil)
-	resp, err := utils.Ipv6HttpClient.Do(req)
+	req1, err := http.NewRequestWithContext(ctx, "GET", "https://www.cloudflare.com/cdn-cgi/trace", nil)
+	resp, err := utils.Ipv6HttpClient.Do(req1)
 	if err != nil {
 		IPV6 = false
 		fmt.Println("Can not detect IPv6 Address")
@@ -807,86 +824,101 @@ func main() {
 	if IPV4 || Force {
 		ReadSelect()
 	}
-	wg = &sync.WaitGroup{}
-	bar = NewBar(0)
 	if IPV4 {
+		total = 0
+		wg = &sync.WaitGroup{}
+		bar = NewBar(0)
+		var FuncList [](func(c *http.Client) model.Result)
 		if M {
-			Multination(client)
+			FuncList = append(FuncList, Multination()...)
 		}
 		if TW {
-			Taiwan(client)
+			FuncList = append(FuncList, Taiwan()...)
 		}
 		if HK {
-			HongKong(client)
+			FuncList = append(FuncList, HongKong()...)
 		}
 		if JP {
-			Japan(client)
+			FuncList = append(FuncList, Japan()...)
 		}
 		if KR {
-			Korea(client)
+			FuncList = append(FuncList, Korea()...)
 		}
 		if NA {
-			NorthAmerica(client)
+			FuncList = append(FuncList, NorthAmerica()...)
 		}
 		if SA {
-			SouthAmerica(client)
+			FuncList = append(FuncList, SouthAmerica()...)
 		}
 		if EU {
-			Europe(client)
+			FuncList = append(FuncList, Europe()...)
 		}
 		if AFR {
-			Africa(client)
+			FuncList = append(FuncList, Africa()...)
 		}
 		if OCEA {
-			Oceania(client)
+			FuncList = append(FuncList, Oceania()...)
 		}
 		if SPORT {
-			Sport(client)
+			FuncList = append(FuncList, Sport()...)
 		}
+		processFunction(FuncList, client)
+		bar.ChangeMax64(total)
+		wg.Wait()
+		bar.Finish()
+		fmt.Println()
+		finallyPrintResult(language)
 	}
 	if IPV6 {
+		fmt.Println()
+		total = 0
+		wg = &sync.WaitGroup{}
+		bar = NewBar(0)
+		var FuncList [](func(c *http.Client) model.Result)
 		if Force {
 			if M {
-				Multination(utils.Ipv6HttpClient)
+				FuncList = append(FuncList, Multination()...)
 			}
 			if TW {
-				Taiwan(utils.Ipv6HttpClient)
+				FuncList = append(FuncList, Taiwan()...)
 			}
 			if HK {
-				HongKong(utils.Ipv6HttpClient)
+				FuncList = append(FuncList, HongKong()...)
 			}
 			if JP {
-				Japan(utils.Ipv6HttpClient)
+				FuncList = append(FuncList, Japan()...)
 			}
 			if KR {
-				Korea(utils.Ipv6HttpClient)
+				FuncList = append(FuncList, Korea()...)
 			}
 			if NA {
-				NorthAmerica(utils.Ipv6HttpClient)
+				FuncList = append(FuncList, NorthAmerica()...)
 			}
 			if SA {
-				SouthAmerica(utils.Ipv6HttpClient)
+				FuncList = append(FuncList, SouthAmerica()...)
 			}
 			if EU {
-				Europe(utils.Ipv6HttpClient)
+				FuncList = append(FuncList, Europe()...)
 			}
 			if AFR {
-				Africa(utils.Ipv6HttpClient)
+				FuncList = append(FuncList, Africa()...)
 			}
 			if OCEA {
-				Oceania(utils.Ipv6HttpClient)
+				FuncList = append(FuncList, Oceania()...)
+			}
+			if SPORT {
+				FuncList = append(FuncList, Sport()...)
 			}
 		} else {
-			IPV6Multination(utils.Ipv6HttpClient)
+			FuncList = append(FuncList, IPV6Multination()...)
 		}
+		processFunction(FuncList, utils.Ipv6HttpClient)
+		bar.ChangeMax64(total)
+		wg.Wait()
+		bar.Finish()
+		fmt.Println()
+		finallyPrintResult(language)
 	}
-	bar.ChangeMax64(total)
-
-	wg.Wait()
-	bar.Finish()
-	fmt.Println()
-	finallyPrintResult(language)
-	fmt.Println()
 	fmt.Println()
 }
 
