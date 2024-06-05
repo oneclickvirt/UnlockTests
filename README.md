@@ -32,11 +32,12 @@ Usage of UT:
         language, specify to en or zh (default "zh")
   -dns-servers string
         specify dns servers
-  -f    force to use ipv6
+  -f string
+        specify select option in menu
   -http-proxy string
         specify http proxy
   -m int
-        mode 0(both)/4/6, default to 0
+        mode 0(both)/4(only)/6(only), default to 4(only ipv4) (default 4)
   -s    show ip address, specify to false or true (default true)
   -v    show version
 ```
