@@ -820,6 +820,8 @@ func getFuncList() [](func(c *http.Client) model.Result) {
 }
 
 func runTests(client *http.Client, ipVersion, language string) {
+	Names = []string{}
+	total = 0
 	wg = &sync.WaitGroup{}
 	bar = NewBar(0)
 	funcList := getFuncList()
@@ -827,7 +829,7 @@ func runTests(client *http.Client, ipVersion, language string) {
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
-	fmt.Println()
+	// fmt.Println()
 	finallyPrintResult(language, ipVersion)
 }
 
