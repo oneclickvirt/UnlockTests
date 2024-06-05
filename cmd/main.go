@@ -683,7 +683,7 @@ func ReadSelect() {
 	r := bufio.NewReader(os.Stdin)
 	l, _, err := r.ReadLine()
 	if err != nil {
-		M, TW, HK, JP = true, true, true, true
+		M = true
 		return
 	}
 	for _, c := range strings.Split(string(l), " ") {
@@ -759,10 +759,10 @@ func main() {
 	httpProxy := ""
 	language := ""
 	showIP := false
-	flag.IntVar(&mode, "m", 0, "mode 0(both)/4/6")
+	flag.IntVar(&mode, "m", 0, "mode 0(both)/4/6, default to 0")
 	flag.BoolVar(&Force, "f", false, "force to use ipv6")
 	flag.BoolVar(&showVersion, "v", false, "show version")
-	flag.BoolVar(&showIP, "s", true, "show ip address, specify to en or zh")
+	flag.BoolVar(&showIP, "s", true, "show ip address, specify to false or true")
 	flag.StringVar(&Iface, "I", "", "specify source ip / interface")
 	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
 	flag.StringVar(&httpProxy, "http-proxy", "", "specify http proxy")
