@@ -36,8 +36,8 @@ Usage of UT:
   -http-proxy string
         specify http proxy
   -m int
-        mode 0(both)/4/6
-  -s    show ip address, specify to en or zh (default true)
+        mode 0(both)/4/6, default to 0
+  -s    show ip address, specify to false or true (default true)
   -v    show version
 ```
 
