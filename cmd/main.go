@@ -5,7 +5,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -54,8 +53,7 @@ var (
 	Names                                           []string
 	ifaceName, ipAddr, netType                      string
 	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
-	Version                                         = "0.0.1"
-	Force                                           = false
+	Version                                         = "0.0.2"
 )
 
 func NewBar(count int64) *pb.ProgressBar {
@@ -619,13 +617,13 @@ func finallyPrintResult(language, netType string) {
 	platformName := getPlatformName(M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT)
 
 	if language == "zh" {
-		if netType == "ipv4" || Force || netType == "" {
+		if netType == "ipv4" || netType == "" {
 			FormarPrint(language, platformName)
-		} else if netType == "ipv6" && !Force {
+		} else if netType == "ipv6" {
 			FormarPrint(language, "跨国平台")
 		}
 	} else if language == "en" {
-		if netType == "ipv4" || Force || netType == "" {
+		if netType == "ipv4" || netType == "" {
 			enPlatformName := map[string]string{
 				"跨国平台":         "Global",
 				"跨国平台 + 台湾平台":  "Global + Taiwan",
@@ -650,100 +648,221 @@ func finallyPrintResult(language, netType string) {
 				"体育平台":         "Sports",
 			}
 			FormarPrint(language, enPlatformName[platformName])
-		} else if netType == "ipv6" && !Force {
+		} else if netType == "ipv6" {
 			FormarPrint(language, "Global")
 		}
 	}
 }
 
-func ReadSelect() {
-	fmt.Println("请选择检测项目,直接按回车将进行全部检测: ")
-	fmt.Println("[0]: 跨国平台")
-	fmt.Println("[1]: 跨国平台 + 台湾平台")
-	fmt.Println("[2]: 跨国平台 + 香港平台")
-	fmt.Println("[3]: 跨国平台 + 日本平台")
-	fmt.Println("[4]: 跨国平台 + 韩国平台")
-	fmt.Println("[5]: 跨国平台 + 北美平台")
-	fmt.Println("[6]: 跨国平台 + 南美平台")
-	fmt.Println("[7]: 跨国平台 + 欧洲平台")
-	fmt.Println("[8]: 跨国平台 + 非洲平台")
-	fmt.Println("[9]: 跨国平台 + 大洋洲平台")
-	fmt.Println("[10]: 仅台湾平台")
-	fmt.Println("[11]: 仅香港平台")
-	fmt.Println("[12]: 仅日本平台")
-	fmt.Println("[13]: 仅韩国平台")
-	fmt.Println("[14]: 仅北美平台")
-	fmt.Println("[15]: 仅南美平台")
-	fmt.Println("[16]: 仅欧洲平台")
-	fmt.Println("[17]: 仅非洲平台")
-	fmt.Println("[18]: 仅大洋洲平台")
-	fmt.Println("[19]: 仅体育平台")
-	fmt.Print("请输入对应数字,空格分隔(回车确认): ")
-	r := bufio.NewReader(os.Stdin)
-	l, _, err := r.ReadLine()
-	if err != nil {
+func switchOptions(c string) {
+	switch c {
+	case "0":
 		M = true
-		return
+	case "1":
+		M = true
+		TW = true
+	case "2":
+		M = true
+		HK = true
+	case "3":
+		M = true
+		JP = true
+	case "4":
+		M = true
+		KR = true
+	case "5":
+		M = true
+		NA = true
+	case "6":
+		M = true
+		SA = true
+	case "7":
+		M = true
+		EU = true
+	case "8":
+		M = true
+		AFR = true
+	case "9":
+		M = true
+		OCEA = true
+	case "10":
+		TW = true
+	case "11":
+		HK = true
+	case "12":
+		JP = true
+	case "13":
+		KR = true
+	case "14":
+		NA = true
+	case "15":
+		SA = true
+	case "16":
+		EU = true
+	case "17":
+		AFR = true
+	case "18":
+		OCEA = true
+	case "19":
+		SPORT = true
+	case "20":
+		M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = true, true, true, true, true, true, true, true, true, true, true
+	default:
+		M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
 	}
-	for _, c := range strings.Split(string(l), " ") {
-		switch c {
-		case "0":
-			M = true
-		case "1":
-			M = true
-			TW = true
-		case "2":
-			M = true
-			HK = true
-		case "3":
-			M = true
-			JP = true
-		case "4":
-			M = true
-			KR = true
-		case "5":
-			M = true
-			NA = true
-		case "6":
-			M = true
-			SA = true
-		case "7":
-			M = true
-			EU = true
-		case "8":
-			M = true
-			AFR = true
-		case "9":
-			M = true
-			OCEA = true
-		case "10":
-			TW = true
-		case "11":
-			HK = true
-		case "12":
-			JP = true
-		case "13":
-			KR = true
-		case "14":
-			NA = true
-		case "15":
-			SA = true
-		case "16":
-			EU = true
-		case "17":
-			AFR = true
-		case "18":
-			OCEA = true
-		case "19":
-			SPORT = true
-		default:
-			M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
+}
+
+func ReadSelect(language, flagString string) {
+	if flagString == "" {
+		if language == "zh" {
+			fmt.Println("请选择检测项目: ")
+			fmt.Println("[0]: 跨国平台")
+			fmt.Println("[1]: 跨国平台 + 台湾平台")
+			fmt.Println("[2]: 跨国平台 + 香港平台")
+			fmt.Println("[3]: 跨国平台 + 日本平台")
+			fmt.Println("[4]: 跨国平台 + 韩国平台")
+			fmt.Println("[5]: 跨国平台 + 北美平台")
+			fmt.Println("[6]: 跨国平台 + 南美平台")
+			fmt.Println("[7]: 跨国平台 + 欧洲平台")
+			fmt.Println("[8]: 跨国平台 + 非洲平台")
+			fmt.Println("[9]: 跨国平台 + 大洋洲平台")
+			fmt.Println("[10]: 仅台湾平台")
+			fmt.Println("[11]: 仅香港平台")
+			fmt.Println("[12]: 仅日本平台")
+			fmt.Println("[13]: 仅韩国平台")
+			fmt.Println("[14]: 仅北美平台")
+			fmt.Println("[15]: 仅南美平台")
+			fmt.Println("[16]: 仅欧洲平台")
+			fmt.Println("[17]: 仅非洲平台")
+			fmt.Println("[18]: 仅大洋洲平台")
+			fmt.Println("[19]: 仅体育平台")
+			fmt.Println("[20]: 全部平台")
+			fmt.Print("请输入对应数字,空格分隔(回车确认): ")
+		} else {
+			fmt.Println("Please select detection items:")
+			fmt.Println("[0]: International platform")
+			fmt.Println("[1]: International platform + Taiwan platform")
+			fmt.Println("[2]: International platform + Hong Kong platform")
+			fmt.Println("[3]: International platform + Japan platform")
+			fmt.Println("[4]: International platform + Korea platform")
+			fmt.Println("[5]: International platform + North America platform")
+			fmt.Println("[6]: International platform + South America platform")
+			fmt.Println("[7]: International platform + Europe platform")
+			fmt.Println("[8]: International platform + Africa platform")
+			fmt.Println("[9]: International platform + Oceania platform")
+			fmt.Println("[10]: Taiwan platform only")
+			fmt.Println("[11]: Hong Kong platform only")
+			fmt.Println("[12]: Japan platform only")
+			fmt.Println("[13]: Korea platform only")
+			fmt.Println("[14]: North America platform only")
+			fmt.Println("[15]: South America platform only")
+			fmt.Println("[16]: Europe platform only")
+			fmt.Println("[17]: Africa platform only")
+			fmt.Println("[18]: Oceania platform only")
+			fmt.Println("[19]: Sports platform only")
+			fmt.Println("[20]: All platforms")
+			fmt.Print("Please enter corresponding numbers, separated by spaces (press Enter to confirm): ")
 		}
+		r := bufio.NewReader(os.Stdin)
+		l, _, err := r.ReadLine()
+		if err != nil {
+			fmt.Println("Failed to read select option.")
+			return
+		}
+		for _, c := range strings.Split(string(l), " ") {
+			switchOptions(c)
+		}
+	} else {
+		switchOptions(flagString)
 	}
 }
 
 var setSocketOptions = func(network, address string, c syscall.RawConn, interfaceName string) (err error) {
 	return
+}
+
+func getFuncList() [](func(c *http.Client) model.Result) {
+	var funcList [](func(c *http.Client) model.Result)
+	if M {
+		funcList = append(funcList, Multination()...)
+	}
+	if TW {
+		funcList = append(funcList, Taiwan()...)
+	}
+	if HK {
+		funcList = append(funcList, HongKong()...)
+	}
+	if JP {
+		funcList = append(funcList, Japan()...)
+	}
+	if KR {
+		funcList = append(funcList, Korea()...)
+	}
+	if NA {
+		funcList = append(funcList, NorthAmerica()...)
+	}
+	if SA {
+		funcList = append(funcList, SouthAmerica()...)
+	}
+	if EU {
+		funcList = append(funcList, Europe()...)
+	}
+	if AFR {
+		funcList = append(funcList, Africa()...)
+	}
+	if OCEA {
+		funcList = append(funcList, Oceania()...)
+	}
+	if SPORT {
+		funcList = append(funcList, Sport()...)
+	}
+	return funcList
+}
+
+func runTests(client *http.Client, ipVersion, language string) {
+	wg = &sync.WaitGroup{}
+	bar = NewBar(0)
+	funcList := getFuncList()
+	processFunction(funcList, client)
+	bar.ChangeMax64(total)
+	wg.Wait()
+	bar.Finish()
+	fmt.Println()
+	finallyPrintResult(language, ipVersion)
+}
+
+func trackUsage() {
+	http.Get("https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false")
+}
+
+func setupInterface(Iface string) {
+	if IP := net.ParseIP(Iface); IP != nil {
+		utils.Dialer.LocalAddr = &net.TCPAddr{IP: IP}
+	} else {
+		utils.Dialer.Control = func(network, address string, c syscall.RawConn) error {
+			return setSocketOptions(network, address, c, Iface)
+		}
+	}
+}
+
+func setupDnsServers(DnsServers string) {
+	utils.Dialer.Resolver = &net.Resolver{
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			return (&net.Dialer{}).DialContext(ctx, "udp", DnsServers)
+		},
+	}
+}
+
+func setupHttpProxy(httpProxy string) {
+	if u, err := url.Parse(httpProxy); err == nil {
+		utils.ClientProxy = http.ProxyURL(u)
+		for _, transport := range []*http.Transport{utils.Ipv4Transport, utils.Ipv6Transport, utils.AutoTransport} {
+			transport.Proxy = utils.ClientProxy
+		}
+		for _, httpClient := range []*http.Client{utils.Ipv4HttpClient, utils.Ipv6HttpClient, utils.AutoHttpClient} {
+			httpClient.Transport = utils.AutoTransport
+		}
+	}
 }
 
 func main() {
@@ -758,10 +877,11 @@ func main() {
 	httpProxy := ""
 	language := ""
 	showIP := false
-	flag.IntVar(&mode, "m", 0, "mode 0(both)/4(only)/6(only), default to 0(at this point, ipv6 only detects transnation)")
-	flag.BoolVar(&Force, "f", false, "force use ipv6(enable all detections)")
+	flagString := ""
+	flag.IntVar(&mode, "m", 4, "mode 0(both)/4(only)/6(only), default to 4(only ipv4)")
 	flag.BoolVar(&showVersion, "v", false, "show version")
 	flag.BoolVar(&showIP, "s", true, "show ip address, specify to false or true")
+	flag.StringVar(&flagString, "f", "", "specify select option in menu")
 	flag.StringVar(&Iface, "I", "", "specify source ip / interface")
 	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
 	flag.StringVar(&httpProxy, "http-proxy", "", "specify http proxy")
@@ -772,34 +892,14 @@ func main() {
 		return
 	}
 	if Iface != "" {
-		if IP := net.ParseIP(Iface); IP != nil {
-			utils.Dialer.LocalAddr = &net.TCPAddr{IP: IP}
-		} else {
-			utils.Dialer.Control = func(network, address string, c syscall.RawConn) error {
-				return setSocketOptions(network, address, c, Iface)
-			}
-		}
+		setupInterface(Iface)
 	}
 	if DnsServers != "" {
-		utils.Dialer.Resolver = &net.Resolver{
-			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-				return (&net.Dialer{}).DialContext(ctx, "udp", DnsServers)
-			},
-		}
+		setupDnsServers(DnsServers)
 	}
 	if httpProxy != "" {
-		log.Println(httpProxy)
-		// c := httpproxy.Config{HTTPProxy: httpProxy, CGI: true}
-		// utils.ClientProxy = func(req *http.Request) (*url.URL, error) { return c.ProxyFunc()(req.URL) }
-		if u, err := url.Parse(httpProxy); err == nil {
-			utils.ClientProxy = http.ProxyURL(u)
-			utils.Ipv4Transport.Proxy = utils.ClientProxy
-			utils.Ipv4HttpClient.Transport = utils.Ipv4Transport
-			utils.Ipv6Transport.Proxy = utils.ClientProxy
-			utils.Ipv6HttpClient.Transport = utils.Ipv6Transport
-			utils.AutoTransport.Proxy = utils.ClientProxy
-			utils.AutoHttpClient.Transport = utils.AutoTransport
-		}
+		fmt.Println(httpProxy)
+		setupHttpProxy(httpProxy)
 	}
 	if mode == 4 {
 		client = utils.Ipv4HttpClient
@@ -818,123 +918,17 @@ func main() {
 		GetIpv4Info()
 		GetIpv6Info()
 	}
-	if IPV4 || IPV6 {
-		ReadSelect()
-	}
+	ReadSelect(language, flagString)
 	if IPV4 {
-		total = 0
-		wg = &sync.WaitGroup{}
-		bar = NewBar(0)
-		var FuncList [](func(c *http.Client) model.Result)
-		if M {
-			FuncList = append(FuncList, Multination()...)
-		}
-		if TW {
-			FuncList = append(FuncList, Taiwan()...)
-		}
-		if HK {
-			FuncList = append(FuncList, HongKong()...)
-		}
-		if JP {
-			FuncList = append(FuncList, Japan()...)
-		}
-		if KR {
-			FuncList = append(FuncList, Korea()...)
-		}
-		if NA {
-			FuncList = append(FuncList, NorthAmerica()...)
-		}
-		if SA {
-			FuncList = append(FuncList, SouthAmerica()...)
-		}
-		if EU {
-			FuncList = append(FuncList, Europe()...)
-		}
-		if AFR {
-			FuncList = append(FuncList, Africa()...)
-		}
-		if OCEA {
-			FuncList = append(FuncList, Oceania()...)
-		}
-		if SPORT {
-			FuncList = append(FuncList, Sport()...)
-		}
-		processFunction(FuncList, client)
-		bar.ChangeMax64(total)
-		wg.Wait()
-		bar.Finish()
-		fmt.Println()
-		finallyPrintResult(language, "ipv4")
+		fmt.Println(Blue("IPV4:"))
+		runTests(client, "ipv4", language)
 	}
 	if IPV6 {
-		if Force {
-			fmt.Println(Blue("IPV6:"))
-			Names = []string{}
-			total = 0
-			wg = &sync.WaitGroup{}
-			bar = NewBar(0)
-			var FuncList [](func(c *http.Client) model.Result)
-			if M {
-				FuncList = append(FuncList, Multination()...)
-			}
-			if TW {
-				FuncList = append(FuncList, Taiwan()...)
-			}
-			if HK {
-				FuncList = append(FuncList, HongKong()...)
-			}
-			if JP {
-				FuncList = append(FuncList, Japan()...)
-			}
-			if KR {
-				FuncList = append(FuncList, Korea()...)
-			}
-			if NA {
-				FuncList = append(FuncList, NorthAmerica()...)
-			}
-			if SA {
-				FuncList = append(FuncList, SouthAmerica()...)
-			}
-			if EU {
-				FuncList = append(FuncList, Europe()...)
-			}
-			if AFR {
-				FuncList = append(FuncList, Africa()...)
-			}
-			if OCEA {
-				FuncList = append(FuncList, Oceania()...)
-			}
-			if SPORT {
-				FuncList = append(FuncList, Sport()...)
-			}
-			if mode == 6 {
-				processFunction(FuncList, client)
-			} else {
-				processFunction(FuncList, utils.Ipv6HttpClient)
-			}
-			bar.ChangeMax64(total)
-			wg.Wait()
-			bar.Finish()
-			fmt.Println()
-			finallyPrintResult(language, "")
+		fmt.Println(Blue("IPV6:"))
+		if mode == 6 {
+			runTests(client, "ipv6", language)
 		} else {
-			fmt.Println(Blue("IPV6:"))
-			Names = []string{}
-			total = 0
-			wg = &sync.WaitGroup{}
-			bar = NewBar(0)
-			var FuncList [](func(c *http.Client) model.Result)
-			FuncList = append(FuncList, IPV6Multination()...)
-			if mode == 6 {
-				processFunction(FuncList, client)
-			} else {
-				processFunction(FuncList, utils.Ipv6HttpClient)
-			}
-			bar.ChangeMax64(total)
-			wg.Wait()
-			bar.Finish()
-			fmt.Println()
-			finallyPrintResult(language, "ipv6")
+			runTests(utils.Ipv6HttpClient, "ipv6", language)
 		}
 	}
 	fmt.Println()
