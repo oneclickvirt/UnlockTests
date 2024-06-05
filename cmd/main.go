@@ -829,7 +829,6 @@ func runTests(client *http.Client, ipVersion, language string) {
 	bar.ChangeMax64(total)
 	wg.Wait()
 	bar.Finish()
-	// fmt.Println()
 	finallyPrintResult(language, ipVersion)
 }
 
@@ -880,9 +879,9 @@ func main() {
 	language := ""
 	showIP := false
 	flagString := ""
-	flag.IntVar(&mode, "m", 4, "mode 0(both)/4(only)/6(only), default to 4(only ipv4)")
+	flag.IntVar(&mode, "m", 4, "mode 0(both)/4(only)/6(only), default to 4")
 	flag.BoolVar(&showVersion, "v", false, "show version")
-	flag.BoolVar(&showIP, "s", true, "show ip address, specify to false or true")
+	flag.BoolVar(&showIP, "s", true, "show ip address, example: -s=false")
 	flag.StringVar(&flagString, "f", "", "specify select option in menu")
 	flag.StringVar(&Iface, "I", "", "specify source ip / interface")
 	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
