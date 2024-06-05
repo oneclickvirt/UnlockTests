@@ -82,6 +82,4 @@ case $os in
 esac
 
 chmod 777 UT
-if [ ! -f /usr/bin/UT ]; then
-  mv UT /usr/bin/
-fi
+mv UT /usr/bin/
