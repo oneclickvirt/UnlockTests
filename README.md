@@ -126,3 +126,13 @@ HBO_Portugal - 被合并了
 ```
 
 </details>
+
+## Thanks
+
+https://github.com/nkeonkeo/MediaUnlockTest
+
+https://github.com/HsukqiLee/MediaUnlockTest
+
+https://github.com/lmc999/RegionRestrictionCheck
+
+https://github.com/betaxab/RegionRestrictionCheck/tree/refactor-1
