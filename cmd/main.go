@@ -759,13 +759,13 @@ func main() {
 	httpProxy := ""
 	language := ""
 	showIP := false
-	flag.IntVar(&mode, "m", 0, "mode 0(default)/4/6")
-	flag.BoolVar(&Force, "f", false, "ipv6 force")
+	flag.IntVar(&mode, "m", 0, "mode 0(both)/4/6")
+	flag.BoolVar(&Force, "f", false, "force to use ipv6")
 	flag.BoolVar(&showVersion, "v", false, "show version")
 	flag.BoolVar(&showIP, "s", true, "show ip address, specify to en or zh")
-	flag.StringVar(&Iface, "I", "", "source ip / interface")
+	flag.StringVar(&Iface, "I", "", "specify source ip / interface")
 	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
-	flag.StringVar(&httpProxy, "http-proxy", "", "http proxy")
+	flag.StringVar(&httpProxy, "http-proxy", "", "specify http proxy")
 	flag.StringVar(&language, "L", "zh", "language, specify to en or zh")
 	flag.Parse()
 	if showVersion {
