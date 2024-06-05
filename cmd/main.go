@@ -871,6 +871,9 @@ func main() {
 	}
 	if IPV6 {
 		fmt.Println()
+		fmt.Println()
+		fmt.Println(Blue("IPV6:"))
+		Names = []string{}
 		total = 0
 		wg = &sync.WaitGroup{}
 		bar = NewBar(0)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
@@ -35,12 +34,12 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	body := string(b)
-	tempList := strings.Split(body, "\n")
-	for _, line := range tempList {
-		if strings.Contains(line, "deviceid") {
-			fmt.Println(line)
-		}
-	}
+	// tempList := strings.Split(body, "\n")
+	// for _, line := range tempList {
+	// 	if strings.Contains(line, "deviceid") {
+	// 		fmt.Println(line)
+	// 	}
+	// }
 	var res struct {
 		Deviceid string `json:"deviceid"`
 	}
