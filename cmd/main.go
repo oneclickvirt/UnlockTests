@@ -57,7 +57,7 @@ var (
 	ifaceName, ipAddr, netType                      string
 	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
 	Version                                         = "0.0.1"
-	Force                                           bool
+	Force                                           = false
 )
 
 func NewBar(count int64) *pb.ProgressBar {
@@ -573,7 +573,7 @@ func GetIpv6Info() {
 	fmt.Println("Your IPV6 address:", Blue(s[:i]))
 }
 
-func finallyPrintResult(language string) {
+func finallyPrintResult(language, netType string) {
 	getPlatformName := func(multi bool, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT bool) string {
 		if multi {
 			if TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
@@ -629,32 +629,40 @@ func finallyPrintResult(language string) {
 	platformName := getPlatformName(M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT)
 
 	if language == "zh" {
-		FormarPrint(language, platformName)
-	} else if language == "en" {
-		enPlatformName := map[string]string{
-			"跨国平台":         "Global",
-			"跨国平台 + 台湾平台":  "Global + Taiwan",
-			"跨国平台 + 香港平台":  "Global + Hong Kong",
-			"跨国平台 + 日本平台":  "Global + Japan",
-			"跨国平台 + 韩国平台":  "Global + Korea",
-			"跨国平台 + 北美平台":  "Global + North America",
-			"跨国平台 + 南美平台":  "Global + South America",
-			"跨国平台 + 欧洲平台":  "Global + Europe",
-			"跨国平台 + 非洲平台":  "Global + Africa",
-			"跨国平台 + 大洋洲平台": "Global + Oceania",
-			"跨国平台 + 体育平台":  "Global + Sports",
-			"台湾平台":         "Taiwan",
-			"香港平台":         "Hong Kong",
-			"日本平台":         "Japan",
-			"韩国平台":         "Korea",
-			"北美平台":         "North America",
-			"南美平台":         "South America",
-			"欧洲平台":         "Europe",
-			"非洲平台":         "Africa",
-			"大洋洲平台":        "Oceania",
-			"体育平台":         "Sports",
+		if netType == "ipv4" || Force {
+			FormarPrint(language, platformName)
+		} else if netType == "ipv6" && !Force {
+			FormarPrint(language, "跨国平台")
 		}
-		FormarPrint(language, enPlatformName[platformName])
+	} else if language == "en" {
+		if netType == "ipv4" || Force {
+			enPlatformName := map[string]string{
+				"跨国平台":         "Global",
+				"跨国平台 + 台湾平台":  "Global + Taiwan",
+				"跨国平台 + 香港平台":  "Global + Hong Kong",
+				"跨国平台 + 日本平台":  "Global + Japan",
+				"跨国平台 + 韩国平台":  "Global + Korea",
+				"跨国平台 + 北美平台":  "Global + North America",
+				"跨国平台 + 南美平台":  "Global + South America",
+				"跨国平台 + 欧洲平台":  "Global + Europe",
+				"跨国平台 + 非洲平台":  "Global + Africa",
+				"跨国平台 + 大洋洲平台": "Global + Oceania",
+				"跨国平台 + 体育平台":  "Global + Sports",
+				"台湾平台":         "Taiwan",
+				"香港平台":         "Hong Kong",
+				"日本平台":         "Japan",
+				"韩国平台":         "Korea",
+				"北美平台":         "North America",
+				"南美平台":         "South America",
+				"欧洲平台":         "Europe",
+				"非洲平台":         "Africa",
+				"大洋洲平台":        "Oceania",
+				"体育平台":         "Sports",
+			}
+			FormarPrint(language, enPlatformName[platformName])
+		} else if netType == "ipv6" && !Force {
+			FormarPrint(language, "Global")
+		}
 	}
 }
 
@@ -867,7 +875,7 @@ func main() {
 		wg.Wait()
 		bar.Finish()
 		fmt.Println()
-		finallyPrintResult(language)
+		finallyPrintResult(language, "ipv4")
 	}
 	if IPV6 {
 		fmt.Println()
@@ -920,7 +928,7 @@ func main() {
 		wg.Wait()
 		bar.Finish()
 		fmt.Println()
-		finallyPrintResult(language)
+		finallyPrintResult(language, "ipv6")
 	}
 	fmt.Println()
 }
