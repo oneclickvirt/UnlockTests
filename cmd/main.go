@@ -55,7 +55,7 @@ var (
 	R                                               []*model.Result
 	Names                                           []string
 	ifaceName, ipAddr, netType                      string
-	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT bool
+	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
 	Version                                         = "0.0.1"
 	Force                                           bool
 )
