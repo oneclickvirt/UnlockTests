@@ -5,7 +5,6 @@ import (
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 )
-
 // Hulu
 // www.hulu.jp 或 id.hulu.jp 仅 ipv4 且 get 请求
 // https://www.hulu.jp/login
@@ -30,11 +29,11 @@ func Hulu(c *http.Client) model.Result {
 		"Sec-Fetch-User":            "?1",
 		"Upgrade-Insecure-Requests": "1",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, _, errs := request.Get("https://id.hulu.jp").End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get("https://id.hulu.jp")
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
 	if resp.Request.URL.Path == "/restrict.html" || resp.StatusCode == 403 {
