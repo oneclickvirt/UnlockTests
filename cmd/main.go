@@ -175,6 +175,7 @@ func FormarPrint(language, message string) {
 	for _, i := range tempList {
 		fmt.Printf(i)
 	}
+	
 }
 
 func excute(F func(c *http.Client) model.Result, c *http.Client) {
@@ -830,10 +831,6 @@ func runTests(client *http.Client, ipVersion, language string) {
 	wg.Wait()
 	bar.Finish()
 	finallyPrintResult(language, ipVersion)
-}
-
-func trackUsage() {
-	http.Get("https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false")
 }
 
 func setupInterface(Iface string) {
