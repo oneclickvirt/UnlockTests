@@ -5,7 +5,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -530,47 +529,41 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 }
 
 func GetIpv4Info() {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	req1, err := http.NewRequestWithContext(ctx, "GET", "https://www.cloudflare.com/cdn-cgi/trace", nil)
-	resp, err := utils.Ipv4HttpClient.Do(req1)
-	if err != nil {
+	c, _ := utils.ParseInterface("", "", "tcp4")
+	resp, body, err := utils.Gorequest(c).Get("https://www.cloudflare.com/cdn-cgi/trace").End()
+	if len(err) > 0 {
 		IPV4 = false
-		log.Println(err)
 		fmt.Println("Can not detect IPv4 Address")
+		return
 	}
 	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		IPV4 = false
-		fmt.Println("Can not detect IPv4 Address")
+	if body != "" && strings.Contains(body, "ip=") {
+		s := body
+		i := strings.Index(s, "ip=")
+		s = s[i+3:]
+		i = strings.Index(s, "\n")
+		fmt.Println("Your IPV4 address:", Blue(s[:i]))
 	}
-	s := string(b)
-	i := strings.Index(s, "ip=")
-	s = s[i+3:]
-	i = strings.Index(s, "\n")
-	fmt.Println("Your IPV4 address:", Blue(s[:i]))
+	return
 }
 
 func GetIpv6Info() {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	req1, err := http.NewRequestWithContext(ctx, "GET", "https://www.cloudflare.com/cdn-cgi/trace", nil)
-	resp, err := utils.Ipv6HttpClient.Do(req1)
-	if err != nil {
+	c, _ := utils.ParseInterface("", "", "tcp6")
+	resp, body, err := utils.Gorequest(c).Get("https://www.cloudflare.com/cdn-cgi/trace").End()
+	if len(err) > 0 {
 		IPV6 = false
 		fmt.Println("Can not detect IPv6 Address")
+		return
 	}
 	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Can not detect IPv6 Address")
+	if body != "" && strings.Contains(body, "ip=") {
+		s := body
+		i := strings.Index(s, "ip=")
+		s = s[i+3:]
+		i = strings.Index(s, "\n")
+		fmt.Println("Your IPV6 address:", Blue(s[:i]))
 	}
-	s := string(b)
-	i := strings.Index(s, "ip=")
-	s = s[i+3:]
-	i = strings.Index(s, "\n")
-	fmt.Println("Your IPV6 address:", Blue(s[:i]))
+	return
 }
 
 func finallyPrintResult(language, netType string) {
