@@ -544,7 +544,6 @@ func GetIpv4Info() {
 		i = strings.Index(s, "\n")
 		fmt.Println("Your IPV4 address:", Blue(s[:i]))
 	}
-	return
 }
 
 func GetIpv6Info() {
@@ -563,7 +562,6 @@ func GetIpv6Info() {
 		i = strings.Index(s, "\n")
 		fmt.Println("Your IPV6 address:", Blue(s[:i]))
 	}
-	return
 }
 
 func finallyPrintResult(language, netType string) {
