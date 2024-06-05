@@ -120,6 +120,24 @@ func Req(c *http.Client) *req.Client {
 		SetRetryCount(2).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
 		SetRetryFixedInterval(2 * time.Second)
+	client.SetTimeout(10 * time.Second)
+	return client
+}
+
+// ReqDefault
+// 为 req 设置请求
+func ReqDefault(c *http.Client) *req.Client {
+	client := req.DefaultClient()
+	if client.Headers == nil {
+		client.Headers = make(http.Header)
+	}
+	client.Transport.DialContext = c.Transport.(*http.Transport).DialContext
+	client.SetProxy(c.Transport.(*http.Transport).Proxy)
+	client.R().
+		SetRetryCount(2).
+		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
+		SetRetryFixedInterval(2 * time.Second)
+	client.SetTimeout(10 * time.Second)
 	return client
 }
 
