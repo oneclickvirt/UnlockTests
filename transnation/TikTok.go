@@ -2,10 +2,12 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // TikTok
@@ -15,24 +17,50 @@ func TikTok(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
+	client := utils.Req(c)
 	url := "https://www.tiktok.com/explore"
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	body := string(b)
+	if resp.StatusCode != 200 {
+		return model.Result{Name: name, Status: model.StatusNo}
+	}
 	if strings.Contains(body, "https://www.tiktok.com/hk/notfound") {
 		return model.Result{Name: name, Status: model.StatusNo, Region: "hk"}
 	}
 	region := utils.ReParse(body, `"region":"(\w+)"`)
 	if region != "" {
 		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+	} else {
+		url = "https://www.tiktok.com/"
+		resp2, err2 := client.R().Get(url)
+		if err2 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
+		}
+		defer resp2.Body.Close()
+		b, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		}
+		body = string(b)
+		if resp.StatusCode != 200 {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
+		if strings.Contains(body, "https://www.tiktok.com/hk/notfound") {
+			return model.Result{Name: name, Status: model.StatusNo, Region: "hk"}
+		}
+		region = utils.ReParse(body, `"region":"(\w+)"`)
+		if region != "" {
+			return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("get www.tiktok.com failed with code: %d", resp.StatusCode)}
+		Err: fmt.Errorf("www.tiktok.com can not find region with resp code: %d", resp.StatusCode)}
 }
