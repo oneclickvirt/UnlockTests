@@ -809,7 +809,6 @@ func main() {
 	if mode == 6 {
 		client = utils.Ipv6HttpClient
 		IPV4 = false
-		M = true
 	}
 
 	if language == "zh" {
@@ -817,7 +816,6 @@ func main() {
 	} else {
 		fmt.Println("Github Repo: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
 	}
-	fmt.Println()
 
 	if showIP {
 		GetIpv4Info()
@@ -927,7 +925,11 @@ func main() {
 			bar = NewBar(0)
 			var FuncList [](func(c *http.Client) model.Result)
 			FuncList = append(FuncList, IPV6Multination()...)
-			processFunction(FuncList, utils.Ipv6HttpClient)
+			if mode == 6 {
+				processFunction(FuncList, client)
+			} else {
+				processFunction(FuncList, utils.Ipv6HttpClient)
+			}
 			bar.ChangeMax64(total)
 			wg.Wait()
 			bar.Finish()
