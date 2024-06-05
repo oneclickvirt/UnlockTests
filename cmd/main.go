@@ -758,9 +758,11 @@ func main() {
 	DnsServers := ""
 	httpProxy := ""
 	language := ""
+	showIP := false
 	flag.IntVar(&mode, "m", 0, "mode 0(default)/4/6")
 	flag.BoolVar(&Force, "f", false, "ipv6 force")
 	flag.BoolVar(&showVersion, "v", false, "show version")
+	flag.BoolVar(&showIP, "s", true, "show ip address, specify to en or zh")
 	flag.StringVar(&Iface, "I", "", "source ip / interface")
 	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
 	flag.StringVar(&httpProxy, "http-proxy", "", "http proxy")
@@ -817,8 +819,10 @@ func main() {
 	}
 	fmt.Println()
 
-	GetIpv4Info()
-	GetIpv6Info()
+	if showIP {
+		GetIpv4Info()
+		GetIpv6Info()
+	}
 
 	if IPV4 || Force {
 		ReadSelect()
