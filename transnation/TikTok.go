@@ -17,8 +17,8 @@ func TikTok(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	client := utils.Req(c)
 	url := "https://www.tiktok.com/explore"
+	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
