@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"time"
 
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -28,13 +28,8 @@ var Ipv4Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 		// 强制使用IPv4
-		return Dialer.DialContext(ctx, "tcp4", addr)
+		return (&net.Dialer{}).DialContext(ctx, "tcp4", addr)
 	},
-	// ForceAttemptHTTP2:     true,
-	MaxIdleConns:          100,
-	IdleConnTimeout:       90 * time.Second,
-	TLSHandshakeTimeout:   30 * time.Second,
-	ExpectContinueTimeout: 1 * time.Second,
 }
 var Ipv4HttpClient = &http.Client{
 	Timeout:   30 * time.Second,
@@ -44,14 +39,8 @@ var Ipv6Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 		// 强制使用IPv6
-		return Dialer.DialContext(ctx, "tcp6", addr)
+		return (&net.Dialer{}).DialContext(ctx, "tcp6", addr)
 	},
-	// ForceAttemptHTTP2:     true,
-	MaxIdleConns:           100,
-	IdleConnTimeout:        90 * time.Second,
-	TLSHandshakeTimeout:    30 * time.Second,
-	ExpectContinueTimeout:  1 * time.Second,
-	MaxResponseHeaderBytes: 262144,
 }
 var Ipv6HttpClient = &http.Client{
 	Timeout:   30 * time.Second,

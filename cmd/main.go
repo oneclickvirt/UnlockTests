@@ -5,7 +5,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -527,55 +526,6 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 	return FuncList
 }
 
-func GetIpv4Info() {
-	resp, err := utils.Req(utils.Ipv4HttpClient).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
-	if err != nil {
-		IPV4 = false
-		fmt.Println("Can not detect IPv4 Address")
-		return
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		IPV4 = false
-		fmt.Println("Can not detect IPv4 Address")
-		return
-	}
-	body := string(b)
-	if body != "" && strings.Contains(body, "ip=") {
-		s := body
-		i := strings.Index(s, "ip=")
-		s = s[i+3:]
-		i = strings.Index(s, "\n")
-		fmt.Println("Your IPV4 address:", Blue(s[:i]))
-	}
-}
-
-func GetIpv6Info() {
-	resp, err := utils.ReqDefault(utils.Ipv6HttpClient).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
-	if err != nil {
-		IPV6 = false
-		fmt.Println("Can not detect IPv6 Address")
-		return
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		IPV4 = false
-		fmt.Println("Can not detect IPv6 Address")
-		return
-	}
-	body := string(b)
-	fmt.Println(body)
-	if body != "" && strings.Contains(body, "ip=") {
-		s := body
-		i := strings.Index(s, "ip=")
-		s = s[i+3:]
-		i = strings.Index(s, "\n")
-		fmt.Println("Your IPV6 address:", Blue(s[:i]))
-	}
-}
-
 func finallyPrintResult(language, netType string) {
 	getPlatformName := func(multi bool, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT bool) string {
 		if multi {
@@ -727,7 +677,7 @@ func switchOptions(c string) {
 	}
 }
 
-func ReadSelect(language, flagString string) {
+func ReadSelect(language, flagString string) bool {
 	if flagString == "" {
 		if language == "zh" {
 			fmt.Println("请选择检测项目: ")
@@ -782,7 +732,7 @@ func ReadSelect(language, flagString string) {
 		l, _, err := r.ReadLine()
 		if err != nil {
 			fmt.Println("Failed to read select option.")
-			return
+			return false
 		}
 		for _, c := range strings.Split(string(l), " ") {
 			switchOptions(c)
@@ -790,6 +740,7 @@ func ReadSelect(language, flagString string) {
 	} else {
 		switchOptions(flagString)
 	}
+	return true
 }
 
 var setSocketOptions = func(network, address string, c syscall.RawConn, interfaceName string) (err error) {
@@ -888,11 +839,9 @@ func main() {
 	DnsServers := ""
 	httpProxy := ""
 	language := ""
-	showIP := false
 	flagString := ""
-	flag.IntVar(&mode, "m", 4, "mode 0(both)/4(only)/6(only), default to 4")
+	flag.IntVar(&mode, "m", 4, "mode 4(only)/6(only), default to 4")
 	flag.BoolVar(&showVersion, "v", false, "show version")
-	flag.BoolVar(&showIP, "s", true, "show ip address, example: -s=false")
 	flag.StringVar(&flagString, "f", "", "specify select option in menu")
 	flag.StringVar(&Iface, "I", "", "specify source ip / interface")
 	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
@@ -926,11 +875,10 @@ func main() {
 	} else {
 		fmt.Println("Github Repo: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
 	}
-	if showIP {
-		GetIpv4Info()
-		GetIpv6Info()
+	readStatus := ReadSelect(language, flagString)
+	if !readStatus {
+		return
 	}
-	ReadSelect(language, flagString)
 	if IPV4 {
 		fmt.Println(Blue("IPV4:"))
 		runTests(client, "ipv4", language)
