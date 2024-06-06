@@ -5,6 +5,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -175,7 +176,7 @@ func FormarPrint(language, message string) {
 	for _, i := range tempList {
 		fmt.Printf(i)
 	}
-	
+
 }
 
 func excute(F func(c *http.Client) model.Result, c *http.Client) {
@@ -528,13 +529,20 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 
 func GetIpv4Info() {
 	c, _ := utils.ParseInterface("", "", "tcp4")
-	resp, body, err := utils.Gorequest(c).Get("https://www.cloudflare.com/cdn-cgi/trace").End()
-	if len(err) > 0 {
+	resp, err := utils.Req(c).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
+	if err != nil {
 		IPV4 = false
 		fmt.Println("Can not detect IPv4 Address")
 		return
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		IPV4 = false
+		fmt.Println("Can not detect IPv4 Address")
+		return
+	}
+	body := string(b)
 	if body != "" && strings.Contains(body, "ip=") {
 		s := body
 		i := strings.Index(s, "ip=")
@@ -546,13 +554,20 @@ func GetIpv4Info() {
 
 func GetIpv6Info() {
 	c, _ := utils.ParseInterface("", "", "tcp6")
-	resp, body, err := utils.Gorequest(c).Get("https://www.cloudflare.com/cdn-cgi/trace").End()
-	if len(err) > 0 {
+	resp, err := utils.Req(c).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
+	if err != nil {
 		IPV6 = false
 		fmt.Println("Can not detect IPv6 Address")
 		return
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		IPV4 = false
+		fmt.Println("Can not detect IPv6 Address")
+		return
+	}
+	body := string(b)
 	if body != "" && strings.Contains(body, "ip=") {
 		s := body
 		i := strings.Index(s, "ip=")
