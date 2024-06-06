@@ -43,7 +43,7 @@ var Ipv4HttpClient = &http.Client{
 var Ipv6Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-		// 强制使用IPv4
+		// 强制使用IPv6
 		return Dialer.DialContext(ctx, "tcp6", addr)
 	},
 	// ForceAttemptHTTP2:     true,
@@ -113,9 +113,9 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*http.Client, error) {
 // 为 req 设置请求
 func Req(c *http.Client) *req.Client {
 	client := req.DefaultClient()
-	client.ImpersonateChrome()
 	client.Transport.DialContext = c.Transport.(*http.Transport).DialContext
 	client.SetProxy(c.Transport.(*http.Transport).Proxy)
+	client.ImpersonateChrome()
 	client.R().
 		SetRetryCount(2).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).

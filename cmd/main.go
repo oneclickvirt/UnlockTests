@@ -528,8 +528,7 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 }
 
 func GetIpv4Info() {
-	c, _ := utils.ParseInterface("", "", "tcp4")
-	resp, err := utils.Req(c).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
+	resp, err := utils.Req(utils.Ipv4HttpClient).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
 	if err != nil {
 		IPV4 = false
 		fmt.Println("Can not detect IPv4 Address")
@@ -553,8 +552,7 @@ func GetIpv4Info() {
 }
 
 func GetIpv6Info() {
-	c, _ := utils.ParseInterface("", "", "tcp6")
-	resp, err := utils.Req(c).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
+	resp, err := utils.ReqDefault(utils.Ipv6HttpClient).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
 	if err != nil {
 		IPV6 = false
 		fmt.Println("Can not detect IPv6 Address")
@@ -568,6 +566,7 @@ func GetIpv6Info() {
 		return
 	}
 	body := string(b)
+	fmt.Println(body)
 	if body != "" && strings.Contains(body, "ip=") {
 		s := body
 		i := strings.Index(s, "ip=")
