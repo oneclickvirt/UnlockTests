@@ -47,7 +47,7 @@ var GptSupportCountry = []string{
 
 var DiscoveryPlusSupportCountry = []string{
 	"at", "br", "ca", "dk", "fi", "de", "in", "ie", "it", "nl", "no", "es",
-	"se", "gb"}
+	"se", "gb", "us"}
 
 var NLZIETSupportCountry = []string{
 	"be", "bg", "cz", "dk", "de", "ee", "ie", "el", "es", "fr",

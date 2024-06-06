@@ -77,9 +77,9 @@ func DiscoveryPlus(c *http.Client) model.Result {
 		exit := utils.GetRegion(loc, model.DiscoveryPlusSupportCountry)
 		if exit {
 			if loc == "us" {
-				return model.Result{Name: name, Status: model.StatusYes, Region: loc + " (origin)"}
+				return model.Result{Name: name, Status: model.StatusYes, Region: loc + "-origin"}
 			} else {
-				return model.Result{Name: name, Status: model.StatusYes, Region: loc + " (global)"}
+				return model.Result{Name: name, Status: model.StatusYes, Region: loc + "-global"}
 			}
 		}
 		return model.Result{Name: name, Status: model.StatusNo, Region: loc}
