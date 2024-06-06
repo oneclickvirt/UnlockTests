@@ -32,7 +32,14 @@ func Reddit(c *http.Client) model.Result {
 	if resp.StatusCode == 200 || resp.StatusCode == 302 {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
-	if resp.StatusCode == 403 && strings.Contains(body, "blocked") {
+	// fmt.Println(body)
+	// tempList := strings.Split(body, "\n")
+	// for _, l := range tempList {
+	// 	if strings.Contains(l, "blocked") {
+	// 		fmt.Println(l)
+	// 	}
+	// }
+	if resp.StatusCode == 403 && strings.Contains(body, "been blocked") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

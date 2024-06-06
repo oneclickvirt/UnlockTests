@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 )
-
 // OpenAI
 // api.openai.com 仅 ipv4 且 get 请求
 func OpenAI(c *http.Client) model.Result {
@@ -101,10 +100,10 @@ func OpenAI(c *http.Client) model.Result {
 			loc := strings.ToLower(location)
 			exit := utils.GetRegion(loc, model.GptSupportCountry)
 			if exit {
-				return model.Result{Name: name, Status: "429 Rate limit", Region: loc}
+				return model.Result{Name: name, Status: model.StatusNo, Info: "429 Rate limit", Region: loc}
 			}
 		}
-		return model.Result{Name: name, Status: "429 Rate limit"}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "429 Rate limit"}
 	}
 	if !VPN && !unsupportedCountry && reqStatus1 && reqStatus2 && reqStatus3 {
 		if location != "" {
@@ -113,15 +112,15 @@ func OpenAI(c *http.Client) model.Result {
 			if exit {
 				return model.Result{Name: name, Status: model.StatusYes, Region: loc}
 			} else {
-				return model.Result{Name: name, Status: "Yes but cdn-cgi recognizes it unsupported", Region: location}
+				return model.Result{Name: name, Status: model.StatusYes, Info: "but cdn-cgi not unsupported", Region: location}
 			}
 		} else {
 			return model.Result{Name: name, Status: model.StatusYes}
 		}
 	} else if !unsupportedCountry && VPN && reqStatus1 {
-		return model.Result{Name: name, Status: "Only Available with Web Browser"}
+		return model.Result{Name: name, Status: model.StatusYes, Info: "Only Available with Web Browser"}
 	} else if unsupportedCountry && !VPN && reqStatus2 {
-		return model.Result{Name: name, Status: "Only Available with Mobile APP"}
+		return model.Result{Name: name, Status: model.StatusYes, Info: "Only Available with Mobile APP"}
 	} else if !reqStatus1 && VPN {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if VPN && unsupportedCountry {
