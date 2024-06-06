@@ -1,10 +1,10 @@
 package us
 
 import (
-	"fmt"
+	"net/http"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
 
 // ATTNOW - DirectvStream
@@ -15,15 +15,21 @@ func DirectvStream(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://www.atttvnow.com/"
-	request := utils.Gorequest(c)
-	resp, _, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	// b, err := io.ReadAll(resp.Body)
+	// if err != nil {
+	// 	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	// }
+	// body := string(b)
+	// fmt.Println(body)
+	// fmt.Println(resp.Header)
 	if resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	return model.Result{Name: name, Status: model.StatusYes,
-		Err: fmt.Errorf("get www.atttvnow.com failed with code: %d", resp.StatusCode)}
+	return model.Result{Name: name, Status: model.StatusYes}
 }

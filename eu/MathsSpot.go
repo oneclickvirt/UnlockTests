@@ -80,6 +80,6 @@ func MathsSpot(c *http.Client) model.Result {
 	case "Success":
 		return model.Result{Name: name, Status: model.StatusYes, Region: region}
 	default:
-		return model.Result{Name: name, Status: model.StatusNo, Info: status}
+		return model.Result{Name: name, Status: model.StatusUnexpected, Info: status}
 	}
 }

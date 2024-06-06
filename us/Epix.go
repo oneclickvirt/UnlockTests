@@ -2,10 +2,12 @@ package us
 
 import (
 	"encoding/json"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Epix
@@ -53,20 +55,25 @@ func Epix(c *http.Client) model.Result {
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
+	// fmt.Println(res.DeviceSession.SessionToken)
 	url2 := "https://api.epix.com/v2/movies/16921/play"
 	headers2 := map[string]string{
 		"Content-Type":     "application/json",
 		"X-Session-Token":  res.DeviceSession.SessionToken,
-		"sec-ch-ua":        model.UA_SecCHUA,
 		"sec-ch-ua-mobile": "?0",
 	}
-	request2 := utils.Gorequest(c)
-	request2 = utils.SetGoRequestHeaders(request2, headers2)
-	resp2, body2, errs2 := request.Post(url2).Send("{}").End()
-	if len(errs2) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers2)
+	resp2, err := client.R().SetBodyString("{}").Post(url2)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp2.Body.Close()
+	b, err := io.ReadAll(resp2.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	body2 := string(b)
 	var res2 struct {
 		Movie struct {
 			Entitlements struct {
@@ -74,7 +81,11 @@ func Epix(c *http.Client) model.Result {
 			} `json:"entitlements"`
 		} `json:"movie"`
 	}
+	// fmt.Println(body2)
 	if err := json.Unmarshal([]byte(body2), &res2); err != nil {
+		if strings.Contains(body2, "Request blocked") {
+			return model.Result{Name: name, Status: model.StatusNo, Info: "Request blocked"}
+		}
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: err}
 	}
 	switch res2.Movie.Entitlements.Status {
