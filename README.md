@@ -58,7 +58,6 @@ GYAO 和 LINE VOOM
 需要重新构建检测逻辑
 
 ```
-
 ElevenSportsTW
 
 MegogoTV
@@ -91,6 +90,8 @@ BahamutAnime - 存在 cloudflare 的质询防御，非5秒盾，无法突破，�
 有替代的检测，但仍保留失效检测的部分，未知是否完全失效
 
 ```
+TikTok - 在 hk、jp 上测试时不时测不出，在 tw 上失效的概率更大，其他地区没有问题
+
 SonyLiv - 获取不到region
 
 AISPlay - {"head": {"title": "Unidentified device", "itype": "item"}, "error": "Unidentified device", "st": {"code": 60400, "info": "Unidentified device"}, "op": {"cache_time": 600000, "timeout": 3000}}
