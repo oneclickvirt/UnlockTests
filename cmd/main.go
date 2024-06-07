@@ -5,6 +5,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -51,9 +52,8 @@ var (
 	IPV4, IPV6                                      = true, true
 	R                                               []*model.Result
 	Names                                           []string
-	ifaceName, ipAddr, netType                      string
 	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
-	Version                                         = "0.0.2"
+	Version                                         = "0.0.3"
 )
 
 func NewBar(count int64) *pb.ProgressBar {
@@ -828,6 +828,54 @@ func setupHttpProxy(httpProxy string) {
 	}
 }
 
+func GetIpv4Info() {
+	resp, err := utils.Req(utils.Ipv4HttpClient).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
+	if err != nil {
+		IPV4 = false
+		fmt.Println("Can not detect IPv4 Address")
+		return
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		IPV4 = false
+		fmt.Println("Can not detect IPv4 Address")
+		return
+	}
+	body := string(b)
+	if body != "" && strings.Contains(body, "ip=") {
+		s := body
+		i := strings.Index(s, "ip=")
+		s = s[i+3:]
+		i = strings.Index(s, "\n")
+		fmt.Println("Your IPV4 address:", Blue(s[:i]))
+	}
+}
+
+func GetIpv6Info() {
+	resp, err := utils.Req(utils.Ipv6HttpClient).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
+	if err != nil {
+		IPV6 = false
+		fmt.Println("Can not detect IPv6 Address")
+		return
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		IPV4 = false
+		fmt.Println("Can not detect IPv6 Address")
+		return
+	}
+	body := string(b)
+	if body != "" && strings.Contains(body, "ip=") {
+		s := body
+		i := strings.Index(s, "ip=")
+		s = s[i+3:]
+		i = strings.Index(s, "\n")
+		fmt.Println("Your IPV6 address:", Blue(s[:i]))
+	}
+}
+
 func main() {
 	go func() {
 		http.Get("https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false")
@@ -835,13 +883,15 @@ func main() {
 	client := utils.AutoHttpClient
 	mode := 0
 	showVersion := false
+	showIP := false
 	Iface := ""
 	DnsServers := ""
 	httpProxy := ""
 	language := ""
 	flagString := ""
-	flag.IntVar(&mode, "m", 4, "mode 4(only)/6(only), default to 4")
+	flag.IntVar(&mode, "m", 0, "mode 0(both)/4(only)/6(only), default to 0, example: -m 4")
 	flag.BoolVar(&showVersion, "v", false, "show version")
+	flag.BoolVar(&showIP, "s", true, "show ip address status, disable example: -s=false")
 	flag.StringVar(&flagString, "f", "", "specify select option in menu")
 	flag.StringVar(&Iface, "I", "", "specify source ip / interface")
 	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
@@ -874,6 +924,10 @@ func main() {
 		fmt.Println("项目地址: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
 	} else {
 		fmt.Println("Github Repo: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
+	}
+	if showIP {
+		GetIpv4Info()
+		GetIpv6Info()
 	}
 	readStatus := ReadSelect(language, flagString)
 	if !readStatus {

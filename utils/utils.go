@@ -101,7 +101,7 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*http.Client, error) {
 // Req
 // 为 req 设置请求
 func Req(c *http.Client) *req.Client {
-	client := req.DefaultClient()
+	client := req.C()
 	client.Transport.DialContext = c.Transport.(*http.Transport).DialContext
 	client.SetProxy(c.Transport.(*http.Transport).Proxy)
 	client.ImpersonateChrome()
@@ -116,7 +116,7 @@ func Req(c *http.Client) *req.Client {
 // ReqDefault
 // 为 req 设置请求
 func ReqDefault(c *http.Client) *req.Client {
-	client := req.DefaultClient()
+	client := req.C()
 	if client.Headers == nil {
 		client.Headers = make(http.Header)
 	}
