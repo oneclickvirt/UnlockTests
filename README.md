@@ -33,7 +33,7 @@ Usage of UT:
   -dns-servers string
         specify dns servers
   -f string
-        specify select option in menu
+        specify select option in menu, example: -f 0
   -http-proxy string
         specify http proxy
   -m int

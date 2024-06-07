@@ -828,22 +828,26 @@ func setupHttpProxy(httpProxy string) {
 	}
 }
 
-func GetIpv4Info() {
+func GetIpv4Info(showIP bool) {
 	resp, err := utils.Req(utils.Ipv4HttpClient).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
 	if err != nil {
 		IPV4 = false
-		fmt.Println("Can not detect IPv4 Address")
+		if showIP {
+			fmt.Println("Can not detect IPv4 Address")
+		}
 		return
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		IPV4 = false
-		fmt.Println("Can not detect IPv4 Address")
+		if showIP {
+			fmt.Println("Can not detect IPv4 Address")
+		}
 		return
 	}
 	body := string(b)
-	if body != "" && strings.Contains(body, "ip=") {
+	if showIP && body != "" && strings.Contains(body, "ip=") {
 		s := body
 		i := strings.Index(s, "ip=")
 		s = s[i+3:]
@@ -852,22 +856,26 @@ func GetIpv4Info() {
 	}
 }
 
-func GetIpv6Info() {
+func GetIpv6Info(showIP bool) {
 	resp, err := utils.Req(utils.Ipv6HttpClient).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
 	if err != nil {
 		IPV6 = false
-		fmt.Println("Can not detect IPv6 Address")
+		if showIP {
+			fmt.Println("Can not detect IPv6 Address")
+		}
 		return
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		IPV4 = false
-		fmt.Println("Can not detect IPv6 Address")
+		if showIP {
+			fmt.Println("Can not detect IPv6 Address")
+		}
 		return
 	}
 	body := string(b)
-	if body != "" && strings.Contains(body, "ip=") {
+	if showIP && body != "" && strings.Contains(body, "ip=") {
 		s := body
 		i := strings.Index(s, "ip=")
 		s = s[i+3:]
@@ -892,7 +900,7 @@ func main() {
 	flag.IntVar(&mode, "m", 0, "mode 0(both)/4(only)/6(only), default to 0, example: -m 4")
 	flag.BoolVar(&showVersion, "v", false, "show version")
 	flag.BoolVar(&showIP, "s", true, "show ip address status, disable example: -s=false")
-	flag.StringVar(&flagString, "f", "", "specify select option in menu")
+	flag.StringVar(&flagString, "f", "", "specify select option in menu, example: -f 0")
 	flag.StringVar(&Iface, "I", "", "specify source ip / interface")
 	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
 	flag.StringVar(&httpProxy, "http-proxy", "", "specify http proxy")
@@ -925,10 +933,8 @@ func main() {
 	} else {
 		fmt.Println("Github Repo: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
 	}
-	if showIP {
-		GetIpv4Info()
-		GetIpv6Info()
-	}
+	GetIpv4Info(showIP)
+	GetIpv6Info(showIP)
 	readStatus := ReadSelect(language, flagString)
 	if !readStatus {
 		return
