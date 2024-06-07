@@ -37,7 +37,8 @@ Usage of UT:
   -http-proxy string
         specify http proxy
   -m int
-        mode 4(only)/6(only), default to 4 (default 4)
+        mode 0(both)/4(only)/6(only), default to 0, example: -m 4
+  -s    show ip address status, disable example: -s=false (default true)
   -v    show version
 ```
 
