@@ -175,17 +175,19 @@ func FormarPrint(language, message string) {
 		}
 	}
 	// 插入小分区的head行
-	for _, r := range R {
-		if r.Status == model.PrintHead {
-			anotherList := []string{}
-			for _, i := range tempList {
-				if strings.Contains(i, r.Info) {
-					tpHead := printCenteredMessage("[ "+r.Name+" ]", 20)
-					anotherList = append(anotherList, tpHead)
+	if !(M && TW && HK && JP && KR && NA && SA && EU && AFR && OCEA && SPORT) {
+		for _, r := range R {
+			if r.Status == model.PrintHead {
+				anotherList := []string{}
+				for _, i := range tempList {
+					if strings.Contains(i, r.Info) {
+						tpHead := printCenteredMessage("[ "+r.Name+" ]", 20)
+						anotherList = append(anotherList, tpHead)
+					}
+					anotherList = append(anotherList, i)
 				}
-				anotherList = append(anotherList, i)
+				tempList = anotherList
 			}
-			tempList = anotherList
 		}
 	}
 	// 去重
@@ -568,6 +570,8 @@ func finallyPrintResult(language, netType string) {
 				return "跨国平台 + 大洋洲平台"
 			} else if !TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && SPORT {
 				return "跨国平台 + 体育平台"
+			else if TW && HK && JP && KR && NA && SA && EU && AFR && OCEA && SPORT {
+				return "所有平台"
 			} else {
 				return "跨国平台"
 			}
@@ -630,6 +634,7 @@ func finallyPrintResult(language, netType string) {
 				"非洲平台":         "Africa",
 				"大洋洲平台":        "Oceania",
 				"体育平台":         "Sports",
+				"所有平台": 		"All Platform",
 			}
 			FormarPrint(language, enPlatformName[platformName])
 		} else if netType == "ipv6" {
