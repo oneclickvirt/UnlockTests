@@ -175,7 +175,7 @@ func FormarPrint(language, message string) {
 		}
 	}
 	// 插入小分区的head行
-	if !(M && TW && HK && JP && KR && NA && SA && EU && AFR && OCEA && SPORT) {
+	if !M || !TW || !HK || !JP || !KR || !NA || !SA || !EU || !AFR || !OCEA || !SPORT {
 		for _, r := range R {
 			if r.Status == model.PrintHead {
 				anotherList := []string{}
