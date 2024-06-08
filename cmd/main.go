@@ -570,7 +570,7 @@ func finallyPrintResult(language, netType string) {
 				return "跨国平台 + 大洋洲平台"
 			} else if !TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && SPORT {
 				return "跨国平台 + 体育平台"
-			else if TW && HK && JP && KR && NA && SA && EU && AFR && OCEA && SPORT {
+			} else if TW && HK && JP && KR && NA && SA && EU && AFR && OCEA && SPORT {
 				return "所有平台"
 			} else {
 				return "跨国平台"
@@ -634,7 +634,7 @@ func finallyPrintResult(language, netType string) {
 				"非洲平台":         "Africa",
 				"大洋洲平台":        "Oceania",
 				"体育平台":         "Sports",
-				"所有平台": 		"All Platform",
+				"所有平台": 	   "All Platform",
 			}
 			FormarPrint(language, enPlatformName[platformName])
 		} else if netType == "ipv6" {
