@@ -113,6 +113,23 @@ func ShowResult(r *model.Result) (s string) {
 	}
 }
 
+func removeDuplicates(input []string) []string {
+	// 创建一个映射来跟踪已经遇到的字符串
+	seen := make(map[string]bool)
+	// 创建一个新的切片来存储去重后的结果
+	result := []string{}
+	// 遍历输入的字符串切片
+	for _, str := range input {
+		// 如果字符串没有在映射中出现过，则添加到结果切片中
+		if !seen[str] {
+			result = append(result, str)
+			// 将字符串标记为已出现
+			seen[str] = true
+		}
+	}
+	return result
+}
+
 func printCenteredMessage(message string, totalLength int) string {
 	if totalLength == 0 {
 		totalLength = 40
@@ -171,6 +188,8 @@ func FormarPrint(language, message string) {
 			tempList = anotherList
 		}
 	}
+	// 去重
+	tempList = removeDuplicates(tempList)
 	// 打印整体文本
 	for _, i := range tempList {
 		fmt.Printf(i)
