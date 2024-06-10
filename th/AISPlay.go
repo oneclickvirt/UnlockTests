@@ -165,7 +165,7 @@ func AISPlay(c *http.Client) model.Result {
 	switch result {
 	case "BLOCK":
 		return model.Result{Name: name, Status: model.StatusNo}
-	case "SUCCESS":
+	case "SUCCESS", "ALLOW":
 		return model.Result{Name: name, Status: model.StatusYes}
 	default:
 		return AnotherAISPlay(c)
