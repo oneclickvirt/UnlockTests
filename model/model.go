@@ -19,7 +19,7 @@ const (
 	PrintHead        = "PrintHead"
 	UA_Browser       = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 	UA_SecCHUA       = "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\""
-	UA_Dalvik        = "Dalvik/2.1.0 (Linux; U; Android 9; ALP-AL00 Build/HUAWEIALP-AL00)"
+	UA_Dalvik        = "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36"
 	UA_Pjsekai       = "pjsekai/48 CFNetwork/1240.0.4 Darwin/20.6.0"
 )
 
