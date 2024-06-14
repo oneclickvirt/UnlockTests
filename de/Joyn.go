@@ -3,9 +3,11 @@ package de
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
 
 // Joyn
@@ -23,6 +25,9 @@ func Joyn(c *http.Client) model.Result {
 	}
 	defer resp.Body.Close()
 	//fmt.Println(body)
+	if strings.Contains(string(body), "Unauthorized") {
+		return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("Unauthorized")}
+	}
 	var res struct {
 		AccessToken string `json:"access_token"`
 	}

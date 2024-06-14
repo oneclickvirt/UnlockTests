@@ -2,10 +2,11 @@ package nz
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // SkyGO
@@ -26,9 +27,9 @@ func SkyGO(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
 	}
 	defer resp.Body.Close()
-	if strings.Contains(body, "Access Denied") || resp.StatusCode == 403 || resp.StatusCode == 451 {
+	if strings.Contains(body, "Access Denied") || resp.StatusCode == 403 || resp.StatusCode == 451 || resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 200 {
+	} else if resp.StatusCode == 302 {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

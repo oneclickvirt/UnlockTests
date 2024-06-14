@@ -53,7 +53,7 @@ var (
 	R                                               []*model.Result
 	Names                                           []string
 	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
-	Version                                         = "0.0.3"
+	Version                                         = "0.0.4"
 )
 
 func NewBar(count int64) *pb.ProgressBar {
@@ -634,7 +634,7 @@ func finallyPrintResult(language, netType string) {
 				"非洲平台":         "Africa",
 				"大洋洲平台":        "Oceania",
 				"体育平台":         "Sports",
-				"所有平台": 	   "All Platform",
+				"所有平台":         "All Platform",
 			}
 			FormarPrint(language, enPlatformName[platformName])
 		} else if netType == "ipv6" {
