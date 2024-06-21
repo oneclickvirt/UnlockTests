@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
@@ -55,7 +56,6 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 	}
 	defer resp2.Body.Close()
-
 	resp3, err3 := client.R().Get("https://ani.gamer.com.tw/")
 	if err3 != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
@@ -65,17 +65,18 @@ func BahamutAnime(c *http.Client) model.Result {
 	if err3 != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
 	}
-	// body3 = string(b3)
-	var res3 struct {
-		AnimeSn int `json:"animeSn"`
-	}
-	if err := json.Unmarshal(b3, &res3); err != nil {
-		return model.Result{Name: name, Status: model.StatusErr, Err: err}
-	}
-	fmt.Println(res3.AnimeSn)
-	if res3.AnimeSn != 0 {
+	body3 := string(b3)
+	// var res3 struct {
+	// 	AnimeSn int `json:"animeSn"`
+	// }
+	// if err := json.Unmarshal(b3, &res3); err != nil {
+	// 	return model.Result{Name: name, Status: model.StatusErr, Err: err}
+	// }
+	// fmt.Println(res3.AnimeSn)
+	fmt.Println(body3)
+	if strings.Contains(body3, "animeSn") {
 		return model.Result{Name: name, Status: model.StatusYes}
-	} else if res3.AnimeSn == 0 || resp2.StatusCode == 403 || resp2.StatusCode == 404 {
+	} else if resp2.StatusCode == 403 || resp2.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
