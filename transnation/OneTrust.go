@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strings"
 )
-
 // OneTrust
 // geolocation.onetrust.com 双栈 get 请求
 func OneTrust(c *http.Client) model.Result {
@@ -30,9 +29,11 @@ func OneTrust(c *http.Client) model.Result {
 	body := string(b)
 	country := utils.ReParse(body, `"country"\s*:\s*"([^"]+)"`)
 	stateName := utils.ReParse(body, `"stateName"\s*:\s*"([^"]+)"`)
-	if strings.ToLower(country) == "us" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: country + " " + stateName}
-	} else {
+	if country == "" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
+	if stateName == "" {
+		stateName = "Unknown"
+	}
+	return model.Result{Name: name, Status: model.StatusYes, Region: country + " " + stateName}
 }
