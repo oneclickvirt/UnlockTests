@@ -2,8 +2,10 @@ package jp
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -19,19 +21,24 @@ func Abema(c *http.Client) model.Result {
 	headers := map[string]string{
 		"User-Agent": model.UA_Dalvik,
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.ReqDefault(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	// fmt.Println(body)
 	var abemaRes struct {
 		Message        string `json:"message"`
 		IsoCountryCode string `json:"isoCountryCode"`
 	}
-	if err := json.Unmarshal([]byte(body), &abemaRes); err != nil {
+	if err := json.Unmarshal(b, &abemaRes); err != nil {
 		if strings.Contains(body, "blocked_location") || strings.Contains(body, "anonymous_ip") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}

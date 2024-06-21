@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -33,13 +34,18 @@ func Crackle(c *http.Client) model.Result {
 		"x-crackle-brand":      "crackle",
 		"x-crackle-platform":   "5FE67CCA-069A-42C6-A20F-4B47A8054D46",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).Retry(2, 5).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	// fmt.Println(body)
 	// TODO 获取地区
 	// x-crackle-region

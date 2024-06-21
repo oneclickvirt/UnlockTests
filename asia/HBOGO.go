@@ -2,8 +2,10 @@ package asia
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -16,22 +18,23 @@ func HBOGO(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://api2.hbogoasia.com/v1/geog?lang=undefined&version=0&bundleId=www.hbogoasia.com"
-	request := utils.Gorequest(c)
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	//body := string(b)
+	//fmt.Println(body)
 	var hboRes struct {
 		Country   string `json:"country"`
 		Territory string `json:"territory"`
 	}
-	//fmt.Println(body)
-	if err := json.Unmarshal([]byte(body), &hboRes); err != nil {
+	if err := json.Unmarshal(b, &hboRes); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if hboRes.Territory == "" {

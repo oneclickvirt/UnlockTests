@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -15,17 +16,22 @@ func Bilibili(c *http.Client, name, url string) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	request := utils.Gorequest(c)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	//fmt.Println(body)
 	var res struct {
 		Code int `json:"code"`
 	}
-	if err := json.Unmarshal([]byte(body), &res); err != nil {
+	if err := json.Unmarshal(b, &res); err != nil {
 		if strings.Contains(body, "抱歉您所在地区不可观看") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}

@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
+
 // OpenAI
 // api.openai.com 仅 ipv4 且 get 请求
 func OpenAI(c *http.Client) model.Result {
@@ -14,6 +16,7 @@ func OpenAI(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
+	var body1, body2, body3 string
 	url1 := "https://api.openai.com/compliance/cookie_requirements"
 	headers1 := map[string]string{
 		"User-Agent":         model.UA_Browser,
@@ -31,9 +34,9 @@ func OpenAI(c *http.Client) model.Result {
 		"sec-fetch-mode":     "cors",
 		"sec-fetch-site":     "same-site",
 	}
-	request1 := utils.Gorequest(c)
-	request1 = utils.SetGoRequestHeaders(request1, headers1)
-	resp1, body1, errs1 := request1.Get(url1).End()
+	client1 := utils.Req(c)
+	client1 = utils.SetReqHeaders(client1, headers1)
+	resp1, err1 := client1.R().Get(url1)
 
 	url2 := "https://ios.chat.openai.com/"
 	headers2 := map[string]string{
@@ -50,39 +53,50 @@ func OpenAI(c *http.Client) model.Result {
 		"sec-fetch-user":            "?1",
 		"upgrade-insecure-requests": "1",
 	}
-	request2 := utils.Gorequest(c)
-	request2 = utils.SetGoRequestHeaders(request2, headers2)
-	resp2, body2, errs2 := request2.Get(url2).End()
+	client2 := utils.Req(c)
+	client2 = utils.SetReqHeaders(client2, headers2)
+	resp2, err2 := client2.R().Get(url2)
 
 	url3 := "https://chat.openai.com/cdn-cgi/trace"
-	headers3 := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request3 := utils.Gorequest(c)
-	request3 = utils.SetGoRequestHeaders(request3, headers3)
-	resp3, body3, errs3 := request3.Get(url3).End()
+	client3 := utils.Req(c)
+	resp3, err3 := client3.R().Get(url3)
 
 	var reqStatus1, reqStatus2, reqStatus3 bool
-	if len(errs1) > 0 {
-		fmt.Println(errs1)
+	if err1 != nil {
+		//fmt.Println(err1)
 		reqStatus1 = false
 	} else {
 		reqStatus1 = true
 		defer resp1.Body.Close()
+		b1, err11 := io.ReadAll(resp1.Body)
+		if err11 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		}
+		body1 = string(b1)
 	}
-	if len(errs2) > 0 {
-		fmt.Println(errs2)
+	if err2 != nil {
+		//fmt.Println(err2)
 		reqStatus2 = false
 	} else {
 		reqStatus2 = true
 		defer resp2.Body.Close()
+		b2, err22 := io.ReadAll(resp2.Body)
+		if err22 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		}
+		body2 = string(b2)
 	}
-	if len(errs3) > 0 {
-		fmt.Println(errs3)
+	if err3 != nil {
+		//fmt.Println(err3)
 		reqStatus3 = false
 	} else {
 		reqStatus3 = true
 		defer resp3.Body.Close()
+		b3, err33 := io.ReadAll(resp3.Body)
+		if err33 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		}
+		body3 = string(b3)
 	}
 	unsupportedCountry := strings.Contains(body1, "unsupported_country")
 	VPN := strings.Contains(body2, "VPN")
@@ -95,7 +109,7 @@ func OpenAI(c *http.Client) model.Result {
 			}
 		}
 	}
-	if (resp1 != nil && resp1.StatusCode == 429) || (resp2 != nil && resp2.StatusCode == 429) {
+	if (reqStatus1 && resp1 != nil && resp1.StatusCode == 429) || (reqStatus2 && resp2 != nil && resp2.StatusCode == 429) {
 		if location != "" {
 			loc := strings.ToLower(location)
 			exit := utils.GetRegion(loc, model.GptSupportCountry)

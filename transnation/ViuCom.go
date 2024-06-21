@@ -16,16 +16,17 @@ func ViuCom(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://www.viu.com"
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, _, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	//b, err := io.ReadAll(resp.Body)
+	//if err != nil {
+	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	//}
+	//body := string(b)
 	location := fmt.Sprintf("%s", resp.Request.URL)
 	if strings.Contains(location, "no-service") {
 		return model.Result{Name: name, Status: model.StatusNo}

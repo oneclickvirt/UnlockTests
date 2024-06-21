@@ -3,10 +3,9 @@ package hk
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // ViuTV
@@ -17,17 +16,16 @@ func ViuTV(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://api.viu.now.com/p8/3/getLiveURL"
-	resp, body, errs := utils.PostJson(c, url,
-		"{\"callerReferenceNo\":\"20210726112323\",\"contentId\":\"099\",\"contentType\":\"Channel\",\"channelno\":\"099\",\"mode\":\"prod\",\"deviceId\":\"29b3cb117a635d5b56\",\"deviceType\":\"ANDROID_WEB\"}",
-		map[string]string{"User-Agent": model.UA_Browser})
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	payload := "{\"callerReferenceNo\":\"20210726112323\",\"contentId\":\"099\",\"contentType\":\"Channel\",\"channelno\":\"099\",\"mode\":\"prod\",\"deviceId\":\"29b3cb117a635d5b56\",\"deviceType\":\"ANDROID_WEB\"}"
+	resp, body, err := utils.PostJson(c, url, payload, map[string]string{"User-Agent": model.UA_Browser})
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
 	var res struct {
 		ResponseCode string
 	}
-	if err := json.Unmarshal(body, &res); err != nil {
+	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.ResponseCode == "SUCCESS" {

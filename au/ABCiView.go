@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -16,16 +17,17 @@ func ABCiView(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://api.iview.abc.net.au/v2/show/abc-kids-live-stream/video/LS1604H001S00?embed=highlightVideo,selectedSeries"
-	request := utils.Gorequest(c)
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	if strings.Contains(body, "unavailable outside Australia") || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

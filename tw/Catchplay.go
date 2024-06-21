@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -21,17 +22,22 @@ func Catchplay(c *http.Client) model.Result {
 	headers := map[string]string{
 		"authorization": "Basic NTQ3MzM0NDgtYTU3Yi00MjU2LWE4MTEtMzdlYzNkNjJmM2E0Ok90QzR3elJRR2hLQ01sSDc2VEoy",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	var res struct {
 		Code string `json:"code"`
 	}
-	if err := json.Unmarshal([]byte(body), &res); err != nil {
+	if err = json.Unmarshal(b, &res); err != nil {
 		if strings.Contains(body, "is not allowed") && strings.Contains(body, "The location") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}

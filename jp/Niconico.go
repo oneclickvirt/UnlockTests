@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -20,13 +21,17 @@ func Niconico(c *http.Client) model.Result {
 	headers := map[string]string{
 		"User-Agent": model.UA_Browser,
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp1, body1, errs1 := request.Get(url1).End()
-	if len(errs1) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
+	client1 := utils.Req(c)
+	resp1, err1 := client1.R().Get(url1)
+	if err1 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}
 	}
 	defer resp1.Body.Close()
+	b1, err := io.ReadAll(resp1.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body1 := string(b1)
 	if strings.Contains(body1, "同じ地域") || resp1.StatusCode == 403 || resp1.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
@@ -43,12 +48,18 @@ func Niconico(c *http.Client) model.Result {
 		"upgrade-insecure-requests": "1",
 		"user-agent":                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
 	}
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get("https://live.nicovideo.jp/?cmnhd_ref=device=pc&site=nicolive&pos=header_servicelink&ref=WatchPage-Anchor").End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client1 = utils.SetReqHeaders(client1, headers)
+	url11 := "https://live.nicovideo.jp/?cmnhd_ref=device=pc&site=nicolive&pos=header_servicelink&ref=WatchPage-Anchor"
+	resp, err := client1.R().Get(url11)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	// 查找第一个官方直播剧的ID
 	splitted := strings.Split(body, "&quot;isOfficialChannelMemberFree&quot;:false")
 	var liveID string
@@ -66,11 +77,16 @@ func Niconico(c *http.Client) model.Result {
 		}
 	}
 	if liveID != "" {
-		resp, body, errs = request.Get("https://live.nicovideo.jp/watch/" + liveID).End()
-		if len(errs) > 0 {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+		resp, err = client1.R().Get("https://live.nicovideo.jp/watch/" + liveID)
+		if err != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 		}
 		defer resp.Body.Close()
+		b, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		}
+		body = string(b)
 		if strings.Contains(body, "notAllowedCountry") && resp1.StatusCode == 200 {
 			return model.Result{Name: name, Status: model.StatusYes,
 				Info: fmt.Sprintf("But Official Live is Unavailable. LiveID: %s", liveID)}

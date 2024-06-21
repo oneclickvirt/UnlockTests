@@ -20,11 +20,9 @@ func NowE(c *http.Client) model.Result {
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Post(url1).Send(data1).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	resp, body, err := utils.PostJson(c, url1, data1, headers)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
 	var res struct {

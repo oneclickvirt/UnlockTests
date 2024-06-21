@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -18,31 +19,33 @@ func AETV(c *http.Client) model.Result {
 	}
 
 	url1 := "https://link.theplatform.com/s/xc6n8B/UR27JDU0bu2s/"
-	headers1 := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request1 := utils.Gorequest(c)
-	request1 = utils.SetGoRequestHeaders(request1, headers1)
-	resp1, body1, errs1 := request1.Post(url1).End()
-	if len(errs1) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
+	client1 := utils.Req(c)
+	resp1, err1 := client1.R().Post(url1)
+	if err1 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}
 	}
 	defer resp1.Body.Close()
+	b1, err1 := io.ReadAll(resp1.Body)
+	if err1 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body1 := string(b1)
 	if strings.Contains(body1, "GeoLocationBlocked") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 
 	url2 := "https://play.aetv.com/"
-	headers2 := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request2 := utils.Gorequest(c)
-	request2 = utils.SetGoRequestHeaders(request2, headers2)
-	resp2, body2, errs2 := request2.Post(url2).End()
-	if len(errs2) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+	client2 := utils.Req(c)
+	resp2, err2 := client2.R().Post(url2)
+	if err2 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 	}
 	defer resp2.Body.Close()
+	b2, err2 := io.ReadAll(resp2.Body)
+	if err2 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body2 := string(b2)
 	if body2 != "" {
 		tp := utils.ReParse(body2, `AETN-Country-Code=([A-Z]+)`)
 		if tp != "" {
@@ -56,16 +59,17 @@ func AETV(c *http.Client) model.Result {
 	}
 
 	url3 := "https://ccpa-service.sp-prod.net/ccpa/consent/10265/display-dns"
-	headers3 := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request3 := utils.Gorequest(c)
-	request3 = utils.SetGoRequestHeaders(request3, headers3)
-	resp3, body3, errs3 := request3.Post(url3).End()
-	if len(errs3) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs3[0]}
+	client3 := utils.Req(c)
+	resp3, err3 := client3.R().Post(url3)
+	if err3 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
 	}
 	defer resp3.Body.Close()
+	b3, err3 := io.ReadAll(resp3.Body)
+	if err3 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body3 := string(b3)
 	//fmt.Println(body)
 	var res struct {
 		CcpaApplies bool `json:"ccpaApplies"`

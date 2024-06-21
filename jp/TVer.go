@@ -94,12 +94,10 @@ func FirstTVer(c *http.Client) model.Result {
 		"sec-fetch-site":     "same-site",
 		"user-agent":         model.UA_Browser,
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	res, body, errs := request.Post("https://platform-api.tver.jp/v2/api/platform_users/browser/create").
-		Send("device_type=pc").End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	res, body, err := utils.PostJson(c, "https://platform-api.tver.jp/v2/api/platform_users/browser/create",
+		"device_type=pc", headers)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
@@ -127,18 +125,23 @@ func FirstTVer(c *http.Client) model.Result {
 		"x-tver-platform-type": "web",
 		"user-agent":           model.UA_Browser,
 	}
-	request2 := utils.Gorequest(c)
-	request2 = utils.SetGoRequestHeaders(request2, headers2)
-	res, body, errs = request2.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client2 := utils.Req(c)
+	client2 = utils.SetReqHeaders(client2, headers2)
+	resp2, err := client2.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	defer res.Body.Close()
+	defer resp2.Body.Close()
+	b, err := io.ReadAll(resp2.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body2 := string(b)
 	if res.StatusCode != 200 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr,
 			Err: fmt.Errorf("2. get platform-api.tver.jp failed with code: %d", res.StatusCode)}
 	}
-	episodeId := getEpisodeID(body)
+	episodeId := getEpisodeID(body2)
 	if episodeId == "" {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("failed (No Episode ID)")}
 	}
@@ -156,19 +159,24 @@ func FirstTVer(c *http.Client) model.Result {
 		"sec-fetch-site":     "same-site",
 		"user-agent":         model.UA_Browser,
 	}
-	request3 := utils.Gorequest(c)
-	request3 = utils.SetGoRequestHeaders(request3, headers3)
-	res, body, errs = request3.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client3 := utils.Req(c)
+	client3 = utils.SetReqHeaders(client3, headers3)
+	resp3, err := client3.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	defer res.Body.Close()
+	defer resp3.Body.Close()
+	b3, err := io.ReadAll(resp3.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	//body = string(b3)
 	if res.StatusCode != 200 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr,
 			Err: fmt.Errorf("get platform-api.tver.jp failed with code: %d", res.StatusCode)}
 	}
 	var episode Episode
-	if err := json.Unmarshal([]byte(body), &episode); err != nil {
+	if err := json.Unmarshal(b3, &episode); err != nil {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("failed (Parsing JSON)")}
 	}
 
@@ -185,13 +193,18 @@ func FirstTVer(c *http.Client) model.Result {
 		"sec-ch-ua-platform": "Windows",
 		"user-agent":         model.UA_Browser,
 	}
-	request4 := utils.Gorequest(c)
-	request4 = utils.SetGoRequestHeaders(request4, headers4)
-	res, body, errs = request4.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client4 := utils.Req(c)
+	client4 = utils.SetReqHeaders(client4, headers4)
+	resp4, err := client4.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	defer res.Body.Close()
+	defer resp4.Body.Close()
+	//b4, err := io.ReadAll(resp4.Body)
+	//if err != nil {
+	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	//}
+	//body4 := string(b4)
 	if res.StatusCode != 200 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr,
 			Err: fmt.Errorf("get platform-api.tver.jp failed with code: %d", res.StatusCode)}
@@ -237,7 +250,7 @@ func FirstTVer(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
+	b, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
@@ -304,7 +317,7 @@ func AnotherTVer(c *http.Client) model.Result {
 		ErrorCode    string `json:"error_code"`
 		Message      string `json:"message"`
 	}
-	// fmt.Println(body)
+	//fmt.Println(body)
 	if err := json.Unmarshal(b, &res1); err != nil {
 		if err := json.Unmarshal(b, &res2); err != nil {
 			if strings.Contains(body, "CLIENT_GEO") || strings.Contains(body, "ACCESS_DENIED") {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -16,12 +17,17 @@ func CBCGem(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://www.cbc.ca/g/stats/js/cbc-stats-top.js"
-	request := utils.Gorequest(c)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.ReqDefault(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	if strings.Contains(body, `country":"CA"`) {
 		return model.Result{Name: name, Status: model.StatusYes, Region: "ca"}
 	} else if resp.StatusCode == 200 {

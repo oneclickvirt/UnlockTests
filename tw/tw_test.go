@@ -2,9 +2,8 @@ package tw
 
 import (
 	"fmt"
-	"testing"
-
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"testing"
 )
 
 func Test(t *testing.T) {

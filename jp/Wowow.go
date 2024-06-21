@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -111,13 +112,18 @@ func Wowow(c *http.Client) model.Result {
 		"sec-ch-ua-platform": "\"Windows\"",
 		"User-Agent":         model.UA_Browser,
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr + " 1", Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr + " 1-1", Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr + " 1-1", Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	// 获取第一个剧集的链接
 	playUrl := getFirstLink(body)
 	if playUrl == "" {
@@ -125,30 +131,32 @@ func Wowow(c *http.Client) model.Result {
 	}
 
 	// 第二次请求：获取真实链接
-	headers2 := map[string]string{
-		"User-Agent": model.UA_Browser,
+	resp2, err := client.R().Get(playUrl)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr + " 2-1", Err: err}
 	}
-	request2 := utils.Gorequest(c)
-	request2 = utils.SetGoRequestHeaders(request2, headers2)
-	resp, body, errs = request2.Get(playUrl).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr + " 2", Err: errs[0]}
+	defer resp2.Body.Close()
+	b2, err := io.ReadAll(resp2.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr + " 2-1", Err: fmt.Errorf("can not parse body")}
 	}
+	body2 := string(b2)
 
 	// 获取真实链接
-	wodUrl := getWodUrl(body)
+	wodUrl := getWodUrl(body2)
 	if wodUrl == "" {
-		programUrl := getProgramUrl(body)
+		programUrl := getProgramUrl(body2)
 		// 第二次请求的二次请求：获取真实链接
-		headers3 := map[string]string{
-			"User-Agent": model.UA_Browser,
+		resp22, err22 := client.R().Get(programUrl)
+		if err22 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr + " 2-2", Err: err22}
 		}
-		request3 := utils.Gorequest(c)
-		request3 = utils.SetGoRequestHeaders(request3, headers3)
-		resp, body, errs = request3.Get(programUrl).End()
-		if len(errs) > 0 {
-			return model.Result{Name: name, Status: model.StatusNetworkErr + " 2-2", Err: errs[0]}
+		defer resp22.Body.Close()
+		b22, err22 := io.ReadAll(resp22.Body)
+		if err22 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 		}
+		body = string(b22)
 		tempList := strings.Split(body, "\"refId\":\"")
 		if len(tempList) >= 2 {
 			for _, l := range tempList {
@@ -167,13 +175,16 @@ func Wowow(c *http.Client) model.Result {
 	}
 
 	// 第三次请求：获取 meta_id
-	resp, body, errs = request.Get(wodUrl).
-		Set("User-Agent", model.UA_Browser).
-		Timeout(10 * time.Second).
-		End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr + " 3", Err: errs[0]}
+	resp3, err := client.R().Get(wodUrl)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr + " 3", Err: err}
 	}
+	defer resp3.Body.Close()
+	b3, err := io.ReadAll(resp3.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr + " 3", Err: fmt.Errorf("can not parse body")}
+	}
+	body = string(b3)
 	metaId := getMetaId(body)
 	if metaId == "" {
 		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to get meta ID")}
@@ -199,11 +210,9 @@ func Wowow(c *http.Client) model.Result {
 		"x-requested-with":   "XMLHttpRequest",
 		"User-Agent":         model.UA_Browser,
 	}
-	request4 := utils.Gorequest(c)
-	request4 = utils.SetGoRequestHeaders(request4, headers4)
-	resp, body, errs = request.Post(authUrl).Send(data).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr + " 4", Err: errs[0]}
+	resp, body, err = utils.PostJson(c, authUrl, data, headers4)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr + " 4", Err: err}
 	}
 	//fmt.Println(body)
 	// {"error":{"message":"サポート外ネットワークからの接続です。日本国外からの接続、VPN・プロキシ経由の接続等ではご利用いただけません。","code":2055,"type":"Forbidden",

@@ -5,6 +5,7 @@ import (
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 )
+
 // Hulu
 // www.hulu.jp 或 id.hulu.jp 仅 ipv4 且 get 请求
 // https://www.hulu.jp/login

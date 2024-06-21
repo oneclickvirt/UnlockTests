@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -30,14 +31,19 @@ func JioCinema(c *http.Client) model.Result {
 		"sec-ch-ua-mobile":   "?0",
 		"sec-ch-ua-platform": "Windows",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
 	url1 := "https://apis-jiocinema.voot.com/location"
-	resp1, body1, errs1 := request.Get(url1).End()
-	if len(errs1) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url1)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	defer resp1.Body.Close()
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body1 := string(b)
 
 	isBlocked1 := strings.Contains(body1, "Access Denied")
 	isOK1 := strings.Contains(body1, "Success")
@@ -55,14 +61,19 @@ func JioCinema(c *http.Client) model.Result {
 		"Sec-Fetch-Site":                 "cross-site",
 		"User-Agent":                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
 	}
-	request2 := utils.Gorequest(c)
-	request2 = utils.SetGoRequestHeaders(request2, headers2)
 	url2 := "https://content-jiovoot.voot.com/psapi/voot/v1/voot-web//view/show/3500210?subNavId=38fa57ba_1706064514668&excludeTray=player-tray,subnav&responseType=common&devicePlatformType=desktop&page=1&layoutCohort=default&supportedChips=comingsoon"
-	resp2, body2, errs2 := request2.Options(url2).End()
-	if len(errs2) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+	client2 := utils.Req(c)
+	client2 = utils.SetReqHeaders(client2, headers2)
+	resp2, err2 := client2.R().Get(url2)
+	if err2 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 	}
 	defer resp2.Body.Close()
+	b2, err2 := io.ReadAll(resp2.Body)
+	if err2 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body2 := string(b2)
 
 	isBlocked2 := strings.Contains(body2, "JioCinema is unavailable at your location")
 	isOK2 := strings.Contains(body2, "Ok")

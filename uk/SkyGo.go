@@ -2,11 +2,11 @@ package uk
 
 import (
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
+	"net/http"
+	"strings"
 )
 
 // SkyGo
@@ -17,16 +17,17 @@ func SkyGo(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://skyid.sky.com/authorise/skygo?response_type=token&client_id=sky&appearance=compact&redirect_uri=skygo://auth"
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	if strings.Contains(body, "You don't have permission to access") || resp.StatusCode == 403 || resp.StatusCode == 200 ||
 		strings.Contains(body, "Access Denied") { // || resp.StatusCode == 451
 		return model.Result{Name: name, Status: model.StatusNo}

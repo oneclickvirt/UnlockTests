@@ -2,11 +2,10 @@ package tw
 
 import (
 	"encoding/json"
-	"net/http"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // LiTV
@@ -22,13 +21,13 @@ func LiTV(c *http.Client) model.Result {
 		"Referer":  "https://www.litv.tv/drama/watch/VOD00331042",
 		"Priority": "u=1, i",
 	}
-	resp, body, errs := utils.PostJson(c, "https://www.litv.tv/api/get-urls-no-auth",
+	resp, body, err := utils.PostJson(c, "https://www.litv.tv/api/get-urls-no-auth",
 		`{"AssetId": "vod71211-000001M001_1500K","MediaType": "vod","puid": "d66267c2-9c52-4b32-91b4-3e482943fe7e"}`,
 		headers,
 	)
-	if len(errs) > 0 {
+	if err != nil {
 		tp := AnotherLiTV(c)
-		tp.Err = errs[0]
+		tp.Err = err
 		return tp
 	}
 	bodyString := string(body)
@@ -55,13 +54,13 @@ func AnotherLiTV(c *http.Client) model.Result {
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
-	resp, body, errs := utils.PostJson(c, url, payload, headers)
-	if errs != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	resp, body, err := utils.PostJson(c, url, payload, headers)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
 	var jsonResponse map[string]interface{}
-	err := json.Unmarshal(body, &jsonResponse)
+	err = json.Unmarshal([]byte(body), &jsonResponse)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: err}
 	}

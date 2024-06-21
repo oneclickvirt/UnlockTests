@@ -24,17 +24,13 @@ func KPLUS(c *http.Client) model.Result {
 		"Origin":  "https://xem.kplus.vn",
 		"Referer": "https://xem.kplus.vn/",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Post("https://tvapi-sgn.solocoo.tv/v1/session").
-		Type("json").
-		Send(firstRequestData).
-		End()
-	if len(errs) > 0 {
-		log.Fatalf("Failed to make first request: %v", errs)
+	url := "https://tvapi-sgn.solocoo.tv/v1/session"
+	resp, body, err := utils.PostJson(c, url, firstRequestData, headers)
+	if err != nil {
+		log.Fatalf("Failed to make first request: %v", err.Error())
 	}
 	defer resp.Body.Close()
-	// fmt.Println(body)
+	//fmt.Println(body)
 	token := ""
 	if strings.Contains(body, "\"token\"") {
 		token = strings.Split(strings.Split(body, "\"token\":\"")[1], "\"")[0]
@@ -44,16 +40,17 @@ func KPLUS(c *http.Client) model.Result {
 	}
 
 	secondRequestData := `{"player":{"name":"RxPlayer","version":"3.29.0","capabilities":{"mediaTypes":["DASH","DASH"],"drmSystems":["PlayReady","Widevine"],"smartLib":true}}}`
-	secondResp, secondBody, secondErrs := request.Post("https://tvapi-sgn.solocoo.tv/v1/assets/BJO0h8jMwJWg5Id_4VLxIJ-VscUzRry_myp4aC21/play").
-		Set("Authorization", "Bearer "+token).
-		Set("Content-Type", "application/json").
-		Send(secondRequestData).
-		End()
-	if len(secondErrs) > 0 {
-		log.Fatalf("Failed to make second request: %v", secondErrs)
+	url2 := "https://tvapi-sgn.solocoo.tv/v1/assets/BJO0h8jMwJWg5Id_4VLxIJ-VscUzRry_myp4aC21/play"
+	headers2 := map[string]string{
+		"Authorization": "Bearer " + token,
+		"Content-Type":  "application/json",
+	}
+	secondResp, secondBody, secondErr := utils.PostJson(c, url2, secondRequestData, headers2)
+	if secondErr != nil {
+		log.Fatalf("Failed to make second request: %v", secondErr.Error())
 	}
 	defer secondResp.Body.Close()
-	// fmt.Println(secondBody)
+	//fmt.Println(secondBody)
 	if strings.Contains(secondBody, "geoblock") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if secondBody != "" {

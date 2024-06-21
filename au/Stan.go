@@ -15,9 +15,9 @@ func Stan(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	resp, body, errs := utils.PostJson(c, "https://api.stan.com.au/login/v1/sessions/web/account", "{}", nil)
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	resp, body, err := utils.PostJson(c, "https://api.stan.com.au/login/v1/sessions/web/account", "{}", nil)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
 	if strings.Contains(string(body), "Access Denied") || resp.StatusCode == 404 || resp.StatusCode == 451 {

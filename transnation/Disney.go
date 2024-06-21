@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -42,15 +43,18 @@ func requestDisney(c *http.Client, URL string, method string) model.Result {
 		"User-Agent":    model.UA_Browser,
 		"authorization": "Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Post(URL).
-		Type("form").
-		SendString(data.Encode()).
-		End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().SetFormDataFromValues(data).Post(URL)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	switch method {
 	case "auth":
 		if strings.Contains(body, "unauthorized") {
@@ -62,7 +66,7 @@ func requestDisney(c *http.Client, URL string, method string) model.Result {
 		return model.Result{Name: name, Status: model.StatusYes}
 	case "query":
 		if location := resp.Header.Get("Location"); location == "" {
-			for _, c := range resp.Request.Cookies() {
+			for _, c := range resp.Request.Cookies {
 				if c.Name == "x-dss-country" {
 					return model.Result{
 						Name: name, Status: model.StatusYes,

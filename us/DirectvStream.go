@@ -1,10 +1,9 @@
 package us
 
 import (
-	"net/http"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // ATTNOW - DirectvStream
@@ -21,13 +20,11 @@ func DirectvStream(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	// b, err := io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
-	// }
-	// body := string(b)
-	// fmt.Println(body)
-	// fmt.Println(resp.Header)
+	//b, err := io.ReadAll(resp.Body)
+	//if err != nil {
+	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	//}
+	//body := string(b)
 	if resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

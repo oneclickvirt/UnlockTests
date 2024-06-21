@@ -40,11 +40,9 @@ func Instagram(c *http.Client) model.Result {
 		"sec-ch-ua-platform-version":  `"10.0.0"`,
 		"viewport-width":              "1640",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Post(url).Send(payload).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr}
+	resp, body, err := utils.PostJson(c, url, payload, headers)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	if resp.StatusCode == 200 {
 		if strings.Contains(body, `"should_mute_audio":true`) {

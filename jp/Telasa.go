@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -20,13 +21,18 @@ func Telasa(c *http.Client) model.Result {
 	headers := map[string]string{
 		"X-Device-ID": "d36f8e6b-e344-4f5e-9a55-90aeb3403799",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.ReqDefault(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	var res struct {
 		Status struct {
 			Type    string `json:"type"`
@@ -34,7 +40,7 @@ func Telasa(c *http.Client) model.Result {
 		} `json:"status"`
 	}
 	//fmt.Println(body)
-	if err := json.Unmarshal([]byte(body), &res); err != nil {
+	if err := json.Unmarshal(b, &res); err != nil {
 		if strings.Contains(body, "RequestForbidden") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}

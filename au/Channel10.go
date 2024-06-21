@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -19,31 +20,38 @@ func Channel10(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://10play.com.au/geo-web"
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
+	//fmt.Println(body)
 	if strings.Contains(body, "Sorry, 10 play is not available in your region.") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	url = "https://e410fasadvz.global.ssl.fastly.net/geo"
-	resp, body, errs = request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	resp, err = client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body = string(b)
 	//fmt.Println(body)
 	var res struct {
 		State string `json:"state"`
 		Allow bool   `json:"allow"`
 	}
-	if err := json.Unmarshal([]byte(body), &res); err != nil {
+	if err := json.Unmarshal(b, &res); err != nil {
 		if strings.Contains(body, "not available") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}

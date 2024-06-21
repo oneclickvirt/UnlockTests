@@ -30,13 +30,12 @@ func Lemino(c *http.Client) model.Result {
 		"X-Trace-ID":         "556db33f-d739-4a82-84df-dd509a8aa179",
 		"sec-ch-ua":          model.UA_SecCHUA,
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, _, errs := request.Get(url).
-		Send("{\"inflow_flows\":[null,\"crid://plala.iptvf.jp/group/b100ce3\"],\"play_type\":1,\"key_download_only\":null,\"quality\":null,\"groupcast\":null,\"avail_status\":\"1\",\"terminal_type\":3,\"test_account\":0,\"content_list\":[{\"kind\":\"main\",\"service_id\":null,\"cid\":\"00lm78dz30\",\"lid\":\"a0lsa6kum1\",\"crid\":\"crid://plala.iptvf.jp/vod/0000000000_00lm78dymn\",\"preview\":0,\"trailer\":0,\"auto_play\":0,\"stop_position\":0}]}").
-		End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	playload := "{\"inflow_flows\":[null,\"crid://plala.iptvf.jp/group/b100ce3\"],\"play_type\":1,\"key_download_only\":null,\"quality\":null,\"groupcast\":null,\"avail_status\":\"1\",\"terminal_type\":3,\"test_account\":0,\"content_list\":[{\"kind\":\"main\",\"service_id\":null,\"cid\":\"00lm78dz30\",\"lid\":\"a0lsa6kum1\",\"crid\":\"crid://plala.iptvf.jp/vod/0000000000_00lm78dymn\",\"preview\":0,\"trailer\":0,\"auto_play\":0,\"stop_position\":0}]}"
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().SetBodyJsonString(playload).Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {

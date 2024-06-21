@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -21,18 +22,23 @@ func MyTvSuper(c *http.Client) model.Result {
 		"User-Agent":   model.UA_Browser,
 		"Content-Type": "application/json",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	var mytvsuperRes struct {
 		Region      int    `json:"region"`
 		CountryCode string `json:"country_code"`
 	}
-	if err := json.Unmarshal([]byte(body), &mytvsuperRes); err != nil {
+	if err := json.Unmarshal(b, &mytvsuperRes); err != nil {
 		if strings.Contains(body, "HK") {
 			return model.Result{Name: name, Status: model.StatusYes}
 		}

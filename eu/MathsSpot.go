@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -34,13 +35,18 @@ func MathsSpot(c *http.Client) model.Result {
 		"User-Agent":      model.UA_Browser,
 	}
 	url := "https://mathsspot.com/"
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	//fmt.Println(body)
 	if len(body) > 0 && strings.Contains(body, "FailureServiceNotInRegion") {
 		return model.Result{Name: name, Status: model.StatusNo}
@@ -50,7 +56,6 @@ func MathsSpot(c *http.Client) model.Result {
 	if region == "" || nggFeVersion == "" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	request2 := utils.Gorequest(c)
 	headers2 := map[string]string{
 		"accept":                "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
 		"accept-language":       "en-US,en;q=0.9",
@@ -63,13 +68,19 @@ func MathsSpot(c *http.Client) model.Result {
 		"x-ngg-skip-evar-check": "true",
 		"x-ngg-fe-version":      nggFeVersion,
 	}
-	request2 = utils.SetGoRequestHeaders(request2, headers2)
+	client2 := utils.Req(c)
+	client2 = utils.SetReqHeaders(client2, headers2)
 	url2 := fmt.Sprintf("https://mathsspot.com/3/api/play/v1/startSession?appId=5349&uaId=ua-%s&uaSessionId=uasess-%s&feSessionId=fesess-%s&visitId=visitid-%s&initialOrientation=landscape&utmSource=NA&utmMedium=NA&utmCampaign=NA&deepLinkUrl=&accessCode=&ngReferrer=NA&pageReferrer=NA&ngEntryPoint=https%%3A%%2F%%2Fmathsspot.com%%2F&ntmSource=NA&customData=&appLaunchExtraData=&feSessionTags=nowgg&sdpType=&eVar=&isIframe=false&feDeviceType=desktop&feOsName=window&userSource=direct&visitSource=direct&userCampaign=NA&visitCampaign=NA", generateRandomString(21), generateRandomString(21), generateRandomString(21), generateRandomString(21))
-	resp2, body2, errs2 := request2.Get(url2).End()
-	if len(errs2) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+	resp2, err2 := client.R().Get(url2)
+	if err2 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 	}
 	defer resp2.Body.Close()
+	b, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body2 := string(b)
 	//fmt.Println(body2)
 	status := utils.ReParse(body2, `"status"\s{0,}:\s{0,}"([^"]+)"`)
 	switch status {

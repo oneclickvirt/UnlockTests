@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
+	"net/url"
 )
 
 // Tw4gtv
@@ -15,25 +17,30 @@ func Tw4gtv(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "https://api2.4gtv.tv//Vod/GetVodUrl3"
-	formData := `value=D33jXJ0JVFkBqV%2BZSi1mhPltbejAbPYbDnyI9hmfqjKaQwRQdj7ZKZRAdb16%2FRUrE8vGXLFfNKBLKJv%2BfDSiD%2BZJlUa5Msps2P4IWuTrUP1%2BCnS255YfRadf%2BKLUhIPj`
+	url1 := "https://api2.4gtv.tv//Vod/GetVodUrl3"
+	data := url.Values{
+		"value": {"D33jXJ0JVFkBqV%2BZSi1mhPltbejAbPYbDnyI9hmfqjKaQwRQdj7ZKZRAdb16%2FRUrE8vGXLFfNKBLKJv%2BfDSiD%2BZJlUa5Msps2P4IWuTrUP1%2BCnS255YfRadf%2BKLUhIPj"},
+	}
 	headers := map[string]string{
 		"User-Agent": model.UA_Browser,
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Post(url).
-		Type("form").
-		Send(formData).
-		End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().SetFormDataFromValues(data).Post(url1)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	//body := string(b)
+	//fmt.Println(body)
 	var res struct {
 		Success bool `json:"success"`
 	}
-	if err := json.Unmarshal([]byte(body), &res); err != nil {
+	if err := json.Unmarshal(b, &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.Success {

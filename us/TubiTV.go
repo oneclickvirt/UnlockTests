@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -16,27 +17,34 @@ func TubiTV(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://tubitv.com/home"
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, _, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	//b, err := io.ReadAll(resp.Body)
+	//if err != nil {
+	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	//}
+	//body := string(b)
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	if resp.StatusCode == 302 {
-		resp2, body2, errs2 := request.Get("https://gdpr.tubi.tv").Retry(2, 5).End()
-		if len(errs2) > 0 {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+		url2 := "https://gdpr.tubi.tv"
+		resp2, err2 := client.R().Get(url2)
+		if err2 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 		}
 		defer resp2.Body.Close()
+		b2, err2 := io.ReadAll(resp2.Body)
+		if err2 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		}
+		body2 := string(b2)
 		if strings.Contains(body2, "Unfortunately") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}

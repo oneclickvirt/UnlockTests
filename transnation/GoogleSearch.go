@@ -2,12 +2,11 @@ package transnation
 
 import (
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // GoogleSearch
@@ -20,10 +19,10 @@ func GoogleSearch(c *http.Client) model.Result {
 	url := "https://www.google.com/search?q=www.spiritysdx.top/"
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
-	defer resp.Body.Close()
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
+	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}

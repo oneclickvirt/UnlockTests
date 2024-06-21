@@ -5,9 +5,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/gofrs/uuid/v5"
+	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/parnurzeal/gorequest"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -37,7 +38,7 @@ func extractValue(body, start, end string) string {
 	return body[startIndex : startIndex+endIndex]
 }
 
-func extractHeaderValue(resp gorequest.Response, headerName string) string {
+func extractHeaderValue(resp *req.Response, headerName string) string {
 	if resp.Header.Get(headerName) != "" {
 		return resp.Header.Get(headerName)
 	}
@@ -74,11 +75,10 @@ func AISPlay(c *http.Client) model.Result {
 		"time":               timestamp,
 		"udid":               fakeUdid,
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Post(url).Send("------WebKitFormBoundaryBj2RhUIW7BtRvfK0--").End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	playload := "------WebKitFormBoundaryBj2RhUIW7BtRvfK0--"
+	resp, body, err := utils.PostJson(c, url, playload, headers)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
 	sId := extractValue(body, `"sid" : "`, `"`)
@@ -94,13 +94,18 @@ func AISPlay(c *http.Client) model.Result {
 	headers["dat"] = datAuth
 	headers["sid"] = sId
 	headers["time"] = timestamp
-	for _, h := range headers {
-		request = request.Set(h, headers[h])
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err = client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	resp, body, errs = request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
+	body = string(b)
 
 	tmpLiveUrl := extractValue(body, `"live" : "`, `"`)
 	if tmpLiveUrl == "" {
@@ -124,12 +129,18 @@ func AISPlay(c *http.Client) model.Result {
 		"sec-ch-ua-mobile":   "?0",
 		"sec-ch-ua-platform": "\"Windows\"",
 	}
-	request2 := utils.Gorequest(c)
-	request2 = utils.SetGoRequestHeaders(request2, headers2)
-	resp, body, errs = request2.Get(realLiveUrl).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client2 := utils.Req(c)
+	client2 = utils.SetReqHeaders(client2, headers2)
+	resp2, err := client2.R().Get(realLiveUrl)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
+	defer resp2.Body.Close()
+	b, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body = string(b)
 	playUrl := extractValue(body, `"url" : "`, `"`)
 	if playUrl == "" {
 		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("playUrl is null")}
@@ -146,14 +157,15 @@ func AISPlay(c *http.Client) model.Result {
 		"sec-ch-ua-mobile":   "?0",
 		"sec-ch-ua-platform": "\"Windows\"",
 	}
-	request3 := utils.Gorequest(c)
-	request3 = utils.SetGoRequestHeaders(request3, headers3)
-	resp, body, errs = request3.Get(playUrl).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client3 := utils.Req(c)
+	client3 = utils.SetReqHeaders(client3, headers3)
+	resp3, err := client3.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
+	defer resp3.Body.Close()
 
-	baseRequstCheckStatus := extractHeaderValue(resp, "X-Base-Request-Check-Status")
+	baseRequstCheckStatus := extractHeaderValue(resp3, "X-Base-Request-Check-Status")
 	if baseRequstCheckStatus == "INCORRECT" {
 		// return model.Result{Name: name, Status: model.StatusErr,
 		// 	Err: fmt.Errorf("X-Base-Request-Check-Status is INCORRECT")}
@@ -165,7 +177,7 @@ func AISPlay(c *http.Client) model.Result {
 	switch result {
 	case "BLOCK":
 		return model.Result{Name: name, Status: model.StatusNo}
-	case "SUCCESS", "ALLOW":
+	case "SUCCESS":
 		return model.Result{Name: name, Status: model.StatusYes}
 	default:
 		return AnotherAISPlay(c)
@@ -180,16 +192,17 @@ func AnotherAISPlay(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://49-231-37-237-rewriter.ais-vidnt.com/ais/play/origin/VOD/playlist/ais-yMzNH1-bGUxc/index.m3u8"
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {

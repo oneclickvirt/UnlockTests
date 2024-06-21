@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 )
 
@@ -22,18 +23,23 @@ func SetantaSports(c *http.Client) model.Result {
 		"x-api-key":       "857a1e5d-e35e-4fdf-805b-a87b6f8364bf",
 		"Accept-Language": "en-US",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	//body := string(b)
 	//fmt.Println(body)
 	var consentResponse struct {
 		OutsideAllowedTerritories bool `json:"outsideAllowedTerritories"`
 	}
-	if err := json.Unmarshal([]byte(body), &consentResponse); err != nil {
+	if err := json.Unmarshal(b, &consentResponse); err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	if consentResponse.OutsideAllowedTerritories {

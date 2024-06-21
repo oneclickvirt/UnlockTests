@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -41,13 +42,18 @@ func NaverTV(c *http.Client) model.Result {
 		"Origin":     "https://tv.naver.com",
 		"Referer":    "https://tv.naver.com/v/31030608",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(reqURL).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(reqURL)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	if resp.StatusCode == 200 {
 		var res struct {
 			Result struct {
@@ -56,7 +62,7 @@ func NaverTV(c *http.Client) model.Result {
 				} `json:"play"`
 			} `json:"result"`
 		}
-		if err := json.Unmarshal([]byte(body), &res); err != nil {
+		if err := json.Unmarshal(b, &res); err != nil {
 			if strings.Contains(body, "NOT_COUNTRY_AVAILABLE") {
 				return model.Result{Name: name, Status: model.StatusNo}
 			}

@@ -53,7 +53,7 @@ var (
 	R                                               []*model.Result
 	Names                                           []string
 	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
-	Version                                         = "0.0.4"
+	Version                                         = "0.0.5"
 )
 
 func NewBar(count int64) *pb.ProgressBar {

@@ -21,18 +21,17 @@ func VideoMarket(c *http.Client) model.Result {
 		"cookie":        "_gid=GA1.2.1853799793.1706147718; VM_REGIST_BANNER_REF_LINK=%2Ftitle%2F292072%2FA292072001999H01; __ulfpc=202401250957239984; _im_vid=01HMZ5C5GNNC6VWSPKD3E4W7YP; __td_signed=true; _td_global=0d11678b-5151-473e-b3a8-4f4d780f26a6; __juicer_sesid_9i3nsdfP_=d36a2e17-011",
 	}
 	url := "https://www.videomarket.jp/graphql"
-	resp, bodyBytes, errs := utils.PostJson(c, url, `{"operationName": "repPacksOnTab","variables": {"fullTitleId": "292072","groupType": "SINGLE_CHOICE","page": {"current": 1,"size": 20}},"query": "query repPacksOnTab($fullTitleId: String!, $groupType: GroupType!, $page: PageInput!) {\n  repPacksOnTab(fullTitleId: $fullTitleId, groupType: $groupType, page: $page) {\n    repFullPackId\n    groupType\n    packName\n    fullTitleId\n    titleName\n    storyImageUrl16x9\n    playTime\n    subtitleDubType\n    outlines\n    courseIds\n    price\n    discountRate\n    couponPrice\n    couponDiscountRate\n    rentalDays\n    viewDays\n    deliveryExpiredAt\n    salesType\n    counter {\n      currentPage\n      currentResult\n      totalPages\n      totalResults\n      __typename\n    }\n    undiscountedPrice\n    packs {\n      undiscountedPrice\n      canPurchase\n      fullPackId\n      subGroupType\n      fullTitleId\n      qualityConsentType\n      courseIds\n      price\n      discountRate\n      couponPrice\n      couponDiscountRate\n      rentalDays\n      viewDays\n      deliveryExpiredAt\n      salesType\n      extId\n      stories {\n        fullStoryId\n        subtitleDubType\n        encodeVersion\n        isDownloadable\n        isBonusMaterial\n        fileSize\n        __typename\n      }\n      __typename\n    }\n    status {\n      hasBeenPlayed\n      isCourseRegistered\n      isEstPurchased\n      isNowPlaying\n      isPlayable\n      isRented\n      playExpiredAt\n      playableQualityType\n      rentalExpiredAt\n      __typename\n    }\n    __typename\n  }\n}\n"}`,
+	resp, body, err := utils.PostJson(c, url, `{"operationName": "repPacksOnTab","variables": {"fullTitleId": "292072","groupType": "SINGLE_CHOICE","page": {"current": 1,"size": 20}},"query": "query repPacksOnTab($fullTitleId: String!, $groupType: GroupType!, $page: PageInput!) {\n  repPacksOnTab(fullTitleId: $fullTitleId, groupType: $groupType, page: $page) {\n    repFullPackId\n    groupType\n    packName\n    fullTitleId\n    titleName\n    storyImageUrl16x9\n    playTime\n    subtitleDubType\n    outlines\n    courseIds\n    price\n    discountRate\n    couponPrice\n    couponDiscountRate\n    rentalDays\n    viewDays\n    deliveryExpiredAt\n    salesType\n    counter {\n      currentPage\n      currentResult\n      totalPages\n      totalResults\n      __typename\n    }\n    undiscountedPrice\n    packs {\n      undiscountedPrice\n      canPurchase\n      fullPackId\n      subGroupType\n      fullTitleId\n      qualityConsentType\n      courseIds\n      price\n      discountRate\n      couponPrice\n      couponDiscountRate\n      rentalDays\n      viewDays\n      deliveryExpiredAt\n      salesType\n      extId\n      stories {\n        fullStoryId\n        subtitleDubType\n        encodeVersion\n        isDownloadable\n        isBonusMaterial\n        fileSize\n        __typename\n      }\n      __typename\n    }\n    status {\n      hasBeenPlayed\n      isCourseRegistered\n      isEstPurchased\n      isNowPlaying\n      isPlayable\n      isRented\n      playExpiredAt\n      playableQualityType\n      rentalExpiredAt\n      __typename\n    }\n    __typename\n  }\n}\n"}`,
 		headers,
 	)
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	bodyString := string(bodyBytes)
-	if strings.Contains(bodyString, "OverseasAccess") {
+	if strings.Contains(body, "OverseasAccess") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if strings.Contains(bodyString, "292072") {
+	if strings.Contains(body, "292072") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

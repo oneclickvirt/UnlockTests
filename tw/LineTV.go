@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 )
 
@@ -16,16 +17,22 @@ func LineTV(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://www.linetv.tw/api/part/11829/eps/1/part?chocomemberId="
-	request := utils.Gorequest(c)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.ReqDefault(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	//body := string(b)
+	//fmt.Println(body)
 	var res struct {
 		CountryCode int `json:"countryCode"`
 	}
-	if err := json.Unmarshal([]byte(body), &res); err != nil {
+	if err := json.Unmarshal(b, &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.CountryCode == 228 {

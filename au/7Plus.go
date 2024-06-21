@@ -16,24 +16,25 @@ func Au7plus(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://7plus-sevennetwork.akamaized.net/media/v1/dash/live/cenc/5303576322001/68dca38b-85d7-4dae-b1c5-c88acc58d51c/f4ea4711-514e-4cad-824f-e0c87db0a614/225ec0a0-ef18-4b7c-8fd6-8dcdd16cf03a/1x/segment0.m4f?akamai_token=exp=1672500385~acl=/media/v1/dash/live/cenc/5303576322001/68dca38b-85d7-4dae-b1c5-c88acc58d51c/f4ea4711-514e-4cad-824f-e0c87db0a614/*~hmac=800e1e1d1943addf12b71339277c637c7211582fe12d148e486ae40d6549dbde"
-	request := utils.Gorequest(c)
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, _, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	//b, err := io.ReadAll(resp.Body)
+	//if err != nil {
+	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	//}
+	//body := string(b)
 	// fmt.Println(body)
 	// fmt.Println(resp.StatusCode)
 	if resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusYes}
 	} else {
-		resp1, _, errs1 := request.Get("https://7plus.com.au/").End()
-		if len(errs1) > 0 {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
+		resp1, err1 := client.R().Get("https://7plus.com.au/")
+		if err1 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}
 		}
 		defer resp1.Body.Close()
 		// fmt.Println(body)

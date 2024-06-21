@@ -18,16 +18,17 @@ func DiscoveryPlus(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url1 := "https://disco-api.discoveryplus.co.uk/token?realm=questuk&deviceId=61ee588b07c4df08c02861ecc1366a592c4ad02d08e8228ecfee67501d98bf47&shortlived=true"
-	request := utils.Gorequest(c)
-	resp1, _, errs1 := request.Get(url1).End()
-	if len(errs1) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
+	client1 := utils.Req(c)
+	resp1, err1 := client1.R().Get(url1)
+	if err1 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}
 	}
 	defer resp1.Body.Close()
 	b1, err1 := io.ReadAll(resp1.Body)
 	if err1 != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
+	//body1 := string(b1)
 	var res struct {
 		Data struct {
 			Attributes struct {
@@ -48,12 +49,15 @@ func DiscoveryPlus(c *http.Client) model.Result {
 		"747161435877577673078228%7CMCAAMLH-1633011393%7C9%7CMCAAMB-1633011393%7CRKhpRz8krg2tLO6pguXWp5o" +
 		"lkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1632413793s%7CNONE%7CvVersion%7C5.2.0; " +
 		"ass=19ef15da-95d6-4b1d-8fa2-e9e099c9cc38.1632408400.1632406594"
-	resp2, _, errs2 := request.
-		Get("https://disco-api.discoveryplus.co.uk/users/me").
-		Set("Cookie", cookies).
-		End()
-	if len(errs2) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+	headers := map[string]string{
+		"Cookie": cookies,
+	}
+	url2 := "https://disco-api.discoveryplus.co.uk/users/me"
+	client2 := utils.Req(c)
+	client2 = utils.SetReqHeaders(client2, headers)
+	resp2, err2 := client2.R().Get(url2)
+	if err2 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 	}
 	defer resp2.Body.Close()
 	b2, err := io.ReadAll(resp2.Body)
@@ -68,7 +72,7 @@ func DiscoveryPlus(c *http.Client) model.Result {
 		} `json:"data"`
 	}
 	//fmt.Println(string(b2))
-	if err := json.Unmarshal(b2, &res2); err != nil {
+	if err = json.Unmarshal(b2, &res2); err != nil {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: err}
 	}
 	if res2.Data.Attributes.CurrentLocationTerritory != "" {

@@ -33,14 +33,22 @@ func Starz(c *http.Client) model.Result {
 	authorization := string(b)
 	// fmt.Printf(authorization)
 	if authorization != "" && !strings.Contains(authorization, "AccessDenied") {
-		request := utils.Gorequest(c)
-		resp2, body2, errs2 := request.Get("https://auth.starz.com/api/v4/User/geolocation").
-			Set("AuthTokenAuthorization", authorization).
-			Retry(2, 5).End()
-		if len(errs2) > 0 {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+		url2 := "https://auth.starz.com/api/v4/User/geolocation"
+		headers2 := map[string]string{
+			"AuthTokenAuthorization": authorization,
+		}
+		client2 := utils.Req(c)
+		client2 = utils.SetReqHeaders(client2, headers2)
+		resp2, err2 := client2.R().Get(url2)
+		if err2 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 		}
 		defer resp2.Body.Close()
+		b2, err2 := io.ReadAll(resp2.Body)
+		if err2 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		}
+		//body2 := string(b2)
 		var res struct {
 			IsAllowedAccess  bool   `json:"isAllowedAccess"`
 			IsAllowedCountry bool   `json:"isAllowedCountry"`
@@ -48,7 +56,7 @@ func Starz(c *http.Client) model.Result {
 			Country          string `json:"country"`
 		}
 		// fmt.Println(body2)
-		if err := json.Unmarshal([]byte(body2), &res); err != nil {
+		if err := json.Unmarshal(b2, &res); err != nil {
 			return model.Result{Name: name, Status: model.StatusErr, Err: err}
 		}
 		if res.IsAllowedAccess && res.IsAllowedCountry && !res.IsKnownProxy {

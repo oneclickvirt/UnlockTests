@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -40,13 +41,18 @@ func TrueID(c *http.Client) model.Result {
 		"sec-fetch-user":            "?1",
 		"upgrade-insecure-requests": "1",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	channelId := getStringBetween(body, `"channelId":"`, `"`)
 	authUser := getStringBetween(body, `"buildId":"`, `"`)
 	if len(authUser) < 11 {
@@ -60,11 +66,17 @@ func TrueID(c *http.Client) model.Result {
 		"accept":        "application/json, text/plain, */*",
 		"referer":       url,
 	}
-	request = utils.SetGoRequestHeaders(request, headers2)
-	resp, body, errs = request.Get(apiURL).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client = utils.SetReqHeaders(client, headers2)
+	resp2, err := client.R().Get(apiURL)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
+	defer resp2.Body.Close()
+	b, err = io.ReadAll(resp2.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body = string(b)
 	result := getStringBetween(body, `"billboardType":"`, `"`)
 	if result == "GEO_BLOCK" || strings.Contains(body, "Access denied") || resp.StatusCode == 401 {
 		return model.Result{Name: name, Status: model.StatusNo}

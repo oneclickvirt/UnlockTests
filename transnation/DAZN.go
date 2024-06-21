@@ -14,12 +14,12 @@ func DAZN(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	resp, bodyBytes, errs := utils.PostJson(c, "https://startup.core.indazn.com/misl/v5/Startup",
+	resp, body, err := utils.PostJson(c, "https://startup.core.indazn.com/misl/v5/Startup",
 		`{"LandingPageKey":"generic","Languages":"zh-CN,zh,en","Platform":"web","PlatformAttributes":{},"Manufacturer":"","PromoCode":"","Version":"2"}`,
 		map[string]string{"User-Agent": model.UA_Browser},
 	)
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
 	var daznRes struct {
@@ -30,7 +30,7 @@ func DAZN(c *http.Client) model.Result {
 			GeolocatedCountryName string `json:"GeolocatedCountryName"`
 		} `json:"Region"`
 	}
-	if err := json.Unmarshal(bodyBytes, &daznRes); err != nil {
+	if err := json.Unmarshal([]byte(body), &daznRes); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if daznRes.Region.IsAllowed {

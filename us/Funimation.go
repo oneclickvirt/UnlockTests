@@ -15,20 +15,21 @@ func Funimation(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://www.crunchyroll.com/"
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, _, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	//b, err := io.ReadAll(resp.Body)
+	//if err != nil {
+	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	//}
+	//body := string(b)
 	if resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	for _, ck := range resp.Request.Cookies() {
+	for _, ck := range resp.Request.Cookies {
 		if ck.Name == "region" {
 			return model.Result{Name: name, Status: model.StatusYes, Region: ck.Value}
 		}

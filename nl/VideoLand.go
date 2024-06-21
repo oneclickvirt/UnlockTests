@@ -26,7 +26,7 @@ func VideoLand(c *http.Client) model.Result {
 		"referer":                   "https://www.videoland.com/",
 		"accept":                    "application/json, text/plain, */*",
 	}
-	client := utils.Req(c)
+	client := utils.ReqDefault(c)
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().SetBodyString(payload).Post(url)
 	if err != nil {
@@ -44,7 +44,7 @@ func VideoLand(c *http.Client) model.Result {
 			Blocked bool `json:"isOnboardingGeoBlocked"`
 		} `json:"data"`
 	}
-	if err := json.Unmarshal([]byte(body), &res); err != nil {
+	if err = json.Unmarshal(b, &res); err != nil {
 		if strings.Contains(body, "\"isOnboardingGeoBlocked\":true") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}

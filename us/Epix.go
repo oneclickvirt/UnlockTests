@@ -2,12 +2,11 @@ package us
 
 import (
 	"encoding/json"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Epix
@@ -32,15 +31,11 @@ func Epix(c *http.Client) model.Result {
 		"Referer":                     "https://www.mgmplus.com/",
 		"sec-ch-ua":                   model.UA_SecCHUA,
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Post(url).
-		Send(payload).
-		End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	resp0, body, err := utils.PostJson(c, url, payload, headers)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	defer resp.Body.Close()
+	defer resp0.Body.Close()
 	if strings.Contains(body, "error code") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

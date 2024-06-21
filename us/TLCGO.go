@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -34,13 +35,18 @@ func TLCGO(c *http.Client) model.Result {
 		"x-disco-client":     "WEB:UNKNOWN:tlc:3.17.0",
 		"x-disco-params":     "realm=go,siteLookupKey=tlc,bid=tlc,hn=go.tlc.com,hth=us,features=ar",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp1, body1, errs1 := request.Get(url).End()
-	if len(errs1) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
+	client1 := utils.Req(c)
+	client1 = utils.SetReqHeaders(client1, headers)
+	resp1, err1 := client1.R().Get(url)
+	if err1 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}
 	}
 	defer resp1.Body.Close()
+	b1, err1 := io.ReadAll(resp1.Body)
+	if err1 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	//body1 := string(b1)
 	//fmt.Println(body1)
 	var res1 struct {
 		Data struct {
@@ -49,7 +55,7 @@ func TLCGO(c *http.Client) model.Result {
 			} `json:"attributes"`
 		} `json:"data"`
 	}
-	if err := json.Unmarshal([]byte(body1), &res1); err != nil {
+	if err := json.Unmarshal(b1, &res1); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res1.Data.Attributes.Token != "" {
@@ -69,13 +75,19 @@ func TLCGO(c *http.Client) model.Result {
 			"x-disco-client":     "WEB:UNKNOWN:tlc:3.17.0",
 			"x-disco-params":     "realm=go,siteLookupKey=tlc,bid=tlc,hn=go.tlc.com,hth=us,features=ar",
 		}
-		request2 := utils.Gorequest(c)
-		request2 = utils.SetGoRequestHeaders(request2, headers2)
-		resp2, body2, errs2 := request2.Get("https://us1-prod-direct.tlc.com/cms/routes/home?include=default&decorators=viewingHistory,isFavorite,playbackAllowed&page[items.number]=1&page[items.size]=8").End()
-		if len(errs2) > 0 {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+		url2 := "https://us1-prod-direct.tlc.com/cms/routes/home?include=default&decorators=viewingHistory,isFavorite,playbackAllowed&page[items.number]=1&page[items.size]=8"
+		client2 := utils.Req(c)
+		client2 = utils.SetReqHeaders(client2, headers2)
+		resp2, err2 := client2.R().Get(url2)
+		if err2 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 		}
 		defer resp2.Body.Close()
+		b2, err2 := io.ReadAll(resp2.Body)
+		if err2 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		}
+		body2 := string(b2)
 		//fmt.Println(body2)
 		isBlocked := strings.Contains(body2, "is not yet available")
 		isOK := strings.Contains(body2, "Episodes")

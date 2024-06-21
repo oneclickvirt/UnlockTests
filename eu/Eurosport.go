@@ -3,12 +3,12 @@ package eu
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/gofrs/uuid/v5"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
+	"net/http"
+	"strings"
 )
 
 // Eurosport
@@ -35,13 +35,18 @@ func Eurosport(c *http.Client) model.Result {
 		"x-device-info":      fmt.Sprintf("escom/0.295.1 (unknown/unknown; Windows/10; %s)", fakeUuid),
 		"x-disco-client":     "WEB:UNKNOWN:escom:0.295.1",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp1, body1, errs1 := request.Get(url).End()
-	if len(errs1) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs1[0]}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp1, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp1.Body.Close()
+	b, err := io.ReadAll(resp1.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	//body1 := string(b)
 	//fmt.Println(body1)
 	var res1 struct {
 		Data struct {
@@ -53,20 +58,27 @@ func Eurosport(c *http.Client) model.Result {
 			Type string `json:"type"`
 		} `json:"data"`
 	}
-	if err := json.Unmarshal([]byte(body1), &res1); err != nil {
+	if err := json.Unmarshal(b, &res1); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res1.Data.Attributes.Token != "" {
 		//fmt.Println(res1.Data.Attributes.Token)
 		sourceSystemId := "eurosport-vid2133403"
 		playbackUrl := fmt.Sprintf("https://eu3-prod-direct.eurosport.ro/playback/v2/videoPlaybackInfo/sourceSystemId/%s?usePreAuth=true", sourceSystemId)
-		resp2, body2, errs2 := request.Get(playbackUrl).
-			Set("Authorization", fmt.Sprintf("Bearer %s", res1.Data.Attributes.Token)).
-			End()
-		if len(errs2) > 0 {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs2[0]}
+		headers2 := map[string]string{
+			"Authorization": fmt.Sprintf("Bearer %s", res1.Data.Attributes.Token),
+		}
+		client = utils.SetReqHeaders(client, headers2)
+		resp2, err2 := client.R().Get(playbackUrl)
+		if err2 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 		}
 		defer resp2.Body.Close()
+		b, err = io.ReadAll(resp2.Body)
+		if err != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		}
+		body2 := string(b)
 		//fmt.Println(body2)
 		isBlocked := strings.Contains(body2, "access.denied.geoblocked")
 		isOK := strings.Contains(body2, "eurosport-vod")

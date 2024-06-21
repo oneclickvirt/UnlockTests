@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"regexp"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/parnurzeal/gorequest"
 )
 
 var ClientProxy = http.ProxyFromEnvironment
@@ -28,8 +28,13 @@ var Ipv4Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 		// 强制使用IPv4
-		return (&net.Dialer{}).DialContext(ctx, "tcp4", addr)
+		return Dialer.DialContext(ctx, "tcp4", addr)
 	},
+	// ForceAttemptHTTP2:     true,
+	MaxIdleConns:          100,
+	IdleConnTimeout:       90 * time.Second,
+	TLSHandshakeTimeout:   30 * time.Second,
+	ExpectContinueTimeout: 1 * time.Second,
 }
 var Ipv4HttpClient = &http.Client{
 	Timeout:   30 * time.Second,
@@ -38,9 +43,15 @@ var Ipv4HttpClient = &http.Client{
 var Ipv6Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-		// 强制使用IPv6
-		return (&net.Dialer{}).DialContext(ctx, "tcp6", addr)
+		// 强制使用IPv4
+		return Dialer.DialContext(ctx, "tcp6", addr)
 	},
+	// ForceAttemptHTTP2:     true,
+	MaxIdleConns:           100,
+	IdleConnTimeout:        90 * time.Second,
+	TLSHandshakeTimeout:    30 * time.Second,
+	ExpectContinueTimeout:  1 * time.Second,
+	MaxResponseHeaderBytes: 262144,
 }
 var Ipv6HttpClient = &http.Client{
 	Timeout:   30 * time.Second,
@@ -102,9 +113,9 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*http.Client, error) {
 // 为 req 设置请求
 func Req(c *http.Client) *req.Client {
 	client := req.C()
+	client.ImpersonateChrome()
 	client.Transport.DialContext = c.Transport.(*http.Transport).DialContext
 	client.SetProxy(c.Transport.(*http.Transport).Proxy)
-	client.ImpersonateChrome()
 	client.R().
 		SetRetryCount(2).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
@@ -130,25 +141,6 @@ func ReqDefault(c *http.Client) *req.Client {
 	return client
 }
 
-// Gorequest
-// 为 gorequest 设置请求
-func Gorequest(c *http.Client) *gorequest.SuperAgent {
-	request := gorequest.New()
-	request.Transport.DialContext = c.Transport.(*http.Transport).DialContext
-	request.Transport.Proxy = c.Transport.(*http.Transport).Proxy
-	request.Retry(2, 5)
-	request.Timeout(12 * time.Second)
-	return request
-}
-
-// SetGoRequestHeaders
-func SetGoRequestHeaders(request *gorequest.SuperAgent, headers map[string]string) *gorequest.SuperAgent {
-	for key, value := range headers {
-		request = request.Set(key, value)
-	}
-	return request
-}
-
 // SetReqHeaders
 func SetReqHeaders(client *req.Client, headers map[string]string) *req.Client {
 	for key, value := range headers {
@@ -161,20 +153,24 @@ func SetReqHeaders(client *req.Client, headers map[string]string) *req.Client {
 // url: 目标 URL
 // payload: 要发送的 JSON 格式的请求体
 // headers: 可选的 HTTP 头信息
-func PostJson(c *http.Client, url string, payload string, headers map[string]string) (gorequest.Response, []byte, []error) {
+func PostJson(c *http.Client, url string, payload string, headers map[string]string) (*req.Response, string, error) {
 	// 构建 POST 请求，设置请求类型为 JSON 并添加请求体
-	request := Gorequest(c)
-	request = request.Post(url).
-		Type("json").
-		Send(payload)
+	request := ReqDefault(c)
 	// 添加可选的 HTTP 头信息
 	if headers != nil {
-		request = SetGoRequestHeaders(request, headers)
+		request = SetReqHeaders(request, headers)
 	}
-	// 发送请求并接收响应、响应体和错误信息
-	resp, body, errs := request.EndBytes()
-	// 返回响应、响应体和错误信息
-	return resp, body, errs
+	resp, err := request.R().SetBodyJsonString(payload).Post(url)
+	if err != nil {
+		return resp, "", err
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return resp, "", err
+	}
+	body := string(b)
+	return resp, body, err
 }
 
 // GetRegion
@@ -263,3 +259,22 @@ func PrintMusic(c *http.Client) model.Result {
 func PrintForum(c *http.Client) model.Result {
 	return model.Result{Name: "Forum", Status: model.PrintHead, Info: "EroGameSpace"}
 }
+
+// Gorequest
+// 为 gorequest 设置请求
+//func Gorequest(c *http.Client) *gorequest.SuperAgent {
+//	request := gorequest.New()
+//	request.Transport.DialContext = c.Transport.(*http.Transport).DialContext
+//	request.Transport.Proxy = c.Transport.(*http.Transport).Proxy
+//	request.Retry(2, 5)
+//	request.Timeout(12 * time.Second)
+//	return request
+//}
+
+// SetGoRequestHeaders
+//func SetGoRequestHeaders(request *gorequest.SuperAgent, headers map[string]string) *gorequest.SuperAgent {
+//	for key, value := range headers {
+//		request = request.Set(key, value)
+//	}
+//	return request
+//}

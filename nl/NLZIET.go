@@ -1,8 +1,10 @@
 package nl
 
 import (
+	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -15,16 +17,18 @@ func ZIETCDN(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get("https://nlziet.nl/cdn-cgi/trace").End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	url := "https://nlziet.nl/cdn-cgi/trace"
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	tempList := strings.Split(body, "\n")
 	var location string
 	for _, line := range tempList {
@@ -64,13 +68,18 @@ func NLZIET(c *http.Client) model.Result {
 		"Sec-Fetch-Mode":     "cors",
 		"Sec-Fetch-Site":     "same-site",
 	}
-	request := utils.Gorequest(c)
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
 		return ZIETCDN(c)
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return ZIETCDN(c)
+	}
+	body := string(b)
 	if resp.StatusCode == 200 {
 		if strings.Contains(body, "CountryNotAllowed") {
 			return model.Result{Name: name, Status: model.StatusNo}

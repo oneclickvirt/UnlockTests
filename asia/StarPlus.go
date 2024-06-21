@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/parnurzeal/gorequest"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -18,16 +18,17 @@ func StarPlus(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://www.starplus.com/"
-	request := utils.Gorequest(c)
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	request = utils.SetGoRequestHeaders(request, headers)
-	resp, body, errs := request.Get(url).End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	client := utils.Req(c)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	//fmt.Println(body)
 	if resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusBanned}
@@ -42,7 +43,7 @@ func StarPlus(c *http.Client) model.Result {
 		if region != "" {
 			loc := strings.ToLower(region)
 			if utils.GetRegion(loc, model.StarPlusSupportCountry) {
-				anotherCheck := AnotherStarPlus()
+				anotherCheck := AnotherStarPlus(c)
 				if anotherCheck.Err == nil && anotherCheck.Status == model.StatusYes {
 					return model.Result{Name: name, Status: model.StatusYes, Region: loc}
 				} else {
@@ -59,8 +60,11 @@ func StarPlus(c *http.Client) model.Result {
 
 // AnotherStarPlus
 // StarPlus 的 另一个检测逻辑
-func AnotherStarPlus() model.Result {
+func AnotherStarPlus(c *http.Client) model.Result {
 	name := "Star+"
+	headers := map[string]string{
+		"authorization": "c3RhciZicm93c2VyJjEuMC4w.COknIGCR7I6N0M5PGnlcdbESHGkNv7POwhFNL-_vIdg",
+	}
 	starcontent := "{\"query\":\"mutation registerDevice($input: RegisterDeviceInput!) " +
 		"{\\n            registerDevice(registerDevice: $input) {\\n                grant " +
 		"{\\n                    grantType\\n                    assertion\\n                " +
@@ -69,20 +73,16 @@ func AnotherStarPlus() model.Result {
 		"\"attributes\":{\"osDeviceIds\":[],\"manufacturer\":\"microsoft\",\"model\":null," +
 		"\"operatingSystem\":\"windows\",\"operatingSystemVersion\":\"10.0\",\"browserName\":" +
 		"\"chrome\",\"browserVersion\":\"96.0.4664\"}}}}"
-	request := gorequest.New()
-	resp, body, errs := request.Post("https://star.api.edge.bamgrid.com/graph/v1/device/graphql").
-		Set("authorization", "c3RhciZicm93c2VyJjEuMC4w.COknIGCR7I6N0M5PGnlcdbESHGkNv7POwhFNL-_vIdg").
-		SendString(starcontent).
-		End()
-	if len(errs) > 0 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+	resp, body, err := utils.PostJson(c, "https://star.api.edge.bamgrid.com/graph/v1/device/graphql", starcontent, headers)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	if resp.StatusCode >= 400 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("resp status code >= 400")}
 	}
 	var data map[string]interface{}
 	if err := json.Unmarshal([]byte(body), &data); err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: errs[0]}
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	region := ""
 	inSupportedLocation := false
