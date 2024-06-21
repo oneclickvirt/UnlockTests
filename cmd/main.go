@@ -853,7 +853,9 @@ func setupHttpProxy(httpProxy string) {
 }
 
 func GetIpv4Info(showIP bool) {
-	resp, err := utils.Req(utils.Ipv4HttpClient).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
+	client := utils.Req(utils.Ipv4HttpClient)
+	client.SetTimeout(5 * time.Second)
+	resp, err := client.R().Get("https://www.cloudflare.com/cdn-cgi/trace")
 	if err != nil {
 		IPV4 = false
 		if showIP {
@@ -881,7 +883,9 @@ func GetIpv4Info(showIP bool) {
 }
 
 func GetIpv6Info(showIP bool) {
-	resp, err := utils.Req(utils.Ipv6HttpClient).R().Get("https://www.cloudflare.com/cdn-cgi/trace")
+	client := utils.Req(utils.Ipv6HttpClient)
+	client.SetTimeout(5 * time.Second)
+	resp, err := client.R().Get("https://www.cloudflare.com/cdn-cgi/trace")
 	if err != nil {
 		IPV6 = false
 		if showIP {
