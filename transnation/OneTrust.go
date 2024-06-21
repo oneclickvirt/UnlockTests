@@ -34,7 +34,8 @@ func OneTrust(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if stateName == "" {
-		stateName = "Unknown"
+		return model.Result{Name: name, Status: model.StatusYes, Region: country}
+	} else {
+		return model.Result{Name: name, Status: model.StatusYes, Region: country + " " + stateName}
 	}
-	return model.Result{Name: name, Status: model.StatusYes, Region: country + " " + stateName}
 }
