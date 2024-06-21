@@ -1,13 +1,15 @@
 package transnation
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // DisneyPlus
@@ -17,76 +19,99 @@ func DisneyPlus(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	QueryResult := requestDisney(c, "https://www.disneyplus.com", "query")
-	if QueryResult.Status != model.StatusYes {
-		return QueryResult
-	}
-	VerifyResult := requestDisney(c, "https://disney.api.edge.bamgrid.com/token", "auth")
-	if VerifyResult.Status != model.StatusYes {
-		return VerifyResult
-	}
-	return QueryResult
-}
 
-// 实际进行请求
-func requestDisney(c *http.Client, URL string, method string) model.Result {
-	name := "Disney+"
-	if c == nil {
-		return model.Result{Name: name}
-	}
-	data := url.Values{
-		"grant_type":         {"refresh_token"},
-		"refresh_token":      {"eyJ6aXAiOiJERUYiLCJraWQiOiJLcTYtNW1Ia3BxOXdzLUtsSUUyaGJHYkRIZFduRjU3UjZHY1h6aFlvZi04IiwiY3R5IjoiSldUIiwiZW5jIjoiQzIwUCIsImFsZyI6ImRpciJ9..OdwL8TEIFZouLDJe.wLz6zEC3PlPAGxx4X4qyP837lUbFrI_DQGnrJDMtEaQd5gsjHwaYshscoDXCYjMioU8JvsH_HKZga3fzSDEoWuMA5lgv4dyJpoB4Cqi91JjPSkqsRHKZ1I-nRoTmnSkcW3RHE-0coAqDWgK7IZ5cPiHQ-9KVRqqZkmTbEHynBdgH2y-FJP8zK0-dAynzR2krlUahhcykp7J7VqhZj_l5HVZZkPylZ6eKoK4J8fQvuGJoqMaRZTzrIH4Yk9J3GMbKnYqEG3SKRp5qAuWTtqLDOoGN0wWsUE5VRuCZxRKpxayJWABq2u4ABkAtIqUx8CPx77ZXxZVlcjRN1Xa8F2-e2mTxZq_1FgzmWECFg6onkDj_TpfBdeFoxDzhnRNceoQ-iyyNf3sgxJ_nz_bwztVZf0Vt3OR8yBnXfbkuEY7GQ4pvCuy-peW0mwJJCd2eJ9ADwDEGmoY4F47W-8rxdBhgna-0hu0FuLxt9MlmH_tGCmM_T-61xsxymLO9tlkwBnxNw4u6T9X2hcvC7-4uzr5cJiaJ3sGPMNo_ixTrP8SG9zCIse-X6_Lq0v3Uo-QOKhcD4N3gIfwZFYEvf-HVGWzFpU683q9CJfTTEXhsufj1URhSis7GdAa3nLZVt7CScsMPcYrMI317PmU-Brdvl_Ic4QeHTeF8-57kzD3mm5mrlQ7kQIXQzzQPqHYt70MzxL_scfT90cpYaSOBQnB1l--226h7X51XxSbrOcO-25zS7OSyedya8eMG6zAmgkk1zvZUzdCHZyzYD8-t0KYcfA5AwiLIFHxgqL4ni9fVy-SpYTKRwCmkp_pZOPaFwJh8zkhw8QaSLHq7ubko7H1kjJZxzsG1l4Bla1QRlj_-FVoY8GZ6okFk3Ts6A2qOK6v8UT7sL_w2zaHDQH1q2o05vsLwqIOxg3Xyey0tahzPbl-In_i1JGGvqGXOiPcKL5uOcTOo1luk32AbCS9i5mkopTS401YYYMH-Sx_krW_VJd2czpFefc0dlagtzBytqlcyscscFwq6IE6VHwG2Ij-WfO44G5hGDJFkZMZLeDUnTIyNrLe9hcfJp73koOSFnURsFWFjM2lgUIayiREAl02oh2alUyqnG09gdXufT_2W0DjA4i7qYuv6ol5NIVc389dF3x4a_7dPBvsMU3ppA1rlV04FlK6_fRv-Dk_jclXRZiQ5ul2ZO2CQ96LmrzmkdeNxFxcwaNXCJGBiRWXfMunoddIRg_LrVGuqWRgxj4DEnngZ2-qI_dliGiYraIehsHvtWeXIUWNF_FQSnQgZLg4WPekcluCecE4Iv7Sz36k9GUDqqs8hRWddirhufYem6RC84PyNqafCnwczrx5pOacmVzDl9Oi8OIhdDasdJa7gvsDoFzf6bv5st7EvbORkgPs6MK46mDMlwkL7TqjrJnSJzozCX4zLbYeyiWK6EXCehOpImMN262KLYQxnf5ugvk11gIA4NXpTbzyo4hp2LS7u8UMs5_w3t02vizxSQGokp-3qkEWmViy3pup1IXMPrcpS6KWHX0AYi1oRDZB5B8vM04pRHwYjsgMp2L-w4PMaDC4QDRU81IdvQ5VRkyLT7CL5hDlq5smXw_7wSFTWxs9vc5PmnrykSAkwFPocORC2j4T96uiu3z4gNoBu_dwKNcPi-dV7myC4iRRTmpm0V5A9IW510RGTyso_b-1hUeGvToYl9VwNgN7Impt3PjEQO2HXMU3p96tdulDEA_8bbyPdEGfxxVK3k2n_dxj_GzPKA8V4ESoNMRrV1vCuxPnrzfAOhqmNOEewTHqlxENSsZFGvfzVj1KemR7zLky14JMVslILnvxl6vuX7SbfIQ5JDktq9qKtTKo1mFrA-mBS3n00FacjPi364nnugiWQN7EwhNdEDH_KtWXGZVh-u2NM5cdoS1kAsOKSLxFTnTDG738LhoB3i_ZOjHFASKiZcsX6yD5csIP21jG5nFF9Qw2qsnqmxRuDLilIoGczEMt2Pfo180CG8Dyr7XtOYNeVU7__h9zBm9CvaAHDoQQhU4KlXM4LsljFeajw5f2wn08OmsdfkSYYl45O718QgzR_RRqwDpQH2pyKDJZ9yZt5OCyxcbnCgepjUyp6S-Pigfw73ASoCknhLLheb2mqkWIC-s3NmClpMoK-IyE57AiHHCatZfPGPnNofVioN5SbVR08mV7pdyQEhQGxGFM_LTAFFpwC48gOFTq-FWdV58muDULTqO3ImbGG6X3vV-PVbher1oJx0CFnelGGIx9lwM-yHbpVZGq9IXnKqoblCHiwuaJgbCKBnTjia2gYPNlN0Ql1ia3vQc7bybDVHyLePAVbOk10MdwHprwMGE__wsXqagElQCGJpU3ytPDktncRPCSQBQ3mw94CCIOQYEyhnA1Vik127AznwbR10Xm59diGBtix0Ao-VIrjKzQNw2hXqC_H-IgY46OT5ZndZ02SAe6AVyipq6kTui_ZyuQhy-zAOiat4t6qh-LyL1xImBuOZ7e79737LYiLHEIgHOIQ68DKcSmsIuA.gwrRhM5AiYUQ6iAbRZhxlw"},
-		"subject_token_type": {"urn:bamtech:params:oauth:token-type:device"},
-	}
+	// 首次请求，获取assertion
+	url1 := "https://disney.api.edge.bamgrid.com/devices"
+	playload := `{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","attributes":{}}`
 	headers := map[string]string{
-		"User-Agent":    model.UA_Browser,
 		"authorization": "Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84",
+		"Content-Type":  "application/json",
 	}
 	client := utils.Req(c)
 	client = utils.SetReqHeaders(client, headers)
-	resp, err := client.R().SetFormDataFromValues(data).Post(URL)
+	resp1, err := client.R().SetBodyString(playload).Post(url1)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
+	defer resp1.Body.Close()
+	body1, err := io.ReadAll(resp1.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	body := string(b)
-	switch method {
-	case "auth":
-		if strings.Contains(body, "unauthorized") {
-			return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("unauthorized")}
-		}
-		if strings.Contains(body, "403 ERROR") || strings.Contains(body, "forbidden-location") {
-			return model.Result{Name: name, Status: model.StatusNo}
-		}
-		return model.Result{Name: name, Status: model.StatusYes}
-	case "query":
-		if location := resp.Header.Get("Location"); location == "" {
-			for _, c := range resp.Request.Cookies {
-				if c.Name == "x-dss-country" {
-					return model.Result{
-						Name: name, Status: model.StatusYes,
-						Region: strings.ToLower(c.Value),
-					}
-				}
-			}
-			return model.Result{
-				Name: name, Status: model.StatusYes,
-			}
-		} else if location == "https://disneyplus.disney.co.jp/" {
-			return model.Result{
-				Name: name, Status: model.StatusYes,
-				Region: "jp",
-			}
-		} else if location == "https://preview.disneyplus.com/unavailable/" {
-			return model.Result{
-				Name: name, Status: model.StatusNo, Info: "unavailable",
-			}
-		}
+	if strings.Contains(string(body1), "403 ERROR") {
+		return model.Result{Name: name, Status: model.StatusNo, Info: "Can not get assertion"}
 	}
-	return model.Result{Name: name, Status: model.StatusNo}
+	// fmt.Println(string(body1))
+	var res1 struct {
+		Assertion string `json:"assertion"`
+	}
+	if err := json.Unmarshal(body1, &res1); err != nil {
+		return model.Result{Name: name, Status: model.StatusErr, Err: err}
+	}
+
+	// 二次请求修改subject_token
+	data := url.Values{
+		"grant_type":         {"urn:ietf:params:oauth:grant-type:token-exchange"},
+		"latitude":           {"0"},
+		"longitude":          {"0"},
+		"platform":           {"browser"},
+		"subject_token":      {res1.Assertion},
+		"subject_token_type": {"urn:bamtech:params:oauth:token-type:device"},
+	}
+	url2 := "https://disney.api.edge.bamgrid.com/token"
+	headers2 := map[string]string{
+		"authorization": "ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84",
+	}
+	client = utils.SetReqHeaders(client, headers2)
+	resp2, err := client.R().SetFormDataFromValues(data).Post(url2)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	defer resp2.Body.Close()
+	body2, err := io.ReadAll(resp2.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	// fmt.Println(string(body2))
+	if strings.Contains(string(body2), "forbidden-location") || resp2.StatusCode == 403 {
+		return model.Result{Name: name, Status: model.StatusNo, Info: "forbidden-location"}
+	}
+	var res2 struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+	if err := json.Unmarshal(body2, &res2); err != nil {
+		return model.Result{Name: name, Status: model.StatusErr, Err: err}
+	}
+
+	// 三次请求获取地址
+	resp3, err := client.R().Get("https://disneyplus.com")
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	defer resp3.Body.Close()
+	if strings.Contains(resp3.Request.URL.String(), "preview") || strings.Contains(resp3.Request.URL.String(), "unavailable") {
+		return model.Result{Name: name, Status: model.StatusNo, Info: "Can not visit page"}
+	}
+
+	// 四次请求刷新token并获取支持
+	url4 := "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql"
+	playload4 := fmt.Sprintf(`{"query":"mutation refreshToken($input: RefreshTokenInput!) {\n refreshToken(refreshToken: $input) {\n activeSession {\n sessionId\n }\n }\n}","variables":{"input":{"refreshToken":"%s"}}}`, res2.RefreshToken)
+	headers4 := map[string]string{
+		"authorization": "ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84",
+	}
+	resp4, body4, err := utils.PostJson(c, url4, playload4, headers4)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	defer resp4.Body.Close()
+	fmt.Println(body4)
+	if utils.ReParse(body4, `"inSupportedLocation"\s*:\s*(false|true)`) != "true" {
+		return model.Result{Name: name, Status: model.StatusNo, Info: "UnSupported"}
+	}
+	region := utils.ReParse(body4, `"countryCode"\s*:\s*"([^"]+)"`)
+	if region == "" {
+		return model.Result{Name: name, Status: model.StatusUnexpected}
+	}
+
+	return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
 }
