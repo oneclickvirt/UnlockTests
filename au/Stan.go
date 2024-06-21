@@ -21,7 +21,7 @@ func Stan(c *http.Client) model.Result {
 	}
 	defer resp.Body.Close()
 	if strings.Contains(string(body), "Access Denied") || resp.StatusCode == 404 || resp.StatusCode == 451 {
-		return model.Result{Name: name, Status: model.StatusNo, Info: "Unavailable"}
+		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if strings.Contains(string(body), "VPNDetected") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "VPN Detected"}
