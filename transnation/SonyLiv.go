@@ -33,17 +33,7 @@ func SonyLiv(c *http.Client) model.Result {
 	if strings.Contains(body1, "geolocation_notsupported") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Unavailable"}
 	}
-	tempList := strings.Split(body1, "\n")
-	var jwtToken string
-	for _, l := range tempList {
-		if strings.Contains(l, "securityToken") {
-			ls := strings.Split(l, "securityToken")[1]
-			if strings.Contains(ls, "resultObj") {
-				tp := strings.Split(ls, "resultObj")[1]
-				jwtToken = strings.Split(tp, "\"")[1]
-			}
-		}
-	}
+	jwtToken := utils.ReParse(body1, `resultObj:"([^"]+)`)
 	if jwtToken == "" {
 		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("can not find jwtToken")}
 	}
@@ -63,12 +53,12 @@ func SonyLiv(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 	}
 	defer resp2.Body.Close()
-	b, err = io.ReadAll(resp1.Body)
+	b, err = io.ReadAll(resp2.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	body2 := string(b)
-	// fmt.Println(resp2.Request.Headers)
+	// fmt.Println(body2)
 	var region string
 	if body2 != "" && strings.Contains(body2, "country_code") {
 		var res1 struct {
@@ -102,7 +92,7 @@ func SonyLiv(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
 	}
 	defer resp3.Body.Close()
-	b, err = io.ReadAll(resp1.Body)
+	b, err = io.ReadAll(resp3.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
@@ -117,7 +107,7 @@ func SonyLiv(c *http.Client) model.Result {
 	if res2.ResultCode == "OK" {
 		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
 	}
-	if res2.ResultCode == "KO" {
+	if res2.ResultCode == "KO" || strings.Contains(body3, "It seems you are trying to access SonyLIV via <b>VPN, Proxy</b> or a <b>Routed Service</b>.") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Proxy Detected", Region: strings.ToLower(region)}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
