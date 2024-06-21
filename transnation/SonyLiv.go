@@ -107,7 +107,8 @@ func SonyLiv(c *http.Client) model.Result {
 	if res2.ResultCode == "OK" {
 		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
 	}
-	if res2.ResultCode == "KO" || strings.Contains(body3, "") {
+	if res2.ResultCode == "KO" ||
+		strings.Contains(body3, "It seems you are trying to access SonyLIV via <b>VPN, Proxy</b> or a <b>Routed Service</b>.") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Proxy Detected", Region: strings.ToLower(region)}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
