@@ -20,11 +20,7 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://ani.gamer.com.tw/ajax/getdeviceid.php"
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
-	client := utils.ReqDefault(c)
-	client = utils.SetReqHeaders(client, headers)
+	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
@@ -48,7 +44,8 @@ func BahamutAnime(c *http.Client) model.Result {
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	// fmt.Println(res.Deviceid)
+	fmt.Println(res.Deviceid)
+
 	// 14667
 	sn := "37783"
 	resp2, err2 := client.R().Get("https://ani.gamer.com.tw/ajax/token.php?adID=89422&sn=" + sn + "&device=" + res.Deviceid)
@@ -56,6 +53,12 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 	}
 	defer resp2.Body.Close()
+	b2, err2 := io.ReadAll(resp2.Body)
+	if err2 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
+	}
+	body2 := string(b2)
+
 	resp3, err3 := client.R().Get("https://ani.gamer.com.tw/")
 	if err3 != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
@@ -74,7 +77,7 @@ func BahamutAnime(c *http.Client) model.Result {
 	// }
 	// fmt.Println(res3.AnimeSn)
 	fmt.Println(body3)
-	if strings.Contains(body3, "animeSn") {
+	if !strings.Contains(body2, "animeSn") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	} else if resp2.StatusCode == 403 || resp2.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusNo}
