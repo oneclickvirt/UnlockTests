@@ -38,8 +38,10 @@ func Watcha(c *http.Client) model.Result {
 	//}
 	//body := string(b)
 	//fmt.Println(body)
-	if resp.StatusCode == 403 || resp.StatusCode == 451 {
+	if resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
+	} else if resp.StatusCode == 403 {
+		return model.Result{Name: name, Status: model.StatusBanned}
 	} else if resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
