@@ -1,12 +1,12 @@
 package transnation
 
 import (
-	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // TikTok
@@ -60,6 +60,7 @@ func TikTok(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
 		}
 	}
-	return model.Result{Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("www.tiktok.com can not find region with resp code: %d", resp.StatusCode)}
+	return model.Result{Name: name, Status: model.StatusNo}
+	// return model.Result{Name: name, Status: model.StatusUnexpected,
+	// 	Err: fmt.Errorf("www.tiktok.com can not find region with resp code: %d", resp.StatusCode)}
 }
