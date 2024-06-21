@@ -41,7 +41,7 @@ func Catchplay(c *http.Client) model.Result {
 		if strings.Contains(body, "is not allowed") && strings.Contains(body, "The location") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		fmt.Println(body)
+		// fmt.Println(body)
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.Code == "100016" {
