@@ -1,7 +1,6 @@
 package jp
 
 import (
-	"fmt"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
