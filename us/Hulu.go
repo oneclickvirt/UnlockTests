@@ -77,6 +77,9 @@ func Hulu(c *http.Client) model.Result {
 		if strings.Contains(body, "GEO_BLOCKED") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
+		if resp.StatusCode == 406 {
+			return model.Result{Name: name, Status: model.StatusBanned}
+		}
 		if strings.Contains(body, "LOGIN_FORBIDDEN") || strings.Contains(body, "LOGIN_BAD_REQUEST") ||
 			strings.Contains(body, "Your login is invalid. Please refresh the page.") {
 			return model.Result{Name: name, Status: model.StatusYes}
