@@ -12,8 +12,7 @@ import (
 )
 
 // BahamutAnime
-// ani.gamer.com.tw 仅 ipv4 且 get 请求 有问题
-// 存在 cloudflare 的质询防御，非5秒盾，无法突破，需要js动态加载
+// ani.gamer.com.tw 仅 ipv4 且 get 请求
 func BahamutAnime(c *http.Client) model.Result {
 	name := "Bahamut Anime"
 	if c == nil {
