@@ -3,10 +3,11 @@ package tw
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // BahamutAnime
@@ -18,7 +19,11 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://ani.gamer.com.tw/ajax/getdeviceid.php"
-	client := utils.Req(c)
+	headers := map[string]string{
+		"User-Agent": model.UA_Browser,
+	}
+	client := utils.ReqDefault(c)
+	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
@@ -29,6 +34,7 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	body := string(b)
+	// fmt.Println(body)
 	//tempList := strings.Split(body, "\n")
 	//for _, line := range tempList {
 	//	if strings.Contains(line, "deviceid") {
@@ -41,6 +47,7 @@ func BahamutAnime(c *http.Client) model.Result {
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
+	fmt.Println(res.Deviceid)
 	var res2 struct {
 		AnimeSn int `json:"animeSn"`
 	}
