@@ -104,7 +104,7 @@ func DisneyPlus(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp4.Body.Close()
-	fmt.Println(body4)
+	// fmt.Println(body4)
 	if utils.ReParse(body4, `"inSupportedLocation"\s*:\s*(false|true)`) != "true" {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "UnSupported"}
 	}
