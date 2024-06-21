@@ -47,7 +47,7 @@ func BahamutAnime(c *http.Client) model.Result {
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	fmt.Println(res.Deviceid)
+	// fmt.Println(res.Deviceid)
 	// 14667
 	sn := "37783"
 	resp2, err2 := client.R().Get("https://ani.gamer.com.tw/ajax/token.php?adID=89422&sn=" + sn + "&device=" + res.Deviceid)
@@ -61,15 +61,15 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
 	}
 	defer resp3.Body.Close()
-	b, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	b3, err3 := io.ReadAll(resp3.Body)
+	if err3 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
 	}
-	// body = string(b)
+	// body3 = string(b3)
 	var res3 struct {
 		AnimeSn int `json:"animeSn"`
 	}
-	if err := json.Unmarshal(b, &res3); err != nil {
+	if err := json.Unmarshal(b3, &res3); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	fmt.Println(res3.AnimeSn)
