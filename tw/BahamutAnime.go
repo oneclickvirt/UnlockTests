@@ -34,7 +34,7 @@ func BahamutAnime(c *http.Client) model.Result {
 		Deviceid string `json:"deviceid"`
 	}
 	if err := json.Unmarshal(b, &res); err != nil {
-		if strings.Contains(body, "Just a moment") {
+		if strings.Contains(body, "Just a moment") || strings.Contains(body, "系統異常回報") {
 			return model.Result{Name: name, Status: model.StatusNo, Info: "Banned by cloudflare"}
 		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
