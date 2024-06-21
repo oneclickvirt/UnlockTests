@@ -27,7 +27,7 @@ func RakutenTV(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "VPN Forbidden"}
 	}
 	if strings.Contains(body, "forbidden_market") || strings.Contains(body, "is not available") {
-		return model.Result{Name: name, Status: model.StatusNo, Info: "Not Available"}
+		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	region := utils.ReParse(body, `"iso3166_code"\s*:\s*"([^"]+)"`)
 	if region == "" {
