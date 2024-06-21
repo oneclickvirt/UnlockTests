@@ -19,17 +19,15 @@ func PrettyDerby(c *http.Client) model.Result {
 		"User-Agent": model.UA_Dalvik,
 		"connection": "keep-alive",
 	}
-	for i := 0; i < 3; i++ {
-		client := utils.ReqDefault(c)
-		client = utils.SetReqHeaders(client, headers)
-		resp, err := client.R().Get(url)
-		if err != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode == 404 {
-			return model.Result{Name: name, Status: model.StatusYes}
-		}
+	client := utils.ReqDefault(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == 404 {
+		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusNo}
 	//return model.Result{Name: name, Status: model.StatusUnexpected,
