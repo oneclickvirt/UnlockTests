@@ -73,7 +73,7 @@ func BahamutAnime(c *http.Client) model.Result {
 	if strings.Contains(body2, "\u5f88\u62b1\u6b49\uff01\u672c\u7bc0\u76ee\u56e0\u6388\u6b0a\u56e0\u7d20\u7121\u6cd5\u5728\u60a8\u7684\u6240\u5728\u5340\u57df\u64ad\u653e\u3002") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if (strings.Contains(body2, "data-animesn") ||
+	if (strings.Contains(body2, "animeSn") ||
 		strings.Contains(body2, "\u88dd\u7f6e\u9a57\u8b49\u7570\u5e38\uff01")) && strings.Contains(body3, "data-geo") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	} else if resp2.StatusCode == 403 || resp2.StatusCode == 404 {
