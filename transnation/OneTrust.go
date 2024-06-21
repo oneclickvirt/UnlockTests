@@ -2,12 +2,13 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
-	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
 // OneTrust
 // geolocation.onetrust.com 双栈 get 请求
 func OneTrust(c *http.Client) model.Result {
