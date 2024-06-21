@@ -44,7 +44,7 @@ func BahamutAnime(c *http.Client) model.Result {
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	fmt.Println(res.Deviceid)
+	// fmt.Println(res.Deviceid)
 
 	// 14667
 	sn := "37783"
@@ -69,15 +69,8 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
 	}
 	body3 := string(b3)
-	// var res3 struct {
-	// 	AnimeSn int `json:"animeSn"`
-	// }
-	// if err := json.Unmarshal(b3, &res3); err != nil {
-	// 	return model.Result{Name: name, Status: model.StatusErr, Err: err}
-	// }
-	// fmt.Println(res3.AnimeSn)
 	fmt.Println(body3)
-	if !strings.Contains(body2, "animeSn") {
+	if strings.Contains(body2, "data-animesn") && strings.Contains(body3, "data-geo") {
 		return model.Result{Name: name, Status: model.StatusYes}
 	} else if resp2.StatusCode == 403 || resp2.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusNo}
