@@ -87,7 +87,7 @@ func Epix(c *http.Client) model.Result {
 	case "PROXY_DETECTED":
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Proxy Detected"}
 	case "GEO_BLOCKED":
-		return model.Result{Name: name, Status: model.StatusNo, Info: "Unavailable"}
+		return model.Result{Name: name, Status: model.StatusNo}
 	case "NOT_SUBSCRIBED":
 		return model.Result{Name: name, Status: model.StatusYes}
 	default:
