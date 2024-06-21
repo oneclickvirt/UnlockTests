@@ -48,26 +48,34 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	fmt.Println(res.Deviceid)
-	var res2 struct {
-		AnimeSn int `json:"animeSn"`
-	}
-	json.Unmarshal([]byte(body), &res2)
-	resp2, err2 := client.R().Get("https://ani.gamer.com.tw/ajax/token.php?adID=89422&sn=14667&device=" + res.Deviceid)
+	// 14667
+	sn := "37783"
+	resp2, err2 := client.R().Get("https://ani.gamer.com.tw/ajax/token.php?adID=89422&sn=" + sn + "&device=" + res.Deviceid)
 	if err2 != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 	}
 	defer resp2.Body.Close()
-	b, err = io.ReadAll(resp2.Body)
+
+	resp3, err3 := client.R().Get("https://ani.gamer.com.tw/")
+	if err3 != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
+	}
+	defer resp3.Body.Close()
+	b, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	body2 := string(b)
-	if err := json.Unmarshal([]byte(body2), &res); err != nil {
+	// body = string(b)
+	var res3 struct {
+		AnimeSn int `json:"animeSn"`
+	}
+	if err := json.Unmarshal(b, &res3); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	if res2.AnimeSn != 0 {
+	fmt.Println(res3.AnimeSn)
+	if res3.AnimeSn != 0 {
 		return model.Result{Name: name, Status: model.StatusYes}
-	} else if res2.AnimeSn == 0 || resp2.StatusCode == 403 || resp2.StatusCode == 404 {
+	} else if res3.AnimeSn == 0 || resp2.StatusCode == 403 || resp2.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
