@@ -75,15 +75,15 @@ Crackle - Platform Key is not specified
 
 Salto - Get remote error: tls: unrecognized name
 
+Catchplay - unauthorized 原 token 已过期
+
+BahamutAnime - 存在 cloudflare 的质询防御，非5秒盾，无法突破，需要js动态加载
+
 PCRJP - stream error: stream ID 1; INTERNAL_ERROR; received from peer
 
 PrettyDerby - stream error: stream ID 1; INTERNAL_ERROR; received from peer
 
 WorldFlipper - stream error: stream ID 1; INTERNAL_ERROR; received from peer
-
-Catchplay - unauthorized 原 token 已过期
-
-BahamutAnime - 存在 cloudflare 的质询防御，非5秒盾，无法突破，需要js动态加载
 ```
 
 ### 部分失效

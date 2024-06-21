@@ -85,7 +85,8 @@ func SonyLiv(c *http.Client) model.Result {
 		"device_id":                 "25a417c3b5f246a393fadb022adc82d5-1715309762699",
 		"security_token":            jwtToken,
 	}
-	url3 := "https://apiv2.sonyliv.com/AGL/3.8/A/ENG/WEB/" + region + "/ALL/CONTENT/VIDEOURL/VOD/1000273613/prefetch"
+	// 1000273613 1000045427
+	url3 := "https://apiv2.sonyliv.com/AGL/3.8/A/ENG/WEB/" + region + "/ALL/CONTENT/VIDEOURL/VOD/1000045427/prefetch"
 	client = utils.SetReqHeaders(client, headers3)
 	resp3, err3 := client.R().Get(url3)
 	if err3 != nil {
