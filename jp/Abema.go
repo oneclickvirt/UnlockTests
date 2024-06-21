@@ -3,11 +3,12 @@ package jp
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Abema
@@ -50,5 +51,5 @@ func Abema(c *http.Client) model.Result {
 	if abemaRes.Message == "blocked_location" || abemaRes.Message == "anonymous_ip" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	return model.Result{Name: name, Status: model.StatusYes + " (Oversea Only)"}
+	return model.Result{Name: name, Status: model.StatusYes, Info: "Oversea Only"}
 }

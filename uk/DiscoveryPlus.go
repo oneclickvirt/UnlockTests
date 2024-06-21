@@ -3,11 +3,12 @@ package uk
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // DiscoveryPlus
@@ -80,9 +81,9 @@ func DiscoveryPlus(c *http.Client) model.Result {
 		exit := utils.GetRegion(loc, model.DiscoveryPlusSupportCountry)
 		if exit {
 			if loc == "gb" {
-				return model.Result{Name: name, Status: model.StatusYes, Region: loc + " (origin)"}
+				return model.Result{Name: name, Status: model.StatusYes, Region: loc, Info: "origin"}
 			} else {
-				return model.Result{Name: name, Status: model.StatusYes, Region: loc + " (global)"}
+				return model.Result{Name: name, Status: model.StatusYes, Region: loc, Info: "global"}
 			}
 		}
 		return model.Result{Name: name, Status: model.StatusNo, Region: loc}

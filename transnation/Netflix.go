@@ -3,11 +3,12 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // NetflixCDN
@@ -100,7 +101,7 @@ func Netflix(c *http.Client) model.Result {
 	//	}
 	//}
 	if resp1.StatusCode == 404 && resp2.StatusCode == 404 {
-		return model.Result{Name: name, Status: model.StatusRestricted + " (Originals Only)"}
+		return model.Result{Name: name, Status: model.StatusRestricted, Info: "Originals Only"}
 	}
 	if resp1.StatusCode == 403 && resp2.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusBanned}
