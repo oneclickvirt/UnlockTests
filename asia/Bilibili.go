@@ -38,10 +38,10 @@ func Bilibili(c *http.Client, name, url string) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if strings.Contains(body, "抱歉您所在地区不可观看") || strings.Contains(body, "The area is inaccessible") ||
-		res.Code == 10004001 || res.Code == 10003003 {
+		res.Code == 10004001 || res.Code == 10003003 || res.Code == -10403 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if res.Code == 0 || res.Code == -10403 {
+	if res.Code == 0 {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
