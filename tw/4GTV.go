@@ -21,11 +21,7 @@ func Tw4gtv(c *http.Client) model.Result {
 	data := url.Values{
 		"value": {"D33jXJ0JVFkBqV%2BZSi1mhPltbejAbPYbDnyI9hmfqjKaQwRQdj7ZKZRAdb16%2FRUrE8vGXLFfNKBLKJv%2BfDSiD%2BZJlUa5Msps2P4IWuTrUP1%2BCnS255YfRadf%2BKLUhIPj"},
 	}
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
 	client := utils.Req(c)
-	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().SetFormDataFromValues(data).Post(url1)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
