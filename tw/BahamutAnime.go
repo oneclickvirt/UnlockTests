@@ -18,11 +18,7 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://ani.gamer.com.tw/ajax/getdeviceid.php"
-	headers := map[string]string{
-		"User-Agent": model.UA_Browser,
-	}
 	client := utils.Req(c)
-	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
