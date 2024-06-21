@@ -31,7 +31,7 @@ func SonyLiv(c *http.Client) model.Result {
 	}
 	body1 := string(b)
 	if strings.Contains(body1, "geolocation_notsupported") {
-		return model.Result{Name: name, Status: model.StatusNo, Info: "Unavailable"}
+		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	jwtToken := utils.ReParse(body1, `resultObj:"([^"]+)`)
 	if jwtToken == "" {
