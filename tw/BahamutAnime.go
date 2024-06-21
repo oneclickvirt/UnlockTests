@@ -30,21 +30,16 @@ func BahamutAnime(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	body := string(b)
-	// fmt.Println(body)
-	//tempList := strings.Split(body, "\n")
-	//for _, line := range tempList {
-	//	if strings.Contains(line, "deviceid") {
-	//		fmt.Println(line)
-	//	}
-	//}
 	var res struct {
 		Deviceid string `json:"deviceid"`
 	}
-	if err := json.Unmarshal([]byte(body), &res); err != nil {
+	if err := json.Unmarshal(b, &res); err != nil {
+		if strings.Contains(body, "Just a moment") {
+			return model.Result{Name: name, Status: model.StatusNo, Info: "Banned by cloudflare"}
+		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	// fmt.Println(res.Deviceid)
-
 	// 14667
 	sn := "37783"
 	resp2, err2 := client.R().Get("https://ani.gamer.com.tw/ajax/token.php?adID=89422&sn=" + sn + "&device=" + res.Deviceid)
