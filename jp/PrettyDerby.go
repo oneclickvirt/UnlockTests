@@ -18,19 +18,21 @@ func PrettyDerby(c *http.Client) model.Result {
 	url := "https://api-umamusume.cygames.jp/"
 	headers := map[string]string{
 		"User-Agent": model.UA_Dalvik,
+		"connection": "keep-alive",
 	}
-	client := utils.ReqDefault(c)
-	client = utils.SetReqHeaders(client, headers)
-	resp, err := client.R().Get(url)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	for i := 0; i < 3; i++ {
+		client := utils.ReqDefault(c)
+		client = utils.SetReqHeaders(client, headers)
+		resp, err := client.R().Get(url)
+		if err != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode == 404 {
+			return model.Result{Name: name, Status: model.StatusYes}
+		}
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode == 403 || resp.StatusCode == 451 {
-		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 200 || resp.StatusCode == 404 {
-		return model.Result{Name: name, Status: model.StatusYes}
-	}
-	return model.Result{Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("get api-umamusume.cygames.jp failed with code: %d", resp.StatusCode)}
+	return model.Result{Name: name, Status: model.StatusNo}
+	//return model.Result{Name: name, Status: model.StatusUnexpected,
+	//	Err: fmt.Errorf("get api-umamusume.cygames.jp failed with code: %d", resp.StatusCode)}
 }
