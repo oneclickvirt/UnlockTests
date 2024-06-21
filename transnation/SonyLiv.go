@@ -3,15 +3,16 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // SonyLiv
-// www.sonyliv.com 双栈 且 get 请求 - 获取不到地区
+// www.sonyliv.com 双栈 且 get 请求 - 有问题，获取不到地区
 func SonyLiv(c *http.Client) model.Result {
 	name := "SonyLiv"
 	if c == nil {
@@ -46,7 +47,7 @@ func SonyLiv(c *http.Client) model.Result {
 	if jwtToken == "" {
 		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("can not find jwtToken")}
 	}
-
+	// fmt.Println(jwtToken)
 	// 获取不到region
 	headers2 := map[string]string{
 		"accept":         "application/json, text/plain, */*",
@@ -67,6 +68,7 @@ func SonyLiv(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	body2 := string(b)
+	// fmt.Println(resp2.Request.Headers)
 	var region string
 	if body2 != "" && strings.Contains(body2, "country_code") {
 		var res1 struct {
@@ -82,7 +84,7 @@ func SonyLiv(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("can not found region")}
 		}
 	} else {
-		region = "US"
+		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("can not found region")}
 	}
 
 	headers3 := map[string]string{

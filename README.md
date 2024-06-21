@@ -93,7 +93,7 @@ BahamutAnime - 存在 cloudflare 的质询防御，非5秒盾，无法突破，�
 ```
 TikTok - 在 hk、jp 上测试时不时测不出，在 tw 上失效的概率更大，其他地区没有问题
 
-SonyLiv - 获取不到region
+SonyLiv - 获取不到region，没办法判断是否可访问视频
 
 AISPlay - {"head": {"title": "Unidentified device", "itype": "item"}, "error": "Unidentified device", "st": {"code": 60400, "info": "Unidentified device"}, "op": {"cache_time": 600000, "timeout": 3000}}
 

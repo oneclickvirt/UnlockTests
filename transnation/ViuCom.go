@@ -2,10 +2,11 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // ViuCom
@@ -22,20 +23,26 @@ func ViuCom(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	//b, err := io.ReadAll(resp.Body)
-	//if err != nil {
-	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-	//}
-	//body := string(b)
+	// b, err := io.ReadAll(resp.Body)
+	// if err != nil {
+	// 	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	// }
+	// body := string(b)
+	// fmt.Println(body)
 	location := fmt.Sprintf("%s", resp.Request.URL)
+	// fmt.Println(location)
 	if strings.Contains(location, "no-service") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if location != "" {
 		regions := strings.Split(location, "/")
-		if regions[len(regions)-1] == "no-service" {
+		if regions[len(regions)-1] == "no-service" || strings.Contains(location, "no-service") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(regions[len(regions)-1])}
+		if len(regions) >= 4 {
+			return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(regions[len(regions)-1])}
+		} else {
+			return model.Result{Name: name, Status: model.StatusYes}
+		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.viu.com failed with code: %d", resp.StatusCode)}
