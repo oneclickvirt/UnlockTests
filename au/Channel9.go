@@ -2,9 +2,12 @@ package au
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
 
 // Channel9
@@ -21,15 +24,15 @@ func Channel9(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	//b, err := io.ReadAll(resp.Body)
-	//if err != nil {
-	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-	//}
-	//body := string(b)
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	}
+	body := string(b)
 	//fmt.Println(body)
-	if resp.StatusCode == 403 {
+	if strings.Contains(body, "Geoblock") || resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 302 {
+	} else if strings.Contains(body, "Log in to") || resp.StatusCode == 302 {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

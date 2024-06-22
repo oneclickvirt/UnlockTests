@@ -2,9 +2,10 @@ package au
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
 
 // Binge
@@ -30,7 +31,7 @@ func Binge(c *http.Client) model.Result {
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if resp.StatusCode == 302 {
+	if resp.StatusCode == 302 || resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
