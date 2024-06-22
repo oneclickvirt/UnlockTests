@@ -22,10 +22,10 @@ func NPOStartPlus(c *http.Client) model.Result {
 	referrerURL := "https://npo.nl/start/live?channel=NPO1"
 	client := utils.Req(c)
 	resp, err := client.R().Get(tokenURL)
-	defer resp.Body.Close()
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
+	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
