@@ -3,16 +3,17 @@ package us
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // ESPNPlus
-// espn.api.edge.bamgrid.com 双栈 且 post 请求 可能 有 cloudflare 的5秒盾
+// espn.api.edge.bamgrid.com 双栈 且 post 请求
 func ESPNPlus(c *http.Client) model.Result {
 	name := "ESPN+"
 	if c == nil {
@@ -81,6 +82,7 @@ func ESPNPlus(c *http.Client) model.Result {
 	if res2.Extensions.Sdk.Session.Location.CountryCode == "US" && res2.Extensions.Sdk.Session.InSupportedLocation {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
-	return model.Result{Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("get espn.api.edge.bamgrid.com failed with code: %d", resp.StatusCode)}
+	return model.Result{Name: name, Status: model.StatusNo}
+	// return model.Result{Name: name, Status: model.StatusUnexpected,
+	// 	Err: fmt.Errorf("get espn.api.edge.bamgrid.com failed with code: %d", resp.StatusCode)}
 }

@@ -2,11 +2,12 @@ package us
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // DirecTVGO
@@ -28,7 +29,7 @@ func DirecTVGO(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	body := string(b)
-	if strings.Contains(body, "proximamente") || resp.StatusCode == 403 {
+	if strings.Contains(body, "proximamente") || resp.StatusCode == 403 || resp.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
 		parts := strings.Split(body, "/")

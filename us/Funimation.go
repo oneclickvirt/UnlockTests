@@ -2,9 +2,10 @@ package us
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
 
 // Funimation
@@ -21,18 +22,23 @@ func Funimation(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	//b, err := io.ReadAll(resp.Body)
-	//if err != nil {
-	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-	//}
-	//body := string(b)
-	if resp.StatusCode == 403 {
+	// b, err := io.ReadAll(resp.Body)
+	// if err != nil {
+	// 	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	// }
+	// body := string(b)
+	// fmt.Println(body)
+	if resp.StatusCode == 403 || resp.StatusCode == 400 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
+	// fmt.Println(resp.Request.Cookies)
 	for _, ck := range resp.Request.Cookies {
 		if ck.Name == "region" {
 			return model.Result{Name: name, Status: model.StatusYes, Region: ck.Value}
 		}
+	}
+	if resp.StatusCode == 200 {
+		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.crunchyroll.com failed with code: %d", resp.StatusCode)}

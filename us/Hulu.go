@@ -2,11 +2,12 @@ package us
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Hulu
@@ -85,6 +86,7 @@ func Hulu(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusYes}
 		}
 	}
-	return model.Result{Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("get www.hulu.com failed with code: %d", resp.StatusCode)}
+	return model.Result{Name: name, Status: model.StatusNo}
+	// return model.Result{Name: name, Status: model.StatusUnexpected,
+	// 	Err: fmt.Errorf("get www.hulu.com failed with code: %d", resp.StatusCode)}
 }
