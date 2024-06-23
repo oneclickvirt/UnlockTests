@@ -249,6 +249,10 @@ func lookupHostWithTimeout(hostname string, timeout time.Duration) ([]string, er
 
 // CheckDNS 三个检测DNS的逻辑并发检测
 func CheckDNS(hostname string) (string, string, string) {
+	if strings.Contains(hostname, "https://") {
+		hostname = strings.ReplaceAll(hostname, "https://", "")
+		hostname = strings.Split(hostname, "/")[0]
+	}
 	var wg sync.WaitGroup
 	var result1, result2, result3 string
 	wg.Add(3)
