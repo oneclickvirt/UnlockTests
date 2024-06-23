@@ -1,10 +1,11 @@
 package transnation
 
 import (
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Steam
@@ -44,7 +45,7 @@ func Steam(c *http.Client) model.Result {
 			//body2 := string(b2)
 			//fmt.Println(body2)
 		}
-		return model.Result{Name: name + " & Community", Status: model.StatusYes, Region: strings.ToLower(region)}
+		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region), Info: "Community Available"}
 	} else {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
