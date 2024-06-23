@@ -76,6 +76,9 @@ func ShowResult(r *model.Result) (s string) {
 		if r.Info != "" {
 			s += colorFunc(" (" + r.Info + ")")
 		}
+		if r.UnlockType != "" {
+			s += colorFunc(" [" + r.UnlockType + "]")
+		}
 		if r.Region != "" {
 			s += colorFunc(" (Region: " + strings.ToUpper(r.Region) + ")")
 		}
