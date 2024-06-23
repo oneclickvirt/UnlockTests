@@ -13,6 +13,7 @@ import (
 // pluto.tv 仅 ipv4 且 get 请求
 func PlutoTV(c *http.Client) model.Result {
 	name := "Pluto TV"
+	hostname := "pluto.tv"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -36,5 +37,7 @@ func PlutoTV(c *http.Client) model.Result {
 	if resp.StatusCode == 429 {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Info: "Rate Limit"}
 	}
-	return model.Result{Name: name, Status: model.StatusYes}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
+	return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 }

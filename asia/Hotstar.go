@@ -12,6 +12,7 @@ import (
 // api.hotstar.com 双栈 get 请求
 func HotStar(c *http.Client) model.Result {
 	name := "HotStar"
+	hostname := "hotstar.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -53,7 +54,9 @@ func HotStar(c *http.Client) model.Result {
 	if strings.ToLower(t[3]) == "us" {
 		return model.Result{Name: name, Status: model.StatusNo, Region: t[3]}
 	}
-	return model.Result{Name: name, Status: model.StatusYes, Region: t[3]}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
+	return model.Result{Name: name, Status: model.StatusYes, Region: t[3], UnlockType: unlockType}
 	// return model.Result{Name: name, Status: model.StatusUnexpected,
 	// 	Err: fmt.Errorf("get api.hotstar.com failed with code: %d", resp.StatusCode)}
 }

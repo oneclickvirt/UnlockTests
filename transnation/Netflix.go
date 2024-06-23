@@ -3,18 +3,18 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // NetflixCDN
 // api.fast.com 双栈 get 请求
 func NetflixCDN(c *http.Client) model.Result {
 	name := "Netflix CDN"
+	hostname := "fast.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -49,9 +49,12 @@ func NetflixCDN(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.Targets[0].Location.Country != "" {
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{
 			Name: name, Status: model.StatusYes,
-			Region: res.Targets[0].Location.Country,
+			Region:     res.Targets[0].Location.Country,
+			UnlockType: unlockType,
 		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
@@ -62,6 +65,7 @@ func NetflixCDN(c *http.Client) model.Result {
 // www.netflix.com 双栈 且 get 请求
 func Netflix(c *http.Client) model.Result {
 	name := "Netflix"
+	hostname := "netflix.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -125,14 +129,19 @@ func Netflix(c *http.Client) model.Result {
 		//}
 		u := resp3.Header.Get("location")
 		if u == "" {
-			return model.Result{Name: name, Status: model.StatusYes, Region: "us"}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "us"}
 		}
 		//fmt.Println("nf", u)
 		t := strings.SplitN(u, "/", 5)
 		if len(t) < 5 {
 			return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("can not find region")}
 		}
-		return model.Result{Name: name, Status: model.StatusYes, Region: strings.SplitN(t[3], "-", 2)[0]}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
+			Region: strings.SplitN(t[3], "-", 2)[0]}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.netflix.com failed with code: %d %d", resp1.StatusCode, resp2.StatusCode)}

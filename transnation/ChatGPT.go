@@ -13,6 +13,7 @@ import (
 // api.openai.com 仅 ipv4 且 get 请求
 func OpenAI(c *http.Client) model.Result {
 	name := "ChatGPT"
+	hostname := "openai.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -123,18 +124,27 @@ func OpenAI(c *http.Client) model.Result {
 		if location != "" {
 			loc := strings.ToLower(location)
 			exit := utils.GetRegion(loc, model.GptSupportCountry)
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
 			if exit {
-				return model.Result{Name: name, Status: model.StatusYes, Region: loc}
+				return model.Result{Name: name, Status: model.StatusYes, Region: loc, UnlockType: unlockType}
 			} else {
-				return model.Result{Name: name, Status: model.StatusYes, Info: "but cdn-cgi not unsupported", Region: location}
+				return model.Result{Name: name, Status: model.StatusYes, Info: "but cdn-cgi not unsupported",
+					Region: location, UnlockType: unlockType}
 			}
 		} else {
 			return model.Result{Name: name, Status: model.StatusYes}
 		}
 	} else if !unsupportedCountry && VPN && reqStatus1 {
-		return model.Result{Name: name, Status: model.StatusYes, Info: "Only Available with Web Browser"}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, Info: "Only Available with Web Browser",
+			UnlockType: unlockType}
 	} else if unsupportedCountry && !VPN && reqStatus2 {
-		return model.Result{Name: name, Status: model.StatusYes, Info: "Only Available with Mobile APP"}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, Info: "Only Available with Mobile APP",
+			UnlockType: unlockType}
 	} else if !reqStatus1 && VPN {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if VPN && unsupportedCountry {

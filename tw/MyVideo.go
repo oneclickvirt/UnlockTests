@@ -13,6 +13,7 @@ import (
 // www.myvideo.net.tw 仅 ipv4 且 get 请求
 func MyVideo(c *http.Client) model.Result {
 	name := "MyVideo"
+	hostname := "myvideo.net.tw"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -31,6 +32,8 @@ func MyVideo(c *http.Client) model.Result {
 	if strings.Contains(body, "serviceAreaBlock") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 }

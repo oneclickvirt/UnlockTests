@@ -3,17 +3,16 @@ package us
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // ESPNPlus
-// espn.api.edge.bamgrid.com 双栈 且 post 请求
+// espn.api.edge.bamgrid.com 双栈 且 post 请求 可能 有 cloudflare 的5秒盾
 func ESPNPlus(c *http.Client) model.Result {
 	name := "ESPN+"
 	if c == nil {

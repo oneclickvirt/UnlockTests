@@ -14,6 +14,7 @@ import (
 // spclient.wg.spotify.com 双栈 且 post 请求
 func Spotify(c *http.Client) model.Result {
 	name := "Spotify Registration"
+	hostname := "spotify.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -50,7 +51,10 @@ func Spotify(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if res.Status == 311 && res.IsCountryLaunched {
-		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(res.Country)}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
+			Region: strings.ToLower(res.Country)}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get spclient.wg.spotify.com failed with code: %d", resp.StatusCode)}

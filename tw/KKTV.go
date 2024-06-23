@@ -14,6 +14,7 @@ import (
 // api.kktv.me 仅 ipv4 且 get 请求
 func KKTV(c *http.Client) model.Result {
 	name := "KKTV"
+	hostname := "kktv.me"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -42,7 +43,9 @@ func KKTV(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.Data.Country == "TW" && res.Data.IsAllowed {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	if !res.Data.IsAllowed {
 		return model.Result{Name: name, Status: model.StatusNo}

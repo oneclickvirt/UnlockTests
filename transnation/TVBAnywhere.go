@@ -14,6 +14,7 @@ import (
 // uapisfm.tvbanywhere.com.sg 仅 ipv4 且 get 请求
 func TVBAnywhere(c *http.Client) model.Result {
 	name := "TVBAnywhere+"
+	hostname := "tvbanywhere.com.sg"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -38,7 +39,10 @@ func TVBAnywhere(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.AllowInThisCountry && res.Country != "" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(res.Country)}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
+			Region: strings.ToLower(res.Country)}
 	} else if !res.AllowInThisCountry && res.Country != "" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

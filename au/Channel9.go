@@ -2,18 +2,18 @@ package au
 
 import (
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Channel9
 // login.nine.com.au 双栈 且 get 请求
 func Channel9(c *http.Client) model.Result {
 	name := "Channel 9"
+	hostname := "nine.com.au"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -33,7 +33,9 @@ func Channel9(c *http.Client) model.Result {
 	if strings.Contains(body, "Geoblock") || resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if strings.Contains(body, "Log in to") || resp.StatusCode == 302 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get login.nine.com.au failed with code: %d", resp.StatusCode)}

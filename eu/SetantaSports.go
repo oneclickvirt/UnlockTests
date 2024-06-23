@@ -13,6 +13,7 @@ import (
 // dce-frontoffice.imggaming.com 仅 ipv4 且 get 请求
 func SetantaSports(c *http.Client) model.Result {
 	name := "Setanta Sports"
+	hostname := "imggaming.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -45,7 +46,9 @@ func SetantaSports(c *http.Client) model.Result {
 	if consentResponse.OutsideAllowedTerritories {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if !consentResponse.OutsideAllowedTerritories {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{
 		Name: name, Status: model.StatusUnexpected,

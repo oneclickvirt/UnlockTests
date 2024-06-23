@@ -15,6 +15,7 @@ import (
 // unauthorized 有问题
 func Catchplay(c *http.Client) model.Result {
 	name := "CatchPlay+"
+	hostname := "catchplay.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -41,13 +42,15 @@ func Catchplay(c *http.Client) model.Result {
 		if strings.Contains(body, "is not allowed") && strings.Contains(body, "The location") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		// fmt.Println(body)
+		//fmt.Println(body)
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.Code == "100016" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if res.Code == "0" {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get sunapi.catchplay.com failed with code: %d", resp.StatusCode)}

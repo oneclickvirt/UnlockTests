@@ -11,6 +11,7 @@ import (
 // www.peacocktv.com 双栈 get 请求
 func PeacockTV(c *http.Client) model.Result {
 	name := "Peacock TV"
+	hostname := "peacocktv.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -30,5 +31,7 @@ func PeacockTV(c *http.Client) model.Result {
 		resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	return model.Result{Name: name, Status: model.StatusYes}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
+	return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 }

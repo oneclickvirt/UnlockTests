@@ -14,6 +14,7 @@ import (
 // api2.hbogoasia.com 仅 ipv4 且 get 请求
 func HBOGO(c *http.Client) model.Result {
 	name := "HBO GO Asia"
+	hostname := "hbogoasia.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -41,5 +42,7 @@ func HBOGO(c *http.Client) model.Result {
 		// 解析不到为空则识别为不解锁
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(hboRes.Country)}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
+	return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(hboRes.Country), UnlockType: unlockType}
 }

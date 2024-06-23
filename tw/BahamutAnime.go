@@ -3,18 +3,18 @@ package tw
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // BahamutAnime
 // ani.gamer.com.tw 仅 ipv4 且 get 请求
 func BahamutAnime(c *http.Client) model.Result {
 	name := "Bahamut Anime"
+	hostname := "gamer.com.tw"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -69,7 +69,9 @@ func BahamutAnime(c *http.Client) model.Result {
 	}
 	if (strings.Contains(body2, "animeSn") ||
 		strings.Contains(body2, "\u88dd\u7f6e\u9a57\u8b49\u7570\u5e38\uff01")) && strings.Contains(body3, "data-geo") {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	} else if resp2.StatusCode == 403 || resp2.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

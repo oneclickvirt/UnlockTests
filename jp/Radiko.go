@@ -14,6 +14,7 @@ import (
 // radiko.jp 仅 ipv4 且 get 请求
 func Radiko(c *http.Client) model.Result {
 	name := "Radiko"
+	hostname := "radiko.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -49,10 +50,12 @@ func Radiko(c *http.Client) model.Result {
 				break
 			}
 		}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
 		if location != "" {
-			return model.Result{Name: name, Status: model.StatusYes, Region: location}
+			return model.Result{Name: name, Status: model.StatusYes, Region: location, UnlockType: unlockType}
 		}
-		return model.Result{Name: name, Status: model.StatusYes}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get radiko.jp failed with code: %d", resp.StatusCode)}

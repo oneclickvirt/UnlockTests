@@ -31,6 +31,9 @@ func Bing(c *http.Client) model.Result {
 	if resp.StatusCode == 200 {
 		region := utils.ReParse(body, `Region:"([^"]*)"`)
 		if region == "CN" {
+			if strings.Contains(body, "cn.bing.com") {
+				return model.Result{Name: name, Status: model.StatusYes, Region: "cn", Info: "Only cn.bing.com"}
+			}
 			return model.Result{Name: name, Status: model.StatusNo, Region: "cn"}
 		}
 		if region != "" {
@@ -38,7 +41,7 @@ func Bing(c *http.Client) model.Result {
 		}
 	}
 	if strings.Contains(body, "cn.bing.com") {
-		return model.Result{Name: name, Status: model.StatusNo, Region: "cn"}
+		return model.Result{Name: name, Status: model.StatusYes, Region: "cn", Info: "Only cn.bing.com"}
 	}
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusBanned}

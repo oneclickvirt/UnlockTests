@@ -3,18 +3,18 @@ package jp
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Abema
 // api.abema.io 仅 ipv4 且 get 请求
 func Abema(c *http.Client) model.Result {
 	name := "Abema.TV"
+	hostname := "abema.io"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -46,10 +46,14 @@ func Abema(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if abemaRes.IsoCountryCode == "JP" || strings.Contains(body, "JP") {
-		return model.Result{Name: name, Status: model.StatusYes, Region: "JP"}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "JP"}
 	}
 	if abemaRes.Message == "blocked_location" || abemaRes.Message == "anonymous_ip" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	return model.Result{Name: name, Status: model.StatusYes, Info: "Oversea Only"}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
+	return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Info: "Oversea Only"}
 }

@@ -15,6 +15,7 @@ import (
 // us1-prod-direct.tlc.com 双栈 get 请求
 func TLCGO(c *http.Client) model.Result {
 	name := "TLC GO"
+	hostname := "tlc.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -99,7 +100,9 @@ func TLCGO(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
 		if isOK {
-			return model.Result{Name: name, Status: model.StatusYes, Region: region}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, Region: region, UnlockType: unlockType}
 		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

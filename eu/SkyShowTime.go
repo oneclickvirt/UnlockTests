@@ -13,6 +13,7 @@ import (
 // www.skyshowtime.com 双栈 get 请求
 func SkyShowTime(c *http.Client) model.Result {
 	name := "SkyShowTime"
+	hostname := "skyshowtime.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -58,7 +59,9 @@ func SkyShowTime(c *http.Client) model.Result {
 			}
 		}
 		if region != "" {
-			return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region), UnlockType: unlockType}
 		} else {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}

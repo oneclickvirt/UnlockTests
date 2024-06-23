@@ -2,18 +2,18 @@ package us
 
 import (
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Hulu
 // www.hulu.com 仅 ipv4 且 post 请求
 func Hulu(c *http.Client) model.Result {
 	name := "Hulu"
+	hostname := "hulu.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -83,7 +83,9 @@ func Hulu(c *http.Client) model.Result {
 		}
 		if strings.Contains(body, "LOGIN_FORBIDDEN") || strings.Contains(body, "LOGIN_BAD_REQUEST") ||
 			strings.Contains(body, "Your login is invalid. Please refresh the page.") {
-			return model.Result{Name: name, Status: model.StatusYes}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}
 	}
 	return model.Result{Name: name, Status: model.StatusNo}

@@ -2,16 +2,16 @@ package us
 
 import (
 	"fmt"
-	"net/http"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
 )
 
 // Popcornflix
 // popcornflix-prod.cloud.seachange.com 仅 ipv4 且 get 请求
 func Popcornflix(c *http.Client) model.Result {
 	name := "Popcornflix"
+	hostname := "seachange.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -30,7 +30,9 @@ func Popcornflix(c *http.Client) model.Result {
 	if resp.StatusCode == 403 || resp.StatusCode == 451 || resp.StatusCode == 400 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get popcornflix-prod.cloud.seachange.com failed with code: %d", resp.StatusCode)}

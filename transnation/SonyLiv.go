@@ -3,18 +3,18 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // SonyLiv
 // www.sonyliv.com 双栈 且 get 请求 - 有问题，获取不到地区
 func SonyLiv(c *http.Client) model.Result {
 	name := "SonyLiv"
+	hostname := "sonyliv.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -106,10 +106,12 @@ func SonyLiv(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res2.ResultCode == "OK" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
+			Region: strings.ToLower(region)}
 	}
-	if res2.ResultCode == "KO" ||
-		strings.Contains(body3, "It seems you are trying to access SonyLIV via <b>VPN, Proxy</b> or a <b>Routed Service</b>.") {
+	if res2.ResultCode == "KO" || strings.Contains(body3, "It seems you are trying to access SonyLIV via <b>VPN, Proxy</b> or a <b>Routed Service</b>.") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Proxy Detected", Region: strings.ToLower(region)}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

@@ -15,6 +15,7 @@ import (
 // www.eurosport.com 双栈
 func Eurosport(c *http.Client) model.Result {
 	name := "Eurosport RO"
+	hostname := "eurosport.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -86,7 +87,9 @@ func Eurosport(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
 		if isOK {
-			return model.Result{Name: name, Status: model.StatusYes}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

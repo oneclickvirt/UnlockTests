@@ -14,6 +14,7 @@ import (
 // ssoToken 已过期
 func KPLUS(c *http.Client) model.Result {
 	name := "K+"
+	hostname := "kplus.vn"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -54,7 +55,9 @@ func KPLUS(c *http.Client) model.Result {
 	if strings.Contains(secondBody, "geoblock") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if secondBody != "" {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get xem.kplus.vn failed with code: %d", resp.StatusCode)}

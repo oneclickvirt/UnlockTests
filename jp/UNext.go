@@ -12,6 +12,7 @@ import (
 // cc.unext.jp 仅 ipv4 且 post 请求
 func UNext(c *http.Client) model.Result {
 	name := "U-NEXT"
+	hostname := "unext.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -35,7 +36,9 @@ func UNext(c *http.Client) model.Result {
 	}
 	status := res.Data.PlaylistUrl.ResultStatus
 	if status == 200 || status == 475 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	if status == 467 {
 		return model.Result{Name: name, Status: model.StatusNo}

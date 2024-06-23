@@ -14,6 +14,7 @@ import (
 // www.mytvsuper.com 仅 ipv4 且 get 请求
 func MyTvSuper(c *http.Client) model.Result {
 	name := "MyTVSuper"
+	hostname := "mytvsuper.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -40,12 +41,16 @@ func MyTvSuper(c *http.Client) model.Result {
 	}
 	if err := json.Unmarshal(b, &mytvsuperRes); err != nil {
 		if strings.Contains(body, "HK") {
-			return model.Result{Name: name, Status: model.StatusYes}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if mytvsuperRes.Region == 1 && mytvsuperRes.CountryCode == "HK" {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	if mytvsuperRes.Region != 1 || mytvsuperRes.CountryCode != "HK" {
 		return model.Result{Name: name, Status: model.StatusNo}

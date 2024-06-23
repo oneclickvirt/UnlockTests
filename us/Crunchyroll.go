@@ -13,6 +13,7 @@ import (
 // c.evidon.com 仅 ipv4 且 get 请求
 func Crunchyroll(c *http.Client) model.Result {
 	name := "Crunchyroll"
+	hostname := "evidon.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -29,7 +30,9 @@ func Crunchyroll(c *http.Client) model.Result {
 	}
 	body := string(b)
 	if strings.Contains(body, "'code':'us'") {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	} else {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

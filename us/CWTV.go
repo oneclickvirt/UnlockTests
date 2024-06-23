@@ -13,6 +13,7 @@ import (
 // www.cwtv.com 双栈 get 请求
 func CWTV(c *http.Client) model.Result {
 	name := "CW TV"
+	hostname := "cwtv.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -31,7 +32,9 @@ func CWTV(c *http.Client) model.Result {
 	if strings.Contains(body, "302 Found") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.cwtv.com failed with code: %d", resp.StatusCode)}

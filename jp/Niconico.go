@@ -13,6 +13,7 @@ import (
 // www.nicovideo.jp 仅 ipv4 且 get 请求
 func Niconico(c *http.Client) model.Result {
 	name := "Niconico"
+	hostname := "nicovideo.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -88,15 +89,21 @@ func Niconico(c *http.Client) model.Result {
 		}
 		body = string(b)
 		if strings.Contains(body, "notAllowedCountry") && resp1.StatusCode == 200 {
-			return model.Result{Name: name, Status: model.StatusYes,
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
 				Info: fmt.Sprintf("But Official Live is Unavailable. LiveID: %s", liveID)}
 		}
 		if resp1.StatusCode == 200 {
-			return model.Result{Name: name, Status: model.StatusYes,
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
 				Info: fmt.Sprintf("LiveID: %s", liveID)}
 		}
 	} else if resp1.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes,
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
 			Info: "But Official Live is Unavailable"}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

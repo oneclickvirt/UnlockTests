@@ -12,6 +12,7 @@ import (
 // gizmo.rakuten.tv 仅 ipv4 且 post 请求
 func RakutenTV(c *http.Client) model.Result {
 	name := "Rakuten TV"
+	hostname := "rakuten.tv"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -34,7 +35,9 @@ func RakutenTV(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if strings.Contains(body, "streaming_drm_types") {
-		return model.Result{Name: name, Status: model.StatusYes, Region: region}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, Region: region, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get gizmo.rakuten.tv failed with code: %d", resp.StatusCode)}

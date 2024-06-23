@@ -14,6 +14,7 @@ import (
 // www.npo.nl 双栈 且 get 请求
 func NPOStartPlus(c *http.Client) model.Result {
 	name := "NPO Start Plus"
+	hostname := "npo.nl"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -65,7 +66,9 @@ func NPOStartPlus(c *http.Client) model.Result {
 		if resp2.StatusCode == 451 || strings.Contains(body, "Dit programma mag niet bekeken worden vanaf jouw locatie.") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		} else if resp2.StatusCode == 200 {
-			return model.Result{Name: name, Status: model.StatusYes}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		} else {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}

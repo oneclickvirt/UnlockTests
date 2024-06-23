@@ -11,6 +11,7 @@ import (
 // startup.core.indazn.com 仅 ipv4 且 post 请求
 func DAZN(c *http.Client) model.Result {
 	name := "Dazn"
+	hostname := "indazn.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -34,9 +35,12 @@ func DAZN(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if daznRes.Region.IsAllowed {
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{
 			Name: name, Status: model.StatusYes,
-			Region: daznRes.Region.GeolocatedCountry,
+			Region:     daznRes.Region.GeolocatedCountry,
+			UnlockType: unlockType,
 		}
 	}
 	return model.Result{

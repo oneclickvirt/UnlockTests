@@ -14,6 +14,7 @@ import (
 // https://www.nfl.com/plus/ 重定向至于 https://nfl.com/dazn-watch-gp-row 约等于仅使用 dazn 进行观看
 func NFLPlus(c *http.Client) model.Result {
 	name := "NFL+"
+	hostname := "nfl.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -34,7 +35,9 @@ func NFLPlus(c *http.Client) model.Result {
 		strings.Contains(lowBody, "gpi.nfl.com") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get https://nfl.com/dazn-watch-gp-row failed with code: %d", resp.StatusCode)}

@@ -12,6 +12,7 @@ import (
 // webtvapi.nowe.com 仅 ipv4 且 post 请求
 func NowE(c *http.Client) model.Result {
 	name := "Now E"
+	hostname := "nowe.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -34,7 +35,9 @@ func NowE(c *http.Client) model.Result {
 	if res.ResponseCode == "GEO_CHECK_FAIL" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if res.ResponseCode == "SUCCESS" {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{
 		Name: name, Status: model.StatusUnexpected,

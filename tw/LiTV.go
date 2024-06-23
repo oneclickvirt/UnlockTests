@@ -12,6 +12,7 @@ import (
 // www.litv.tv 仅 ipv4 且 post 请求
 func LiTV(c *http.Client) model.Result {
 	name := "LiTV"
+	hostname := "litv.tv"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -36,7 +37,9 @@ func LiTV(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
 		if strings.Contains(bodyString, "42000075") {
-			return model.Result{Name: name, Status: model.StatusYes}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}
 	}
 	return AnotherLiTV(c)
@@ -46,6 +49,7 @@ func LiTV(c *http.Client) model.Result {
 // www.litv.tv 的另一个检测逻辑
 func AnotherLiTV(c *http.Client) model.Result {
 	name := "LiTV"
+	hostname := "litv.tv"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -70,7 +74,9 @@ func AnotherLiTV(c *http.Client) model.Result {
 	}
 	switch errorMessage {
 	case "null":
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	case "vod.error.outsideregionerror":
 		return model.Result{Name: name, Status: model.StatusNo}
 	default:

@@ -1,18 +1,18 @@
 package transnation
 
 import (
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // TikTok
 // www.tiktok.com 仅 ipv4 且 get 请求
 func TikTok(c *http.Client) model.Result {
 	name := "TikTok"
+	hostname := "tiktok.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -36,7 +36,9 @@ func TikTok(c *http.Client) model.Result {
 	}
 	region := utils.ReParse(body, `"region":"(\w+)"`)
 	if region != "" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: strings.ToLower(region)}
 	} else {
 		url = "https://www.tiktok.com/"
 		resp2, err2 := client.R().Get(url)
@@ -57,10 +59,13 @@ func TikTok(c *http.Client) model.Result {
 		}
 		region = utils.ReParse(body, `"region":"(\w+)"`)
 		if region != "" {
-			return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
+				Region: strings.ToLower(region)}
 		}
 	}
 	return model.Result{Name: name, Status: model.StatusNo}
-	// return model.Result{Name: name, Status: model.StatusUnexpected,
-	// 	Err: fmt.Errorf("www.tiktok.com can not find region with resp code: %d", resp.StatusCode)}
+	//return model.Result{Name: name, Status: model.StatusUnexpected,
+	//	Err: fmt.Errorf("www.tiktok.com can not find region with resp code: %d", resp.StatusCode)}
 }

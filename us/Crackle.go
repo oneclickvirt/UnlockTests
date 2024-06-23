@@ -14,6 +14,7 @@ import (
 // {"path":"/appconfig","version":"v2.0.0","status":"400","timestamp":"2024-05-31T10:28:34.542Z","error":{"message":"Platform Key is not specified","type":"ApiError","code":121,"details":{}}}
 func Crackle(c *http.Client) model.Result {
 	name := "Crackle"
+	hostname := "crackle.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -52,7 +53,9 @@ func Crackle(c *http.Client) model.Result {
 	if strings.Contains(body, "302 Found") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get prod-api.crackle.com failed with code: %d", resp.StatusCode)}

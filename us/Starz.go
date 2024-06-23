@@ -14,6 +14,7 @@ import (
 // www.starz.com 双栈 get 请求
 func Starz(c *http.Client) model.Result {
 	name := "Starz"
+	hostname := "starz.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -60,7 +61,9 @@ func Starz(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusErr, Err: err}
 		}
 		if res.IsAllowedAccess && res.IsAllowedCountry && !res.IsKnownProxy {
-			return model.Result{Name: name, Status: model.StatusYes}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

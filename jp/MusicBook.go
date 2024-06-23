@@ -12,6 +12,7 @@ import (
 // overseaauth.music-book.jp 仅 ipv4 且 get 请求
 func MusicBook(c *http.Client) model.Result {
 	name := "music.jp"
+	hostname := "music-book.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -31,7 +32,9 @@ func MusicBook(c *http.Client) model.Result {
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 && body != "" {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get overseaauth.music-book.jp failed with code: %d", resp.StatusCode)}

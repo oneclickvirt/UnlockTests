@@ -13,6 +13,7 @@ import (
 // api.epix.com 仅 ipv4 且 post 请求
 func Epix(c *http.Client) model.Result {
 	name := "MGM+"
+	hostname := "epix.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -89,7 +90,9 @@ func Epix(c *http.Client) model.Result {
 	case "GEO_BLOCKED":
 		return model.Result{Name: name, Status: model.StatusNo}
 	case "NOT_SUBSCRIBED":
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	default:
 		return model.Result{Name: name, Status: model.StatusUnexpected}
 	}

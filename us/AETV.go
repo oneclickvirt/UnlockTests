@@ -14,6 +14,7 @@ import (
 // ccpa-service.sp-prod.net 仅 ipv4 且 post 请求
 func AETV(c *http.Client) model.Result {
 	name := "A&E TV"
+	hostname := "aetv.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -78,7 +79,9 @@ func AETV(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.CcpaApplies == true {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	} else if res.CcpaApplies == false {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

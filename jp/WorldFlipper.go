@@ -11,6 +11,7 @@ import (
 // api.worldflipper.jp 双栈 且 get 请求
 func WorldFlipper(c *http.Client) model.Result {
 	name := "World Flipper Japan"
+	hostname := "worldflipper.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -28,7 +29,9 @@ func WorldFlipper(c *http.Client) model.Result {
 	if resp.StatusCode == 403 || resp.StatusCode == 404 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get api.worldflipper.jp failed with code: %d", resp.StatusCode)}

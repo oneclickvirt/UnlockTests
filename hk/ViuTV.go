@@ -12,6 +12,7 @@ import (
 // api.viu.now.com 双栈 且 post 请求
 func ViuTV(c *http.Client) model.Result {
 	name := "Viu.TV"
+	hostname := "viu.now.com "
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -29,7 +30,9 @@ func ViuTV(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.ResponseCode == "SUCCESS" {
-		return model.Result{Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	} else if res.ResponseCode == "GEO_CHECK_FAIL" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

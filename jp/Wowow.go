@@ -5,13 +5,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 func getFirstLink(jsonStr string) string {
@@ -94,6 +93,7 @@ func getMetaId(htmlStr string) string {
 // www.wowow.co.jp 仅 ipv4 且 get 请求
 func Wowow(c *http.Client) model.Result {
 	name := "WOWOW"
+	hostname := "wowow.co.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -220,7 +220,9 @@ func Wowow(c *http.Client) model.Result {
 	if strings.Contains(body, "VPN") || strings.Contains(body, "Forbidden") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if strings.Contains(body, "playback_session_id") {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{
 		Name: name, Status: model.StatusUnexpected,

@@ -13,6 +13,7 @@ import (
 // www.linetv.tw 仅 ipv4 且 get 请求
 func LineTV(c *http.Client) model.Result {
 	name := "LineTV.TW"
+	hostname := "linetv.tw"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -36,7 +37,9 @@ func LineTV(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.CountryCode == 228 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	} else if resp.StatusCode == 400 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

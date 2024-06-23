@@ -13,6 +13,7 @@ import (
 // www.cbc.ca 仅 ipv4 且 get 请求
 func CBCGem(c *http.Client) model.Result {
 	name := "CBC Gem"
+	hostname := "cbc.ca"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -29,9 +30,13 @@ func CBCGem(c *http.Client) model.Result {
 	}
 	body := string(b)
 	if strings.Contains(body, `country":"CA"`) {
-		return model.Result{Name: name, Status: model.StatusYes, Region: "ca"}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "ca"}
 	} else if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes, Region: "global"}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "global"}
 	}
 	if resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}

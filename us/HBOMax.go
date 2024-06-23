@@ -14,6 +14,7 @@ import (
 // www.hbonow.com 仅 ipv4 且 get 请求 (重定向至于 www.max.com 了)
 func HBOMax(c *http.Client) model.Result {
 	name := "HBO Max"
+	hostname := "max.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -37,5 +38,7 @@ func HBOMax(c *http.Client) model.Result {
 	if len(t) >= 4 {
 		region = strings.Split(resp.Header.Get("location"), "/")[3]
 	}
-	return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToUpper(region)}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
+	return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToUpper(region), UnlockType: unlockType}
 }

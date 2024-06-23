@@ -15,6 +15,7 @@ func ZDF(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://ssl.zdf.de/geo/de/geo.txt"
+	hostname := "zdf.de"
 	headers := map[string]string{
 		"User-Agent": model.UA_Dalvik,
 	}
@@ -28,7 +29,9 @@ func ZDF(c *http.Client) model.Result {
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 || resp.StatusCode == 404 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get ssl.zdf.de failed with code: %d", resp.StatusCode)}

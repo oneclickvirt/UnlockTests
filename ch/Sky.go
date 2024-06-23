@@ -17,6 +17,7 @@ func SkyCh(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://sky.ch/"
+	hostname := "sky.ch"
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
@@ -33,7 +34,9 @@ func SkyCh(c *http.Client) model.Result {
 		strings.Contains(body, "Are you using a Proxy or similar Anonymizer technics") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get sky.ch failed with code: %d", resp.StatusCode)}

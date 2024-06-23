@@ -14,6 +14,7 @@ import (
 // api2.4gtv.tv 仅 ipv4 且 post 请求
 func Tw4gtv(c *http.Client) model.Result {
 	name := "4GTV.TV"
+	hostname := "4gtv.tv"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -40,7 +41,9 @@ func Tw4gtv(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.Success {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	} else if res.Success == false || resp.StatusCode == 403 || resp.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

@@ -14,6 +14,7 @@ import (
 // www.maoriplus.co.nz 双栈 且 get 请求
 func MaoriTV(c *http.Client) model.Result {
 	name := "Maori TV"
+	hostname := "maoriplus.co.nz"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -60,7 +61,9 @@ func MaoriTV(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res1.AccountId != "0" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: "nz"}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "nz"}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get edge.api.brightcove.com failed with code: %d", resp.StatusCode)}

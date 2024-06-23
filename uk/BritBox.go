@@ -13,6 +13,7 @@ import (
 // www.britbox.com 双栈 get 请求
 func BritBox(c *http.Client) model.Result {
 	name := "BritBox"
+	hostname := "britbox.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -33,7 +34,9 @@ func BritBox(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.britbox.com failed with code: %d", resp.StatusCode)}

@@ -39,6 +39,6 @@ func Test(t *testing.T) {
 		if res.Err != nil {
 			fmt.Printf(res.Err.Error() + " ")
 		}
-		fmt.Println(res.Status, res.Region)
+		fmt.Println(res.Status, res.Region, res.Info, res.UnlockType)
 	}
 }

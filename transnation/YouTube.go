@@ -13,6 +13,7 @@ import (
 // www.youtube.com 双栈 且 get 请求
 func Youtube(c *http.Client) model.Result {
 	name := "YouTube Region"
+	hostname := "youtube.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -40,15 +41,20 @@ func Youtube(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if EndLocation := strings.Index(body1, `"countryCode":`); EndLocation != -1 {
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{
 			Name: name, Status: model.StatusYes,
-			Region: strings.ToLower(body1[EndLocation+15 : EndLocation+17]),
+			Region:     strings.ToLower(body1[EndLocation+15 : EndLocation+17]),
+			UnlockType: unlockType,
 		}
 	}
 	if strings.Contains(body1, "premiumPurchaseButton") ||
 		strings.Contains(body1, "manageSubscriptionButton") ||
 		strings.Contains(body1, "/月") || strings.Contains(body1, "/month") {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusNo}
 }
@@ -57,6 +63,7 @@ func Youtube(c *http.Client) model.Result {
 // redirector.googlevideo.com 双栈 且 get 请求
 func YoutubeCDN(c *http.Client) model.Result {
 	name := "YouTube CDN"
+	hostname := "googlevideo.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -84,17 +91,21 @@ func YoutubeCDN(c *http.Client) model.Result {
 	body = body[:i]
 	i = strings.Index(body, "-")
 
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
 	if i == -1 {
 		i = strings.Index(body, ".")
 		return model.Result{
 			Name: name, Status: model.StatusYes, Info: "Youtube Video Server",
-			Region: findAirCode(body[i+1:]),
+			Region:     findAirCode(body[i+1:]),
+			UnlockType: unlockType,
 		}
 	} else {
 		isp := body[:i]
 		return model.Result{
 			Name: name, Status: model.StatusYes, Info: "Google Global CacheCDN - ISP Cooperation",
-			Region: isp + " - " + findAirCode(body[i+1:]),
+			Region:     isp + " - " + findAirCode(body[i+1:]),
+			UnlockType: unlockType,
 		}
 	}
 }

@@ -13,35 +13,35 @@ func Test(t *testing.T) {
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = BilibiliSEA(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = HBOGO(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = HotStar(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = MolaTV(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = StarPlus(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 }

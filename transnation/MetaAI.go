@@ -13,6 +13,7 @@ import (
 // www.meta.ai 双栈 且 get 请求 有问题
 func MetaAI(c *http.Client) model.Result {
 	name := "MetaAI"
+	hostname := "meta.ai"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -55,7 +56,9 @@ func MetaAI(c *http.Client) model.Result {
 			code := body[start:end]
 			region := strings.Split(code, "_")[1]
 			if region != "" {
-				return model.Result{Name: name, Status: model.StatusYes, Region: region}
+				result1, result2, result3 := utils.CheckDNS(hostname)
+				unlockType := utils.GetUnlockType(result1, result2, result3)
+				return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
 			}
 		}
 	}

@@ -13,17 +13,17 @@ func Test(t *testing.T) {
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = MXPlayer(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = Zee5(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 }

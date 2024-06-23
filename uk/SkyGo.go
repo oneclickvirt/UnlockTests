@@ -13,6 +13,7 @@ import (
 // skyid.sky.com 仅 ipv4 且 get 请求
 func SkyGo(c *http.Client) model.Result {
 	name := "Sky Go"
+	hostname := "sky.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -32,7 +33,9 @@ func SkyGo(c *http.Client) model.Result {
 		strings.Contains(body, "Access Denied") { // || resp.StatusCode == 451
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 302 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get skyid.sky.com failed with code: %d", resp.StatusCode)}

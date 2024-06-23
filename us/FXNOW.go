@@ -13,6 +13,7 @@ import (
 // fxnow.fxnetworks.com 仅 ipv4 且 get 请求
 func FXNOW(c *http.Client) model.Result {
 	name := "FXNOW"
+	hostname := "fxnetworks.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -31,7 +32,9 @@ func FXNOW(c *http.Client) model.Result {
 	if strings.Contains(body, "is not accessible") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if strings.Contains(body, "FX Movies") {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get fxnow.fxnetworks.com with code: %d", resp.StatusCode)}

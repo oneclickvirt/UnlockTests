@@ -12,6 +12,7 @@ import (
 // www.videomarket.jp 仅 ipv4 且 post 请求
 func VideoMarket(c *http.Client) model.Result {
 	name := "VideoMarket"
+	hostname := "videomarket.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -32,7 +33,9 @@ func VideoMarket(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if strings.Contains(body, "292072") {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.videomarket.jp failed with code: %d", resp.StatusCode)}

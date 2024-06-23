@@ -78,6 +78,7 @@ func TVer(c *http.Client) model.Result {
 // 主要的检测逻辑
 func FirstTVer(c *http.Client) model.Result {
 	name := "TVer"
+	hostname := "tver.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -278,7 +279,9 @@ func FirstTVer(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res1.AccountId != "0" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: "jp"}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "jp"}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get edge.api.brightcove.com failed with code: %d", resp.StatusCode)}

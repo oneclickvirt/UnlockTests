@@ -13,6 +13,7 @@ import (
 // hamivideo.hinet.net 仅 ipv4 且 get 请求
 func HamiVideo(c *http.Client) model.Result {
 	name := "Hami Video"
+	hostname := "hinet.net"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -35,7 +36,9 @@ func HamiVideo(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.Code == "06001-107" {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	} else if res.Code == "06001-106" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

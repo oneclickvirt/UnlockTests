@@ -26,6 +26,7 @@ func generateRandomString(length int) string {
 // MathsSpot
 func MathsSpot(c *http.Client) model.Result {
 	name := "Maths Spot"
+	hostname := "mathsspot.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -89,7 +90,9 @@ func MathsSpot(c *http.Client) model.Result {
 	case "FailureProxyUserLimitExceeded":
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Proxy/VPN Detected"}
 	case "Success":
-		return model.Result{Name: name, Status: model.StatusYes, Region: region}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, Region: region, UnlockType: unlockType}
 	default:
 		return model.Result{Name: name, Status: model.StatusUnexpected, Info: status}
 	}

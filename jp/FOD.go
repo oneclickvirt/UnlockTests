@@ -13,6 +13,7 @@ import (
 // geocontrol1.stream.ne.jp 仅 ipv4 且 get 请求
 func FOD(c *http.Client) model.Result {
 	name := "FOD(Fuji TV)"
+	hostname := "stream.ne.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -32,7 +33,9 @@ func FOD(c *http.Client) model.Result {
 	if strings.Contains(body, "FLAG TYPE=\"false\"") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 || strings.Contains(body, "true") {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get geocontrol1.stream.ne.jp failed with code: %d", resp.StatusCode)}

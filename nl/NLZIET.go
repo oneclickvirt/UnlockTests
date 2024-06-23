@@ -14,6 +14,7 @@ import (
 // 直接通过CDN判断地区
 func ZIETCDN(c *http.Client) model.Result {
 	name := "NLZIET"
+	hostname := "nlziet.nl"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -39,7 +40,9 @@ func ZIETCDN(c *http.Client) model.Result {
 	loc := strings.ToLower(location)
 	exit := utils.GetRegion(loc, model.NLZIETSupportCountry)
 	if exit {
-		return model.Result{Name: name, Status: model.StatusYes, Region: loc}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: loc}
 	}
 	return model.Result{Name: name, Status: model.StatusNo}
 }
@@ -48,6 +51,7 @@ func ZIETCDN(c *http.Client) model.Result {
 // nlziet.nl 仅 ipv4 且 get 请求 cookie 有效期非常短
 func NLZIET(c *http.Client) model.Result {
 	name := "NLZIET"
+	hostname := "nlziet.nl"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -84,7 +88,9 @@ func NLZIET(c *http.Client) model.Result {
 		if strings.Contains(body, "CountryNotAllowed") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		} else if strings.Contains(body, "streamSessionId") {
-			return model.Result{Name: name, Status: model.StatusYes}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		} else {
 			return ZIETCDN(c)
 		}

@@ -13,6 +13,7 @@ import (
 // capi.9c9media.com 仅 ipv4 且 get 请求
 func Crave(c *http.Client) model.Result {
 	name := "Crave"
+	hostname := "9c9media.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -32,7 +33,9 @@ func Crave(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if strings.Contains(body, "video.9c9media.com") {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get capi.9c9media.com with code: %d", resp.StatusCode)}

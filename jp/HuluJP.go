@@ -11,6 +11,7 @@ import (
 // https://www.hulu.jp/login
 func Hulu(c *http.Client) model.Result {
 	name := "Hulu Japan"
+	hostname := "hulu.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -40,5 +41,7 @@ func Hulu(c *http.Client) model.Result {
 	if resp.Request.URL.Path == "/restrict.html" || resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	return model.Result{Name: name, Status: model.StatusYes}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
+	return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 }

@@ -13,23 +13,35 @@ func Test(t *testing.T) {
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = Docplay(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = SkyShowTime(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = SetantaSports(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
+
+	res = Eurosport(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
+
+	res = MathsSpot(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 }

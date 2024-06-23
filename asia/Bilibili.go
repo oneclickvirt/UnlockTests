@@ -13,6 +13,7 @@ import (
 // Bilibili
 // B站主体请求逻辑
 func Bilibili(c *http.Client, name, url string) model.Result {
+	hostname := "bilibili.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -42,7 +43,10 @@ func Bilibili(c *http.Client, name, url string) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if res.Code == 0 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		//fmt.Println(result1, result2, result3)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get api.bilibili.com failed with code: %d", resp.StatusCode)}

@@ -16,6 +16,7 @@ import (
 // https://10play.com.au/geo-web 仅 ipv4 且 get 请求
 func Channel10(c *http.Client) model.Result {
 	name := "Channel 10"
+	hostname := "10play.com.au"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -60,7 +61,9 @@ func Channel10(c *http.Client) model.Result {
 	if !res.Allow {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if res.Allow && res.State != "" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: res.State}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, Region: res.State, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get 10play.com.au failed with code: %d", resp.StatusCode)}

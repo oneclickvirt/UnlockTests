@@ -13,6 +13,7 @@ import (
 // www.amediateka.ru 仅 ipv4 且 get 请求
 func Amediateka(c *http.Client) model.Result {
 	name := "Amediateka"
+	hostname := "amediateka.ru"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -35,7 +36,9 @@ func Amediateka(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.amediateka.ru failed with code: %d", resp.StatusCode)}

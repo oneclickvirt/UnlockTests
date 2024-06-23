@@ -13,6 +13,7 @@ import (
 // vod.kbs.co.kr 仅 ipv4 且 get 请求
 func KBSDomestic(c *http.Client) model.Result {
 	name := "KBS Domestic"
+	hostname := "kbs.co.kr"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -36,7 +37,9 @@ func KBSDomestic(c *http.Client) model.Result {
 			if strings.Contains(strings.Split(tpList[1], "\"")[1], "false") {
 				return model.Result{Name: name, Status: model.StatusNo}
 			} else if strings.Contains(strings.Split(tpList[1], "\"")[1], "true") {
-				return model.Result{Name: name, Status: model.StatusYes}
+				result1, result2, result3 := utils.CheckDNS(hostname)
+				unlockType := utils.GetUnlockType(result1, result2, result3)
+				return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 			}
 		}
 	}

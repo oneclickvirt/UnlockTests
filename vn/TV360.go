@@ -13,6 +13,7 @@ import (
 // 登录认证已过期
 func TV360(c *http.Client) model.Result {
 	name := "TV360"
+	hostname := "tv360.vn"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -53,7 +54,9 @@ func TV360(c *http.Client) model.Result {
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get api-v2.tv360.vn failed with code: %d", resp.StatusCode)}

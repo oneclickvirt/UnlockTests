@@ -13,6 +13,7 @@ import (
 // api.iview.abc.net.au 仅 ipv4 且 get 请求
 func ABCiView(c *http.Client) model.Result {
 	name := "ABC iView"
+	hostname := "abc.net.au"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -32,7 +33,9 @@ func ABCiView(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get api.iview.abc.net.au failed with code: %d", resp.StatusCode)}

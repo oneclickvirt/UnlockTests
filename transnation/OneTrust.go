@@ -2,17 +2,17 @@ package transnation
 
 import (
 	"fmt"
-	"io"
-	"net/http"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"io"
+	"net/http"
 )
 
 // OneTrust
 // geolocation.onetrust.com 双栈 get 请求
 func OneTrust(c *http.Client) model.Result {
 	name := "OneTrust"
+	hostname := "onetrust.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -33,9 +33,12 @@ func OneTrust(c *http.Client) model.Result {
 	if country == "" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
 	if stateName == "" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: country}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: country}
 	} else {
-		return model.Result{Name: name, Status: model.StatusYes, Region: country + " " + stateName}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
+			Region: country + " " + stateName}
 	}
 }

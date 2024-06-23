@@ -48,6 +48,7 @@ func extractHeaderValue(resp *req.Response, headerName string) string {
 // AISPlay
 func AISPlay(c *http.Client) model.Result {
 	name := "AIS Play"
+	hostname := "ais-vidnt.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -178,7 +179,9 @@ func AISPlay(c *http.Client) model.Result {
 	case "BLOCK":
 		return model.Result{Name: name, Status: model.StatusNo}
 	case "SUCCESS":
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	default:
 		return AnotherAISPlay(c)
 	}
@@ -188,6 +191,7 @@ func AISPlay(c *http.Client) model.Result {
 // 49-231-37-237-rewriter.ais-vidnt.com 双栈 get 请求
 func AnotherAISPlay(c *http.Client) model.Result {
 	name := "AIS Play"
+	hostname := "ais-vidnt.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -208,7 +212,9 @@ func AnotherAISPlay(c *http.Client) model.Result {
 	} else if resp.StatusCode == 200 {
 		if strings.Contains(body, "X-Geo-Protection-System-Status") {
 			if strings.Contains(body, "ALLOW") {
-				return model.Result{Name: name, Status: model.StatusYes}
+				result1, result2, result3 := utils.CheckDNS(hostname)
+				unlockType := utils.GetUnlockType(result1, result2, result3)
+				return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 			} else if strings.Contains(body, "BLOCK") {
 				return model.Result{Name: name, Status: model.StatusNo}
 			}

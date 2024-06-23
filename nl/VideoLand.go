@@ -13,6 +13,7 @@ import (
 // api.videoland.com 双栈 且 post 请求
 func VideoLand(c *http.Client) model.Result {
 	name := "Videoland"
+	hostname := "videoland.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -45,7 +46,7 @@ func VideoLand(c *http.Client) model.Result {
 		} `json:"data"`
 	}
 	if err = json.Unmarshal(b, &res); err != nil {
-		if strings.Contains(body, "\"isOnboardingGeoBlocked\":true") {
+		if strings.Contains(body, "\"isOnboardingGeoBlocked\":true") || body == "" {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
@@ -53,5 +54,7 @@ func VideoLand(c *http.Client) model.Result {
 	if res.Data.Blocked {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	return model.Result{Name: name, Status: model.StatusYes}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
+	return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 }

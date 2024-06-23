@@ -1,11 +1,11 @@
 package model
 
 type Result struct {
-	Name      string
-	Status    string
-	Err       error
-	Region    string
-	Info      string
+	Name       string
+	Status     string
+	Err        error
+	Region     string
+	Info       string
 	UnlockType string
 }
 

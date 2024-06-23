@@ -12,6 +12,7 @@ import (
 // www.instagram.com 双栈 且 post 请求
 func Instagram(c *http.Client) model.Result {
 	name := "Instagram Licensed Audio"
+	hostname := "instagram.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -48,7 +49,9 @@ func Instagram(c *http.Client) model.Result {
 		if strings.Contains(body, `"should_mute_audio":true`) {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.instagram.com failed with code: %d", resp.StatusCode)}

@@ -12,6 +12,7 @@ import (
 // 7plus-sevennetwork.akamaized.net 有问题 - 无论如何请求都失败
 func Au7plus(c *http.Client) model.Result {
 	name := "7plus"
+	hostname := "7plus.com.au"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -41,7 +42,9 @@ func Au7plus(c *http.Client) model.Result {
 		if resp1.StatusCode == 403 || resp1.StatusCode == 451 {
 			return model.Result{Name: name, Status: model.StatusNo}
 		} else if resp1.StatusCode == 200 {
-			return model.Result{Name: name, Status: model.StatusYes}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		} else {
 			return model.Result{Name: name, Status: model.StatusUnexpected,
 				Err: fmt.Errorf("get 7plus.com.au failed with code: %d %d", resp.StatusCode, resp1.StatusCode)}

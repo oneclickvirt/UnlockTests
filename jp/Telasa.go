@@ -14,6 +14,7 @@ import (
 // api-videopass-anon.kddi-video.com 双栈 get 请求
 func Telasa(c *http.Client) model.Result {
 	name := "Telasa"
+	hostname := "kddi-video.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -50,7 +51,9 @@ func Telasa(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if res.Status.Type != "" {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get api-videopass-anon.kddi-video.com failed with code: %d", resp.StatusCode)}

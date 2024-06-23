@@ -14,6 +14,7 @@ import (
 // geolocation.digitalsvc.apps.nbcuni.com 双栈 get 请求
 func NBCTV(c *http.Client) model.Result {
 	name := "NBC TV"
+	hostname := "nbcuni.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -48,7 +49,9 @@ func NBCTV(c *http.Client) model.Result {
 	body := string(b)
 	// fmt.Println(body)
 	if strings.Contains(body, `"restricted":false`) {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	} else if strings.Contains(body, `"restricted":true`) || body == "" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

@@ -14,6 +14,7 @@ import (
 // www.starplus.com 双栈 且 get 请求
 func StarPlus(c *http.Client) model.Result {
 	name := "Star+"
+	hostname := "starplus.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -44,10 +45,13 @@ func StarPlus(c *http.Client) model.Result {
 			loc := strings.ToLower(region)
 			if utils.GetRegion(loc, model.StarPlusSupportCountry) {
 				anotherCheck := AnotherStarPlus(c)
+				result1, result2, result3 := utils.CheckDNS(hostname)
+				unlockType := utils.GetUnlockType(result1, result2, result3)
 				if anotherCheck.Err == nil && anotherCheck.Status == model.StatusYes {
-					return model.Result{Name: name, Status: model.StatusYes, Region: loc}
+					return model.Result{Name: name, Status: model.StatusYes, Region: loc, UnlockType: unlockType}
 				} else {
 					anotherCheck.Info = "Website: " + model.StatusYes
+					anotherCheck.UnlockType = unlockType
 					return anotherCheck
 				}
 			}

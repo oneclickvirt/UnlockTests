@@ -13,23 +13,23 @@ func Test(t *testing.T) {
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println("BilibiliHKMO", ": ", res.Status, res.Region)
+	fmt.Println("BilibiliHKMO", ": ", res.Status, res.Region, res.UnlockType)
 
 	res = MyTvSuper(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = ViuTV(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = NowE(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region)
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 }

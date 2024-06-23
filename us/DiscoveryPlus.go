@@ -3,18 +3,18 @@ package us
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // DiscoveryPlus
 // discoveryplus.com 双栈 且 post 请求
 func DiscoveryPlus(c *http.Client) model.Result {
 	name := "Discovery+"
+	hostname := "discoveryplus.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -80,10 +80,12 @@ func DiscoveryPlus(c *http.Client) model.Result {
 		loc := strings.ToLower(res2.Data.Attributes.CurrentLocationTerritory)
 		exit := utils.GetRegion(loc, model.DiscoveryPlusSupportCountry)
 		if exit {
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
 			if loc == "us" {
-				return model.Result{Name: name, Status: model.StatusYes, Region: loc, Info: "origin"}
+				return model.Result{Name: name, Status: model.StatusYes, Region: loc, Info: "origin", UnlockType: unlockType}
 			} else {
-				return model.Result{Name: name, Status: model.StatusYes, Region: loc, Info: "global"}
+				return model.Result{Name: name, Status: model.StatusYes, Region: loc, Info: "global", UnlockType: unlockType}
 			}
 		}
 		return model.Result{Name: name, Status: model.StatusNo, Region: loc}

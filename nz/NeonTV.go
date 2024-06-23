@@ -12,6 +12,7 @@ import (
 // api.neontv.co.nz 仅 ipv4 且 post 请求
 func NeonTV(c *http.Client) model.Result {
 	name := "Neon TV"
+	hostname := "neontv.co.nz"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -30,7 +31,9 @@ func NeonTV(c *http.Client) model.Result {
 	if strings.Contains(body, "Access Denied") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 || strings.Contains(body, "RESTRICTED_GEOLOCATION") {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get api.neontv.co.nz failed with code: %d", resp.StatusCode)}

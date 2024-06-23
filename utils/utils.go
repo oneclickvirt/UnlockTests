@@ -1,14 +1,16 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"math/rand"
 	"net"
 	"net/http"
 	"regexp"
+	"strings"
+	"sync"
 	"time"
-
-	"context"
 
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"

@@ -2,17 +2,17 @@ package transnation
 
 import (
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"net/http"
+	"strings"
 )
 
 // ViuCom
 // www.viu.com 仅 ipv4 且 get 请求
 func ViuCom(c *http.Client) model.Result {
 	name := "Viu.com"
+	hostname := "viu.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -38,10 +38,13 @@ func ViuCom(c *http.Client) model.Result {
 		if regions[len(regions)-1] == "no-service" || strings.Contains(location, "no-service") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
 		if len(regions) >= 4 {
-			return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(regions[len(regions)-1])}
+			return model.Result{Name: name, Status: model.StatusYes,
+				Region: strings.ToLower(regions[len(regions)-1]), UnlockType: unlockType}
 		} else {
-			return model.Result{Name: name, Status: model.StatusYes}
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

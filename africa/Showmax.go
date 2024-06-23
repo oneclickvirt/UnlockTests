@@ -13,6 +13,7 @@ import (
 // www.showmax.com 双栈 且 get 请求
 func Showmax(c *http.Client) model.Result {
 	name := "Showmax"
+	hostname := "showmax.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -52,7 +53,9 @@ func Showmax(c *http.Client) model.Result {
 	regionEnd := strings.Index(body[regionStart:], "\n")
 	region := strings.TrimSpace(body[regionStart+len("activeTerritory")+1 : regionStart+regionEnd])
 	if region != "" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region), UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.showmax.com failed with code: %d", resp.StatusCode)}

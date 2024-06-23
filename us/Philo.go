@@ -14,6 +14,7 @@ import (
 // content-us-east-2-fastly-b.www.philo.com 仅 ipv4 且 get 请求
 func Philo(c *http.Client) model.Result {
 	name := "Philo"
+	hostname := "philo.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -42,7 +43,9 @@ func Philo(c *http.Client) model.Result {
 	if res.Status == "FAIL" {
 		return model.Result{Name: name, Status: model.StatusNo, Region: strings.ToLower(res.Country)}
 	} else if res.Status == "SUCCESS" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(res.Country)}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(res.Country), UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get content-us-east-2-fastly-b.www.philo.com failed with code: %d", resp.StatusCode)}

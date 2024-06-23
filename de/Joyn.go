@@ -17,6 +17,7 @@ func Joyn(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://auth.joyn.de/auth/anonymous"
+	hostname := "joyn.de"
 	payload := `{"client_id":"b74b9f27-a994-4c45-b7eb-5b81b1c856e7","client_name":"web","anon_device_id":"b74b9f27-a994-4c45-b7eb-5b81b1c856e7"}`
 	resp, body, err := utils.PostJson(c, url, payload, nil)
 	if err != nil {
@@ -56,7 +57,9 @@ func Joyn(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusUnexpected, Err: err}
 		}
 		if res2b.Token != "" {
-			return model.Result{Name: name, Status: model.StatusYes}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}
 	}
 	if len(res2a) > 0 && res2a[0].Code == "ENT_AssetNotAvailableInCountry" {

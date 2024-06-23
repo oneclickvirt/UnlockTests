@@ -15,6 +15,7 @@ import (
 // api.fubo.tv 仅 ipv4 且 get 请求
 func FuboTV(c *http.Client) model.Result {
 	name := "Fubo TV"
+	hostname := "fubo.tv"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -32,9 +33,11 @@ func FuboTV(c *http.Client) model.Result {
 	}
 	body := string(b)
 	if strings.Contains(body, "No Subscription") {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	} else if strings.Contains(body, "Forbidden IP") {
-		return model.Result{Name: name, Status: model.StatusYes, Info: "IP Forbidden"}
+		return model.Result{Name: name, Status: model.StatusNo, Info: "IP Forbidden"}
 	} else {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

@@ -3,23 +3,22 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // DisneyPlus
 // www.disneyplus.com 双栈 且 post 请求
 func DisneyPlus(c *http.Client) model.Result {
 	name := "Disney+"
+	hostname := "disneyplus.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
-
 	// 首次请求，获取assertion
 	url1 := "https://disney.api.edge.bamgrid.com/devices"
 	playload := `{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","attributes":{}}`
@@ -104,7 +103,7 @@ func DisneyPlus(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp4.Body.Close()
-	// fmt.Println(body4)
+	//fmt.Println(body4)
 	if utils.ReParse(body4, `"inSupportedLocation"\s*:\s*(false|true)`) != "true" {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "UnSupported"}
 	}
@@ -112,6 +111,7 @@ func DisneyPlus(c *http.Client) model.Result {
 	if region == "" {
 		return model.Result{Name: name, Status: model.StatusUnexpected}
 	}
-
-	return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region)}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
+	return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region), UnlockType: unlockType}
 }

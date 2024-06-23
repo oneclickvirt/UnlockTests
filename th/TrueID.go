@@ -26,6 +26,7 @@ func getStringBetween(value string, a string, b string) string {
 // tv.trueid.net 双栈 get 请求
 func TrueID(c *http.Client) model.Result {
 	name := "TrueID"
+	hostname := "trueid.net"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -81,7 +82,9 @@ func TrueID(c *http.Client) model.Result {
 	if result == "GEO_BLOCK" || strings.Contains(body, "Access denied") || resp.StatusCode == 401 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if result == "LOADING" {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get  failed with code: %d", resp.StatusCode)}
