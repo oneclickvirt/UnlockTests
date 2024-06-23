@@ -6,7 +6,7 @@ type Result struct {
 	Err       error
 	Region    string
 	Info      string
-	DNSUnlock bool
+	UnlockType string
 }
 
 const (
