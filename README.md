@@ -91,10 +91,6 @@ WorldFlipper - stream error: stream ID 1; INTERNAL_ERROR; received from peer
 ```
 TikTok - 在 hk、jp 上测试时不时测不出，在 tw 上失效的概率更大，其他地区没有问题
 
-AISPlay - {"head": {"title": "Unidentified device", "itype": "item"}, "error": "Unidentified device", "st": {"code": 60400, "info": "Unidentified device"}, "op": {"cache_time": 600000, "timeout": 3000}}
-
-Au7plus - 7plus-sevennetwork.akamaized.net 无论如何请求都失败
-
 BilibiliID - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
 
 BilibiliTH - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
