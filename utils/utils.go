@@ -204,18 +204,18 @@ func CheckDNSIP(ipStr string, referenceIP string) int {
 	}
 	if ip.To4() != nil {
 		// 处理IPv4地址
-		privateIPv4Ranges := []struct {
-			net  string
-			mask string
-		}{
-			{"10.0.0.0", "255.0.0.0"},
-			{"172.16.0.0", "255.240.0.0"},
-			{"169.254.0.0", "255.255.0.0"},
-			{"192.168.0.0", "255.255.0.0"},
+		privateIPv4Ranges := []string{
+			"10.0.0.0/8",
+			"172.16.0.0/12",
+			"169.254.0.0/16",
+			"192.168.0.0/16",
 		}
 		// 检查IP是否在私有IPv4地址范围内
-		for _, r := range privateIPv4Ranges {
-			_, ipNet, _ := net.ParseCIDR(r.net + "/" + r.mask)
+		for _, cidr := range privateIPv4Ranges {
+			_, ipNet, err := net.ParseCIDR(cidr)
+			if err != nil {
+				continue
+			}
 			if ipNet.Contains(ip) {
 				return 0 // 如果IP在私有地址范围内，返回0
 			}
@@ -249,14 +249,14 @@ func lookupHostWithTimeout(hostname string, timeout time.Duration) ([]string, er
 
 // CheckDNS 三个检测DNS的逻辑并发检测
 func CheckDNS(hostname string) (string, string, string) {
-	if strings.Contains(hostname, "https://") {
-		hostname = strings.ReplaceAll(hostname, "https://", "")
-		hostname = strings.Split(hostname, "/")[0]
-	}
+	//if strings.Contains(hostname, "https://") {
+	//	hostname = strings.ReplaceAll(hostname, "https://", "")
+	//	hostname = strings.Split(hostname, "/")[0]
+	//}
 	var wg sync.WaitGroup
 	var result1, result2, result3 string
 	wg.Add(3)
-	// 内网IP检测
+	// 内网/同网IP检测
 	go func() {
 		defer wg.Done()
 		addrs, err := lookupHostWithTimeout(hostname, 5*time.Second)
@@ -265,30 +265,44 @@ func CheckDNS(hostname string) (string, string, string) {
 			return
 		}
 		result1 = "1"
-		if CheckDNSIP(addrs[0], addrs[0]) == 0 {
-			result1 = "0"
+		for i := 0; i < len(addrs); i++ {
+			for j := i + 1; j < len(addrs); j++ {
+				//fmt.Printf("Checking %s and %s\n", addrs[i], addrs[j])
+				if CheckDNSIP(addrs[i], addrs[j]) == 0 {
+					result1 = "0"
+				}
+			}
 		}
 	}()
 	//主域名DNS解析检测
 	go func() {
 		defer wg.Done()
 		addrs, err := lookupHostWithTimeout(hostname, 5*time.Second)
-		if err != nil || len(addrs) == 0 {
+		if err != nil {
 			result2 = ""
 			return
 		}
-		result2 = "0"
+		// 判断实际的回答数量
+		var result2Value string
+		switch len(addrs) {
+		case 0, 1, 2:
+			result2Value = "0"
+		default:
+			result2Value = "1"
+		}
+		result2 = result2Value
 	}()
 	//随机前缀DNS解析检测
 	go func() {
 		defer wg.Done()
 		testDomain := fmt.Sprintf("test%d.%s", rand.Int(), hostname)
+		//fmt.Println(testDomain)
 		addrs, err := lookupHostWithTimeout(testDomain, 5*time.Second)
 		if err != nil || len(addrs) == 0 {
-			result3 = ""
+			result3 = "1"
 			return
 		}
-		result3 = "1"
+		result3 = "0"
 	}()
 	wg.Wait()
 	return result1, result2, result3
