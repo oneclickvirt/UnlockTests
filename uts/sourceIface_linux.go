@@ -1,7 +1,10 @@
-package main
+package uts
 
 import (
+	"net"
 	"syscall"
+
+	"golang.org/x/sys/unix"
 )
 
 func init() {
@@ -13,7 +16,15 @@ func init() {
 			return
 		}
 		var innerErr error
-
+		err = c.Control(func(fd uintptr) {
+			host, _, _ := net.SplitHostPort(address)
+			if ip := net.ParseIP(host); ip != nil && !ip.IsGlobalUnicast() {
+				return
+			}
+			if innerErr = unix.BindToDevice(int(fd), interfaceName); innerErr != nil {
+				return
+			}
+		})
 		if innerErr != nil {
 			err = innerErr
 		}
