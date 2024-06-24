@@ -146,7 +146,7 @@ func PrintCenteredMessage(message string, totalLength int) string {
 	return (leftPadding + message + rightPadding + "\n")
 }
 
-func FormarPrint(language, message string) {
+func FormarPrint(message string) {
 	Length := 25
 	for _, r := range R {
 		if len(r.Name) > Length {
@@ -602,9 +602,9 @@ func finallyPrintResult(language, netType string) {
 
 	if language == "zh" {
 		if netType == "ipv4" || netType == "" {
-			FormarPrint(language, platformName)
+			FormarPrint(platformName)
 		} else if netType == "ipv6" {
-			FormarPrint(language, "跨国平台")
+			FormarPrint("跨国平台")
 		}
 	} else if language == "en" {
 		if netType == "ipv4" || netType == "" {
@@ -632,9 +632,9 @@ func finallyPrintResult(language, netType string) {
 				"体育平台":         "Sports",
 				"所有平台":         "All Platform",
 			}
-			FormarPrint(language, enPlatformName[platformName])
+			FormarPrint(enPlatformName[platformName])
 		} else if netType == "ipv6" {
-			FormarPrint(language, "Global")
+			FormarPrint("Global")
 		}
 	}
 }
