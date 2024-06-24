@@ -83,4 +83,4 @@ case $os in
 esac
 
 chmod 777 ut
-cp ut /usr/bin/
+cp ut /usr/bin/ut
