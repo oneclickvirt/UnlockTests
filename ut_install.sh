@@ -1,8 +1,9 @@
 #!/bin/bash
 #From https://github.com/oneclickvirt/UnlockTests
-#2024.05.21
+#2024.06.24
 
 rm -rf /usr/bin/ut
+rm -rf ut
 os=$(uname -s)
 arch=$(uname -m)
 
