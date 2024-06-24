@@ -20,7 +20,13 @@ curl https://raw.githubusercontent.com/oneclickvirt/UnlockTests/main/ut_install.
 ut
 ```
 
-唤起菜单
+或
+
+```
+./ut
+```
+
+唤起菜单进行选择
 
 无环境依赖，理论上适配所有系统和主流架构，更多架构请查看 https://github.com/oneclickvirt/UnlockTests/releases/tag/output
 
