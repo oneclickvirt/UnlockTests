@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/oneclickvirt/UnlockTests/uts"
@@ -64,6 +65,11 @@ func main() {
 	readStatus := uts.ReadSelect(language, flagString)
 	if !readStatus {
 		return
+	}
+	if language == "zh" {
+		fmt.Println("测试时间: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
+	} else {
+		fmt.Println("Test time: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
 	}
 	if uts.IPV4 {
 		fmt.Println(Blue("IPV4:"))

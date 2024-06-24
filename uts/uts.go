@@ -147,11 +147,6 @@ func PrintCenteredMessage(message string, totalLength int) string {
 }
 
 func FormarPrint(language, message string) {
-	if language == "zh" {
-		fmt.Println("测试时间: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
-	} else {
-		fmt.Println("Test time: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
-	}
 	Length := 25
 	for _, r := range R {
 		if len(r.Name) > Length {
