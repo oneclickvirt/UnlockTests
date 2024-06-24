@@ -2,18 +2,19 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // MetaAI
 // www.meta.ai 双栈 且 get 请求 有问题
 func MetaAI(c *http.Client) model.Result {
 	name := "MetaAI"
-	hostname := "meta.ai"
+	hostname := "www.meta.ai"
 	if c == nil {
 		return model.Result{Name: name}
 	}

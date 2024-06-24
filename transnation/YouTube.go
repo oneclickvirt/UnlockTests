@@ -2,18 +2,19 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Youtube
 // www.youtube.com 双栈 且 get 请求
 func Youtube(c *http.Client) model.Result {
 	name := "YouTube Region"
-	hostname := "youtube.com"
+	hostname := "www.youtube.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}

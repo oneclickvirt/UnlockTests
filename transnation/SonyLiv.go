@@ -3,18 +3,19 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // SonyLiv
 // www.sonyliv.com 双栈 且 get 请求 - 有问题，获取不到地区
 func SonyLiv(c *http.Client) model.Result {
 	name := "SonyLiv"
-	hostname := "sonyliv.com"
+	hostname := "www.sonyliv.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}

@@ -2,18 +2,18 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // OpenAI
 // api.openai.com 仅 ipv4 且 get 请求
 func OpenAI(c *http.Client) model.Result {
 	name := "ChatGPT"
-	hostname := "openai.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -124,7 +124,7 @@ func OpenAI(c *http.Client) model.Result {
 		if location != "" {
 			loc := strings.ToLower(location)
 			exit := utils.GetRegion(loc, model.GptSupportCountry)
-			result1, result2, result3 := utils.CheckDNS(hostname)
+			result1, result2, result3 := utils.CheckDNS("api.openai.com")
 			unlockType := utils.GetUnlockType(result1, result2, result3)
 			if exit {
 				return model.Result{Name: name, Status: model.StatusYes, Region: loc, UnlockType: unlockType}
@@ -136,12 +136,12 @@ func OpenAI(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusYes}
 		}
 	} else if !unsupportedCountry && VPN && reqStatus1 {
-		result1, result2, result3 := utils.CheckDNS(hostname)
+		result1, result2, result3 := utils.CheckDNS("chat.openai.com")
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, Info: "Only Available with Web Browser",
 			UnlockType: unlockType}
 	} else if unsupportedCountry && !VPN && reqStatus2 {
-		result1, result2, result3 := utils.CheckDNS(hostname)
+		result1, result2, result3 := utils.CheckDNS("ios.chat.openai.com")
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, Info: "Only Available with Mobile APP",
 			UnlockType: unlockType}

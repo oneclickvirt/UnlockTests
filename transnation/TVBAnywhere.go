@@ -3,18 +3,19 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // TVBAnywhere
 // uapisfm.tvbanywhere.com.sg 仅 ipv4 且 get 请求
 func TVBAnywhere(c *http.Client) model.Result {
 	name := "TVBAnywhere+"
-	hostname := "tvbanywhere.com.sg"
+	hostname := "uapisfm.tvbanywhere.com.sg"
 	if c == nil {
 		return model.Result{Name: name}
 	}

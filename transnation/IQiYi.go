@@ -2,16 +2,18 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // IQiYi
 // www.iq.com 仅 ipv4 且 get 请求
 func IQiYi(c *http.Client) model.Result {
 	name := "IQiYi"
+	hostname := "www.iq.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
@@ -40,7 +42,9 @@ func IQiYi(c *http.Client) model.Result {
 		}
 	}
 	if region != "" {
-		return model.Result{Name: name, Status: model.StatusYes, Region: region}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, Region: region, UnlockType: unlockType}
 	} else {
 		return model.Result{Name: name, Status: model.StatusUnexpected,
 			Err: fmt.Errorf("get www.iq.com failed with head: %s", tp)}

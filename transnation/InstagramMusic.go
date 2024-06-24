@@ -2,17 +2,18 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Instagram
 // www.instagram.com 双栈 且 post 请求
 func Instagram(c *http.Client) model.Result {
 	name := "Instagram Licensed Audio"
-	hostname := "instagram.com"
+	hostname := "www.instagram.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}

@@ -2,16 +2,17 @@ package transnation
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
 
 // DAZN
 // startup.core.indazn.com 仅 ipv4 且 post 请求
 func DAZN(c *http.Client) model.Result {
 	name := "Dazn"
-	hostname := "indazn.com"
+	hostname := "startup.core.indazn.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}

@@ -2,18 +2,19 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // KOCOWA
 // www.kocowa.com 仅 ipv4 且 get 请求
 func KOCOWA(c *http.Client) model.Result {
 	name := "KOCOWA"
-	hostname := "kocowa.com"
+	hostname := "www.kocowa.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}

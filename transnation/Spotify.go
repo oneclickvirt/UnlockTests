@@ -3,18 +3,19 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Spotify
 // spclient.wg.spotify.com 双栈 且 post 请求
 func Spotify(c *http.Client) model.Result {
 	name := "Spotify Registration"
-	hostname := "spotify.com"
+	hostname := "spclient.wg.spotify.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}

@@ -2,18 +2,19 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // ParamountPlus
 // www.paramountplus.com 双栈 且 get 请求
 func ParamountPlus(c *http.Client) model.Result {
 	name := "Paramount+"
-	hostname := "paramountplus.com"
+	hostname := "www.paramountplus.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}

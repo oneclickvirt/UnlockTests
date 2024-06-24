@@ -2,17 +2,18 @@ package asia
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // HotStar
 // api.hotstar.com 双栈 get 请求
 func HotStar(c *http.Client) model.Result {
 	name := "HotStar"
-	hostname := "hotstar.com"
+	hostname := "api.hotstar.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
