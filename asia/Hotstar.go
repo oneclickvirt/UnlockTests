@@ -30,7 +30,7 @@ func HotStar(c *http.Client) model.Result {
 	resp1, errs1 := client.R().Get("https://www.hotstar.com")
 	if errs1 != nil {
 		return model.Result{Name: name, Status: model.StatusUnexpected,
-			Err: fmt.Errorf("get api.hotstar.com failed with code: %d %d", resp.StatusCode, resp1.StatusCode)}
+			Err: fmt.Errorf("get api.hotstar.com failed with code1: %d", resp.StatusCode)}
 	}
 	defer resp1.Body.Close()
 	//b, err := io.ReadAll(resp1.Body)
