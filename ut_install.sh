@@ -2,7 +2,7 @@
 #From https://github.com/oneclickvirt/UnlockTests
 #2024.05.21
 
-rm -rf /usr/bin/UT
+rm -rf /usr/bin/ut
 os=$(uname -s)
 arch=$(uname -m)
 
@@ -10,13 +10,13 @@ case $os in
   Linux)
     case $arch in
       "x86_64" | "x86" | "amd64" | "x64")
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-linux-amd64
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-linux-amd64
         ;;
       "i386" | "i686")
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-linux-386
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-linux-386
         ;;
       "armv7l" | "armv8" | "armv8l" | "aarch64" | "arm64")
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-linux-arm64
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-linux-arm64
         ;;
       *)
         echo "Unsupported architecture: $arch"
@@ -27,13 +27,13 @@ case $os in
   Darwin)
     case $arch in
       "x86_64" | "x86" | "amd64" | "x64")
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-darwin-amd64
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-darwin-amd64
         ;;
       "i386" | "i686")
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-darwin-386
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-darwin-386
         ;;
       "armv7l" | "armv8" | "armv8l" | "aarch64" | "arm64")
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-darwin-arm64
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-darwin-arm64
         ;;
       *)
         echo "Unsupported architecture: $arch"
@@ -44,13 +44,13 @@ case $os in
   FreeBSD)
     case $arch in
       amd64)
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-freebsd-amd64
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-freebsd-amd64
         ;;
       "i386" | "i686")
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-freebsd-386
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-freebsd-386
         ;;
       "armv7l" | "armv8" | "armv8l" | "aarch64" | "arm64")
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-freebsd-arm64
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-freebsd-arm64
         ;;
       *)
         echo "Unsupported architecture: $arch"
@@ -61,13 +61,13 @@ case $os in
   OpenBSD)
     case $arch in
       amd64)
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-openbsd-amd64
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-openbsd-amd64
         ;;
       "i386" | "i686")
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-openbsd-386
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-openbsd-386
         ;;
       "armv7l" | "armv8" | "armv8l" | "aarch64" | "arm64")
-        wget -O UT https://github.com/oneclickvirt/UnlockTests/releases/download/output/UT-openbsd-arm64
+        wget -O ut https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-openbsd-arm64
         ;;
       *)
         echo "Unsupported architecture: $arch"
@@ -81,5 +81,5 @@ case $os in
     ;;
 esac
 
-chmod 777 UT
-mv UT /usr/bin/
+chmod 777 ut
+mv ut /usr/bin/

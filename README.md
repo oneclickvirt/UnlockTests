@@ -17,7 +17,7 @@ curl https://raw.githubusercontent.com/oneclickvirt/UnlockTests/main/ut_install.
 以后需要使用时使用
 
 ```
-UT
+ut
 ```
 
 唤起菜单
@@ -25,7 +25,7 @@ UT
 无环境依赖，理论上适配所有系统和主流架构，更多架构请查看 https://github.com/oneclickvirt/UnlockTests/releases/tag/output
 
 ```
-Usage of UT:
+Usage of ut:
   -I string
         specify source ip / interface
   -L string
@@ -119,6 +119,12 @@ HBO_Portugal - 被合并了
 ```
 
 </details>
+
+## 在Golang中使用
+
+```
+go get github.com/oneclickvirt/UnlockTests@latest
+```
 
 ## Thanks
 

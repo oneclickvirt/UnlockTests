@@ -77,5 +77,4 @@ func main() {
 			uts.RunTests(utils.Ipv6HttpClient, "ipv6", language)
 		}
 	}
-	fmt.Println()
 }
