@@ -644,7 +644,7 @@ func finallyPrintResult(language, netType string) {
 	}
 }
 
-func switchOptions(c string) {
+func SwitchOptions(c string) {
 	switch c {
 	case "0":
 		M = true
@@ -760,10 +760,10 @@ func ReadSelect(language, flagString string) bool {
 			return false
 		}
 		for _, c := range strings.Split(string(l), " ") {
-			switchOptions(c)
+			SwitchOptions(c)
 		}
 	} else {
-		switchOptions(flagString)
+		SwitchOptions(flagString)
 	}
 	return true
 }
