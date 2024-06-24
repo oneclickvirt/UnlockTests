@@ -82,4 +82,4 @@ case $os in
 esac
 
 chmod 777 ut
-mv ut /usr/bin/
+cp ut /usr/bin/
