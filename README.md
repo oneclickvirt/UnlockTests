@@ -48,6 +48,13 @@ Usage of ut:
   -v    show version
 ```
 
+## 卸载
+
+```
+rm -rf /root/ut
+rm -rf /usr/bin/ut
+```
+
 ## TODO
 
 <details>
