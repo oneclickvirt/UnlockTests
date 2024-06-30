@@ -40,6 +40,7 @@ Usage of ut:
         specify source ip / interface
   -L string
         language, specify to en or zh (default "zh")
+  -b    use progress bar, disable example: -b=false (default true)
   -dns-servers string
         specify dns servers
   -f string
