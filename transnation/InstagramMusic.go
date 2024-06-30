@@ -53,6 +53,8 @@ func Instagram(c *http.Client) model.Result {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+	} else if resp.StatusCode == 429 {
+		return model.Result{Name: name, Status: model.StatusNo, Info: "Too Many Requests"}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.instagram.com failed with code: %d", resp.StatusCode)}
