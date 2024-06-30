@@ -17,16 +17,12 @@ func main() {
 	}()
 	client := utils.AutoHttpClient
 	mode := 0
-	showVersion := false
-	showIP := false
-	Iface := ""
-	DnsServers := ""
-	httpProxy := ""
-	language := ""
-	flagString := ""
+	var showVersion, showIP, useBar bool
+	var Iface, DnsServers, httpProxy, language, flagString string
 	flag.IntVar(&mode, "m", 0, "mode 0(both)/4(only)/6(only), default to 0, example: -m 4")
 	flag.BoolVar(&showVersion, "v", false, "show version")
 	flag.BoolVar(&showIP, "s", true, "show ip address status, disable example: -s=false")
+	flag.BoolVar(&useBar, "b", true, "use progress bar, disable example: -b=false")
 	flag.StringVar(&flagString, "f", "", "specify select option in menu, example: -f 0")
 	flag.StringVar(&Iface, "I", "", "specify source ip / interface")
 	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
@@ -73,14 +69,14 @@ func main() {
 	}
 	if uts.IPV4 {
 		fmt.Println(Blue("IPV4:"))
-		uts.RunTests(client, "ipv4", language)
+		uts.RunTests(client, "ipv4", language, useBar)
 	}
 	if uts.IPV6 {
 		fmt.Println(Blue("IPV6:"))
 		if mode == 6 {
-			uts.RunTests(client, "ipv6", language)
+			uts.RunTests(client, "ipv6", language, useBar)
 		} else {
-			uts.RunTests(utils.Ipv6HttpClient, "ipv6", language)
+			uts.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar)
 		}
 	}
 }

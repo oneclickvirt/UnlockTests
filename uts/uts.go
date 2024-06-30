@@ -195,15 +195,17 @@ func FormarPrint(message string) {
 
 }
 
-func Excute(F func(c *http.Client) model.Result, c *http.Client) {
+func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar bool) {
 	wg.Add(1)
 	total++
 	go func() {
 		defer wg.Done()
 		res := F(c)
 		R = append(R, &res)
-		bar.Describe(res.Name + " " + ShowResult(&res))
-		bar.Add(1)
+		if useProgressBar {
+			bar.Describe(res.Name + " " + ShowResult(&res))
+			bar.Add(1)
+		}
 	}()
 }
 
@@ -217,10 +219,10 @@ func PreProcess(FuncList [](func(c *http.Client) model.Result)) {
 	}
 }
 
-func ProcessFunction(FuncList [](func(c *http.Client) model.Result), c *http.Client) {
+func ProcessFunction(FuncList [](func(c *http.Client) model.Result), c *http.Client, useProgressBar bool) {
 	// 实际开始任务
 	for _, f := range FuncList {
-		Excute(f, c)
+		Excute(f, c, useProgressBar)
 	}
 }
 
@@ -805,16 +807,22 @@ func getFuncList() [](func(c *http.Client) model.Result) {
 	return funcList
 }
 
-func RunTests(client *http.Client, ipVersion, language string) {
+func RunTests(client *http.Client, ipVersion, language string, useProgressBar bool) {
 	Names = []string{}
 	total = 0
 	wg = &sync.WaitGroup{}
-	bar = NewBar(0)
+	if useProgressBar {
+		bar = NewBar(0)
+	}
 	funcList := getFuncList()
-	ProcessFunction(funcList, client)
-	bar.ChangeMax64(total)
+	ProcessFunction(funcList, client, useProgressBar)
+	if useProgressBar {
+		bar.ChangeMax64(total)
+	}
 	wg.Wait()
-	bar.Finish()
+	if useProgressBar {
+		bar.Finish()
+	}
 	finallyPrintResult(language, ipVersion)
 }
 
