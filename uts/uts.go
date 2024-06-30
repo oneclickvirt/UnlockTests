@@ -146,7 +146,7 @@ func PrintCenteredMessage(message string, totalLength int) string {
 	return (leftPadding + message + rightPadding + "\n")
 }
 
-func FormarPrint(message string) {
+func FormarPrint(message string) string {
 	Length := 25
 	for _, r := range R {
 		if len(r.Name) > Length {
@@ -188,11 +188,11 @@ func FormarPrint(message string) {
 	}
 	// 去重
 	tempList = RemoveDuplicates(tempList)
-	// 打印整体文本
+	var res strings.Builder
 	for _, i := range tempList {
-		fmt.Printf(i)
+		res.WriteString(i)
 	}
-
+	return res.String()
 }
 
 func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar bool) {
@@ -545,7 +545,8 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 	return FuncList
 }
 
-func finallyPrintResult(language, netType string) {
+func finallyPrintResult(language, netType string) string {
+	var result string
 	getPlatformName := func(multi bool, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT bool) string {
 		if multi {
 			if TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
@@ -604,9 +605,9 @@ func finallyPrintResult(language, netType string) {
 
 	if language == "zh" {
 		if netType == "ipv4" || netType == "" {
-			FormarPrint(platformName)
+			result += FormarPrint(platformName)
 		} else if netType == "ipv6" {
-			FormarPrint("跨国平台")
+			result += FormarPrint("跨国平台")
 		}
 	} else if language == "en" {
 		if netType == "ipv4" || netType == "" {
@@ -634,11 +635,12 @@ func finallyPrintResult(language, netType string) {
 				"体育平台":         "Sports",
 				"所有平台":         "All Platform",
 			}
-			FormarPrint(enPlatformName[platformName])
+			result += FormarPrint(enPlatformName[platformName])
 		} else if netType == "ipv6" {
-			FormarPrint("Global")
+			result += FormarPrint("Global")
 		}
 	}
+	return result
 }
 
 func SwitchOptions(c string) {
@@ -807,7 +809,7 @@ func getFuncList() [](func(c *http.Client) model.Result) {
 	return funcList
 }
 
-func RunTests(client *http.Client, ipVersion, language string, useProgressBar bool) {
+func RunTests(client *http.Client, ipVersion, language string, useProgressBar bool) string {
 	Names = []string{}
 	total = 0
 	wg = &sync.WaitGroup{}
@@ -823,7 +825,7 @@ func RunTests(client *http.Client, ipVersion, language string, useProgressBar bo
 	if useProgressBar {
 		bar.Finish()
 	}
-	finallyPrintResult(language, ipVersion)
+	return finallyPrintResult(language, ipVersion)
 }
 
 func SetupInterface(Iface string) {

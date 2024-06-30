@@ -69,14 +69,14 @@ func main() {
 	}
 	if uts.IPV4 {
 		fmt.Println(Blue("IPV4:"))
-		uts.RunTests(client, "ipv4", language, useBar)
+		fmt.Printf(uts.RunTests(client, "ipv4", language, useBar))
 	}
 	if uts.IPV6 {
 		fmt.Println(Blue("IPV6:"))
 		if mode == 6 {
-			uts.RunTests(client, "ipv6", language, useBar)
+			fmt.Printf(uts.RunTests(client, "ipv6", language, useBar))
 		} else {
-			uts.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar)
+			fmt.Printf(uts.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
 		}
 	}
 }

@@ -1,3 +1,3 @@
 package uts
 
-const UnlockTestsVersion = "v0.0.9"
+const UnlockTestsVersion = "v0.0.10"
