@@ -6,12 +6,16 @@
 
 ## 使用
 
-更新时间：2024.06.24
-
-安装
+下载、安装、升级
 
 ```shell
-curl https://raw.githubusercontent.com/oneclickvirt/UnlockTests/main/ut_install.sh -sSf | sh
+curl https://raw.githubusercontent.com/oneclickvirt/UnlockTests/main/ut_install.sh -sSf | bash
+```
+
+或
+
+```
+curl https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/UnlockTests/main/ut_install.sh -sSf | bash
 ```
 
 以后需要使用时使用
