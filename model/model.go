@@ -1,5 +1,9 @@
 package model
 
+const UnlockTestsVersion = "v0.0.11"
+
+var EnableLoger = false
+
 type Result struct {
 	Name       string
 	Status     string

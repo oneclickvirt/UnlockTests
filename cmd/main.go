@@ -4,8 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 	"github.com/oneclickvirt/UnlockTests/uts"
 	. "github.com/oneclickvirt/defaultset"
@@ -17,20 +19,28 @@ func main() {
 	}()
 	client := utils.AutoHttpClient
 	mode := 0
-	var showVersion, showIP, useBar bool
+	var showVersion, help, showIP, useBar bool
 	var Iface, DnsServers, httpProxy, language, flagString string
-	flag.IntVar(&mode, "m", 0, "mode 0(both)/4(only)/6(only), default to 0, example: -m 4")
-	flag.BoolVar(&showVersion, "v", false, "show version")
-	flag.BoolVar(&showIP, "s", true, "show ip address status, disable example: -s=false")
-	flag.BoolVar(&useBar, "b", true, "use progress bar, disable example: -b=false")
-	flag.StringVar(&flagString, "f", "", "specify select option in menu, example: -f 0")
-	flag.StringVar(&Iface, "I", "", "specify source ip / interface")
-	flag.StringVar(&DnsServers, "dns-servers", "", "specify dns servers")
-	flag.StringVar(&httpProxy, "http-proxy", "", "specify http proxy")
-	flag.StringVar(&language, "L", "zh", "language, specify to en or zh")
-	flag.Parse()
+	utFlag := flag.NewFlagSet("ut", flag.ContinueOnError)
+	utFlag.BoolVar(&help, "h", false, "show help information")
+	utFlag.IntVar(&mode, "m", 0, "mode: 0 (both), 4 (only), or 6 (only); default is 0, example: -m 4")
+	utFlag.BoolVar(&showVersion, "v", false, "show version")
+	utFlag.BoolVar(&showIP, "s", true, "show IP address status; to disable, use: -s=false")
+	utFlag.BoolVar(&useBar, "b", true, "use progress bar; to disable, use: -b=false")
+	utFlag.BoolVar(&model.EnableLoger, "log", false, "enable logging")
+	utFlag.StringVar(&flagString, "f", "", "specify selection option in menu; example: -f 0")
+	utFlag.StringVar(&Iface, "I", "", "specify source IP/interface")
+	utFlag.StringVar(&DnsServers, "dns-servers", "", "specify DNS servers")
+	utFlag.StringVar(&httpProxy, "http-proxy", "", "specify HTTP proxy")
+	utFlag.StringVar(&language, "L", "zh", "language; specify 'en' for English or 'zh' for Chinese")
+	utFlag.Parse(os.Args[1:])
+	if help {
+		fmt.Printf("Usage: %s [options]\n", os.Args[0])
+		utFlag.PrintDefaults()
+		return
+	}
 	if showVersion {
-		fmt.Println(uts.UnlockTestsVersion)
+		fmt.Println(model.UnlockTestsVersion)
 		return
 	}
 	if Iface != "" {

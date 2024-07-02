@@ -14,6 +14,7 @@ import (
 
 	"github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
+	. "github.com/oneclickvirt/defaultset"
 )
 
 var ClientProxy = http.ProxyFromEnvironment
@@ -156,6 +157,10 @@ func SetReqHeaders(client *req.Client, headers map[string]string) *req.Client {
 // payload: 要发送的 JSON 格式的请求体
 // headers: 可选的 HTTP 头信息
 func PostJson(c *http.Client, url string, payload string, headers map[string]string) (*req.Response, string, error) {
+	if model.EnableLoger {
+		InitLogger()
+		defer Logger.Sync()
+	}
 	// 构建 POST 请求，设置请求类型为 JSON 并添加请求体
 	request := ReqDefault(c)
 	// 添加可选的 HTTP 头信息
@@ -164,11 +169,17 @@ func PostJson(c *http.Client, url string, payload string, headers map[string]str
 	}
 	resp, err := request.R().SetBodyJsonString(payload).Post(url)
 	if err != nil {
+		if model.EnableLoger {
+			Logger.Info("PostJson failed: " + err.Error())
+		}
 		return resp, "", err
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
+		if model.EnableLoger {
+			Logger.Info("read resp.Body failed: " + err.Error())
+		}
 		return resp, "", err
 	}
 	body := string(b)
@@ -391,22 +402,3 @@ func PrintMusic(c *http.Client) model.Result {
 func PrintForum(c *http.Client) model.Result {
 	return model.Result{Name: "Forum", Status: model.PrintHead, Info: "EroGameSpace"}
 }
-
-// Gorequest
-// 为 gorequest 设置请求
-//func Gorequest(c *http.Client) *gorequest.SuperAgent {
-//	request := gorequest.New()
-//	request.Transport.DialContext = c.Transport.(*http.Transport).DialContext
-//	request.Transport.Proxy = c.Transport.(*http.Transport).Proxy
-//	request.Retry(2, 5)
-//	request.Timeout(12 * time.Second)
-//	return request
-//}
-
-// SetGoRequestHeaders
-//func SetGoRequestHeaders(request *gorequest.SuperAgent, headers map[string]string) *gorequest.SuperAgent {
-//	for key, value := range headers {
-//		request = request.Set(key, value)
-//	}
-//	return request
-//}
