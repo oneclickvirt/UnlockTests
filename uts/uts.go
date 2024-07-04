@@ -86,6 +86,11 @@ func ShowResult(r *model.Result) (s string) {
 	case model.StatusYes:
 		return formatResult(Green, "YES", *r)
 	case model.StatusNetworkErr:
+		if model.EnableLoger {
+			InitLogger()
+			defer Logger.Sync()
+			Logger.Info(r.Name + " " + r.Err.Error())
+		}
 		return Red("NO") + Yellow(" (Network Err)")
 	case model.StatusRestricted:
 		return formatResult(Yellow, "Restricted", *r)
@@ -109,6 +114,11 @@ func ShowResult(r *model.Result) (s string) {
 		s = Purple("Unknown")
 		if r.Err != nil {
 			s += ": " + r.Err.Error()
+			if model.EnableLoger {
+				InitLogger()
+				defer Logger.Sync()
+				Logger.Info(r.Name + " " + r.Err.Error())
+			}
 		}
 		return s
 	default:
