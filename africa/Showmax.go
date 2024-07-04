@@ -2,11 +2,13 @@ package africa
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
+	. "github.com/oneclickvirt/defaultset"
 )
 
 // Showmax
@@ -16,6 +18,10 @@ func Showmax(c *http.Client) model.Result {
 	hostname := "showmax.com"
 	if c == nil {
 		return model.Result{Name: name}
+	}
+	if model.EnableLoger {
+		InitLogger()
+		defer Logger.Sync()
 	}
 	url := "https://www.showmax.com/"
 	headers := map[string]string{
@@ -37,11 +43,17 @@ func Showmax(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().Get(url)
 	if err != nil {
+		if model.EnableLoger {
+			Logger.Info("Showmax Get request failed: " + err.Error())
+		}
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
+		if model.EnableLoger {
+			Logger.Info("Showmax can not parse body: " + err.Error())
+		}
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
@@ -56,6 +68,9 @@ func Showmax(c *http.Client) model.Result {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region), UnlockType: unlockType}
+	}
+	if model.EnableLoger {
+		Logger.Info(fmt.Sprintf("Showmax unexpected response code: %d", resp.StatusCode))
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.showmax.com failed with code: %d", resp.StatusCode)}
