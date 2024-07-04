@@ -7,7 +7,6 @@ import (
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	. "github.com/oneclickvirt/defaultset"
 )
 
 // HotStar
@@ -18,17 +17,10 @@ func HotStar(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	if model.EnableLoger {
-		InitLogger()
-		defer Logger.Sync()
-	}
 	url := "https://api.hotstar.com/o/v1/page/1557?offset=0&size=20&tao=0&tas=20"
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
-		if model.EnableLoger {
-			Logger.Info("api.hotstar.com Get request failed: " + err.Error())
-		}
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
@@ -38,9 +30,6 @@ func HotStar(c *http.Client) model.Result {
 	}
 	resp1, err1 := client.R().Get("https://www.hotstar.com")
 	if err1 != nil {
-		if model.EnableLoger {
-			Logger.Info("www.hotstar.com Get request failed: " + err1.Error())
-		}
 		return model.Result{Name: name, Status: model.StatusUnexpected,
 			Err: fmt.Errorf("get api.hotstar.com failed with code1: %d", resp.StatusCode)}
 	}

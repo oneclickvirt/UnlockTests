@@ -9,7 +9,6 @@ import (
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	. "github.com/oneclickvirt/defaultset"
 )
 
 // Bilibili
@@ -19,24 +18,14 @@ func Bilibili(c *http.Client, name, url string) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	if model.EnableLoger {
-		InitLogger()
-		defer Logger.Sync()
-	}
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
-		if model.EnableLoger {
-			Logger.Info("Bilibili Get request failed: " + err.Error())
-		}
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		if model.EnableLoger {
-			Logger.Info("Bilibili can not parse body: " + err.Error())
-		}
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
@@ -47,9 +36,6 @@ func Bilibili(c *http.Client, name, url string) model.Result {
 	if err := json.Unmarshal(b, &res); err != nil {
 		if strings.Contains(body, "抱歉您所在地区不可观看") {
 			return model.Result{Name: name, Status: model.StatusNo}
-		}
-		if model.EnableLoger {
-			Logger.Info("Bilibili can not parse json: " + err.Error())
 		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
@@ -62,9 +48,6 @@ func Bilibili(c *http.Client, name, url string) model.Result {
 		//fmt.Println(result1, result2, result3)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
-	}
-	if model.EnableLoger {
-		Logger.Info(fmt.Sprintf("Bilibili unexpected response code: %d", resp.StatusCode))
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get api.bilibili.com failed with code: %d", resp.StatusCode)}

@@ -2,9 +2,10 @@ package au
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
 
 // Binge
