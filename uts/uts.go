@@ -387,6 +387,7 @@ func Japan() [](func(c *http.Client) model.Result) {
 		jp.DMMTV,
 		jp.Abema,
 		jp.Niconico,
+		jp.AnimeFesta,
 		jp.Telasa,
 		jp.UNext,
 		jp.Hulu,

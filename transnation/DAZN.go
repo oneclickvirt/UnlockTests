@@ -24,6 +24,9 @@ func DAZN(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == 403 {
+	    return model.Result{Name: name, Status: model.StatusBanned}
+	}
 	var daznRes struct {
 		Region struct {
 			IsAllowed             bool   `json:"isAllowed"`

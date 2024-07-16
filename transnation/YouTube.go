@@ -55,7 +55,7 @@ func Youtube(c *http.Client) model.Result {
 		strings.Contains(body1, "/月") || strings.Contains(body1, "/month") {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "us"}
 	}
 	return model.Result{Name: name, Status: model.StatusNo}
 }

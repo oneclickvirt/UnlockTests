@@ -2,8 +2,9 @@ package jp
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"testing"
+
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 func Test(t *testing.T) {
@@ -166,6 +167,12 @@ func Test(t *testing.T) {
 	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = NETRIDE(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
+
+	res = AnimeFesta(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
