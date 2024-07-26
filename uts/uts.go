@@ -438,6 +438,8 @@ func Multination() [](func(c *http.Client) model.Result) {
 		transnation.Spotify,
 		transnation.Steam,
 		transnation.OpenAI,
+		transnation.Gemini,
+		transnation.MetaAI,
 		transnation.WikipediaEditable,
 		transnation.Reddit,
 		transnation.TikTok,

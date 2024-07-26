@@ -50,17 +50,17 @@ func MetaAI(c *http.Client) model.Result {
 	}
 	// 检查是否成功
 	if strings.Contains(body, "AbraHomeRootConversationQuery") {
-		start := strings.Index(body, `"code"`)
-		if start != -1 {
-			start = strings.Index(body[start:], `"`) + start + 1
-			end := strings.Index(body[start:], `"`) + start
-			code := body[start:end]
-			region := strings.Split(code, "_")[1]
-			if region != "" {
-				result1, result2, result3 := utils.CheckDNS(hostname)
-				unlockType := utils.GetUnlockType(result1, result2, result3)
-				return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
-			}
+		var region, code string
+		code = utils.ReParse(body, `"code"\s*:\s*"(.*?)"`)
+		if code != "" && strings.Contains(code, "_") {
+			region = strings.Split(code, "_")[1]
+		} else if code != "" && len(code) < 10 {
+			region = code
+		}
+		if region != "" {
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
 		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
