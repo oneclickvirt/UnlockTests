@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -88,5 +89,9 @@ func main() {
 		} else {
 			fmt.Printf(uts.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
 		}
+	}
+	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
+		fmt.Println("Press Enter to exit...")
+		fmt.Scanln()
 	}
 }
