@@ -4,12 +4,9 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"math/rand"
 	"net"
 	"net/http"
 	"regexp"
-	"strings"
-	"sync"
 	"time"
 
 	"github.com/imroc/req/v3"
@@ -206,136 +203,6 @@ func ReParse(responseBody, rex string) string {
 		return match[1]
 	}
 	return ""
-}
-
-// CheckDNSIP 检测IP地址是否同子网/在内网
-func CheckDNSIP(ipStr string, referenceIP string) int {
-	// 解析输入的IP地址字符串
-	ip := net.ParseIP(ipStr)
-	if ip == nil {
-		return 1 // 如果IP地址无效，返回1
-	}
-	if ip.To4() != nil {
-		// 处理IPv4地址
-		privateIPv4Ranges := []string{
-			"10.0.0.0/8",
-			"172.16.0.0/12",
-			"169.254.0.0/16",
-			"192.168.0.0/16",
-		}
-		// 检查IP是否在私有IPv4地址范围内
-		for _, cidr := range privateIPv4Ranges {
-			_, ipNet, err := net.ParseCIDR(cidr)
-			if err != nil {
-				continue
-			}
-			if ipNet.Contains(ip) {
-				return 0 // 如果IP在私有地址范围内，返回0
-			}
-		}
-		// 检查IP是否与参考IP在同一子网内
-		refIP := net.ParseIP(referenceIP)
-		if refIP != nil && ip.Mask(net.CIDRMask(24, 32)).Equal(refIP.Mask(net.CIDRMask(24, 32))) {
-			return 0 // 如果在同一子网内，返回0
-		}
-	} else {
-		// 处理IPv6地址
-		// 检查IP是否在特殊IPv6地址范围内
-		if strings.HasPrefix(ipStr, "fe8") || strings.HasPrefix(ipStr, "FE8") ||
-			strings.HasPrefix(ipStr, "fc") || strings.HasPrefix(ipStr, "FC") ||
-			strings.HasPrefix(ipStr, "fd") || strings.HasPrefix(ipStr, "FD") ||
-			strings.HasPrefix(ipStr, "ff") || strings.HasPrefix(ipStr, "FF") {
-			return 0 // 如果IP在特殊IPv6地址范围内，返回0
-		}
-	}
-	return 1 // 如果IP不符合上述条件，返回1
-}
-
-// lookupHostWithTimeout 检测网址的IP地址
-func lookupHostWithTimeout(hostname string, timeout time.Duration) ([]string, error) {
-	// 创建带有超时的上下文
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-	// 使用默认解析器查找主机地址
-	return net.DefaultResolver.LookupHost(ctx, hostname)
-}
-
-// CheckDNS 三个检测DNS的逻辑并发检测
-func CheckDNS(hostname string) (string, string, string) {
-	//if strings.Contains(hostname, "https://") {
-	//	hostname = strings.ReplaceAll(hostname, "https://", "")
-	//	hostname = strings.Split(hostname, "/")[0]
-	//}
-	var wg sync.WaitGroup
-	var result1, result2, result3 string
-	wg.Add(3)
-	// 内网/同网IP检测
-	go func() {
-		defer wg.Done()
-		addrs, err := lookupHostWithTimeout(hostname, 5*time.Second)
-		if err != nil || len(addrs) == 0 {
-			result1 = ""
-			return
-		}
-		result1 = "1"
-		for i := 0; i < len(addrs); i++ {
-			for j := i + 1; j < len(addrs); j++ {
-				//fmt.Printf("Checking %s and %s\n", addrs[i], addrs[j])
-				if CheckDNSIP(addrs[i], addrs[j]) == 0 {
-					result1 = "0"
-				}
-			}
-		}
-	}()
-	//主域名DNS解析检测
-	go func() {
-		defer wg.Done()
-		addrs, err := lookupHostWithTimeout(hostname, 5*time.Second)
-		if err != nil {
-			result2 = ""
-			return
-		}
-		// 判断实际的回答数量
-		var result2Value string
-		switch len(addrs) {
-		case 0, 1, 2:
-			result2Value = "0"
-		default:
-			result2Value = "1"
-		}
-		result2 = result2Value
-	}()
-	//随机前缀DNS解析检测
-	go func() {
-		defer wg.Done()
-		testDomain := fmt.Sprintf("test%d.%s", rand.Int(), hostname)
-		//fmt.Println(testDomain)
-		addrs, err := lookupHostWithTimeout(testDomain, 5*time.Second)
-		if err != nil || len(addrs) == 0 {
-			result3 = "1"
-			return
-		}
-		result3 = "0"
-	}()
-	wg.Wait()
-	return result1, result2, result3
-}
-
-// GetUnlockType 获取解锁的类型
-func GetUnlockType(results ...string) string {
-	// 检查结果中是否有空值
-	for _, result := range results {
-		if result == "" {
-			return ""
-		}
-	}
-	// 检查结果中是否有"0"
-	for _, result := range results {
-		if result == "0" {
-			return "Via DNS"
-		}
-	}
-	return "Native"
 }
 
 // 通过Info标记要被插入的行的下一行包含什么文本内容
