@@ -11,6 +11,7 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/oneclickvirt/UnlockTests/model"
+	. "github.com/oneclickvirt/defaultset"
 )
 
 func get_nameserver_from_resolv() []string {
@@ -29,21 +30,14 @@ func CheckDNSIP(ipStr string, referenceIP string) int {
 		return 1 // 如果IP地址无效，返回1
 	}
 	if ip.To4() != nil {
-		// 处理IPv4地址
-		privateIPv4Ranges := []string{
-			"10.0.0.0/8",
-			"172.16.0.0/12",
-			"169.254.0.0/16",
-			"192.168.0.0/16",
-		}
 		// 检查IP是否在私有IPv4地址范围内
-		for _, cidr := range privateIPv4Ranges {
+		for _, cidr := range model.PrivateIPv4Ranges {
 			_, ipNet, err := net.ParseCIDR(cidr)
 			if err != nil {
 				continue
 			}
 			if ipNet.Contains(ip) {
-				return 0 // 如果IP在私有地址范围内，返回0
+				return 2 // 如果IP在私有地址范围内，返回2，与解锁测试判断无关，可能在通过Proxy检测
 			}
 		}
 		// 检查IP是否与参考IP在同一子网内
@@ -61,7 +55,7 @@ func CheckDNSIP(ipStr string, referenceIP string) int {
 			return 0 // 如果IP在特殊IPv6地址范围内，返回0
 		}
 	}
-	return 1 // 如果IP不符合上述条件，返回1
+	return 1 // 如果IP不符合上述条件，返回1，意味着多数据中心，可能是DNS解锁
 }
 
 // // lookupHostWithTimeout 检测网址的IP地址
@@ -109,7 +103,7 @@ func CheckDNS(hostname string) (string, string, string) {
 			}
 		}
 		if totalChecks > 0 && sameSubnetOrPrivateCount > totalChecks/2 {
-			result1 = "0" // 大多数IP在同一子网或是内网IP，可能是原生解锁
+			result1 = "0" // 大多数IP在同一子网或是内网IP
 		} else {
 			result1 = "1" // 大多数IP不在同一子网且不是内网IP，可能是DNS解锁
 		}
@@ -157,6 +151,10 @@ func CheckDNS(hostname string) (string, string, string) {
 
 // GetUnlockType 获取解锁的类型
 func GetUnlockType(results ...string) string {
+	if model.EnableLoger {
+		InitLogger()
+		defer Logger.Sync()
+	}
 	// 检查结果中是否有空值
 	for _, result := range results {
 		if result == "" {
@@ -167,7 +165,13 @@ func GetUnlockType(results ...string) string {
 	var status bool = true
 	nameservers := get_nameserver_from_resolv()
 	if nameservers != nil {
+		if model.EnableLoger {
+			Logger.Info("Name servers: ")
+		}
 		for _, k := range nameservers {
+			if model.EnableLoger {
+				Logger.Info(k)
+			}
 			// 去除IPV6地址
 			if strings.Count(k, ":") > 4 {
 				continue
@@ -186,6 +190,9 @@ func GetUnlockType(results ...string) string {
 	// 检查结果中是原生解锁的判断为多数
 	zeroCount := 0
 	for _, result := range results {
+		if result == "2" {
+			return "In Proxy"
+		}
 		if result == "0" {
 			zeroCount++
 		}

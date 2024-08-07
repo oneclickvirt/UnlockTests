@@ -28,6 +28,17 @@ const (
 	UA_Pjsekai       = "pjsekai/48 CFNetwork/1240.0.4 Darwin/20.6.0"
 )
 
+var PrivateIPv4Ranges = []string{
+	"10.0.0.0/8",     // RFC 1918
+	"172.16.0.0/12",  // RFC 1918
+	"192.168.0.0/16", // RFC 1918
+	"169.254.0.0/16", // 链路本地地址
+	"127.0.0.0/8",    // 回环地址
+	"0.0.0.0/8",      // 本网络
+	"100.64.0.0/10",  // RFC 6598 (CGNAT)
+	"224.0.0.0/4",    // 组播地址
+}
+
 var CommonPublicDNS = map[string]bool{
 	"8.8.8.8":         true, // Google Public DNS
 	"8.8.4.4":         true, // Google Public DNS
@@ -39,6 +50,20 @@ var CommonPublicDNS = map[string]bool{
 	"208.67.220.220":  true, // OpenDNS
 	"64.6.64.6":       true, // Verisign DNS
 	"64.6.65.6":       true, // Verisign DNS
+	"94.140.14.14":    true, // AdGuard DNS
+	"94.140.15.15":    true, // AdGuard DNS
+	"185.228.168.9":   true, // CleanBrowsing
+	"185.228.169.9":   true, // CleanBrowsing
+	"76.76.19.19":     true, // Alternate DNS
+	"76.223.122.150":  true, // Alternate DNS
+	"77.88.8.8":       true, // Yandex.DNS
+	"77.88.8.1":       true, // Yandex.DNS
+	"156.154.70.1":    true, // Neustar DNS
+	"156.154.71.1":    true, // Neustar DNS
+	"8.26.56.26":      true, // Comodo Secure DNS
+	"8.20.247.20":     true, // Comodo Secure DNS
+	"84.200.69.80":    true, // DNS.WATCH
+	"84.200.70.40":    true, // DNS.WATCH
 }
 
 var CdnPrefixes = []string{
