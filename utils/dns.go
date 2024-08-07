@@ -90,7 +90,6 @@ func CheckDNS(hostname string) (string, string, string) {
 	var wg sync.WaitGroup
 	var result1, result2, result3 string
 	wg.Add(3)
-
 	// 内网/同网IP检测
 	go func() {
 		defer wg.Done()
@@ -99,17 +98,22 @@ func CheckDNS(hostname string) (string, string, string) {
 			result1 = ""
 			return
 		}
-		result1 = "1"
+		totalChecks := 0
+		sameSubnetOrPrivateCount := 0
 		for i := 0; i < len(addrs); i++ {
 			for j := i + 1; j < len(addrs); j++ {
+				totalChecks++
 				if CheckDNSIP(addrs[i], addrs[j]) == 0 {
-					result1 = "0"
-					return
+					sameSubnetOrPrivateCount++
 				}
 			}
 		}
+		if totalChecks > 0 && sameSubnetOrPrivateCount > totalChecks/2 {
+			result1 = "0" // 大多数IP在同一子网或是内网IP，可能是原生解锁
+		} else {
+			result1 = "1" // 大多数IP不在同一子网且不是内网IP，可能是DNS解锁
+		}
 	}()
-
 	// 主域名DNS解析检测
 	go func() {
 		defer wg.Done()
@@ -124,27 +128,27 @@ func CheckDNS(hostname string) (string, string, string) {
 				cdnCount++
 			}
 		}
+		// 根据解析结果进行判断
 		switch {
 		case len(addrs) <= 2:
-			result2 = "0" // 可能是原生IP
+			result2 = "0" // 解析到2个或更少的IP，可能是原生IP - 大多数原生服务通常只有少量IP
 		case cdnCount > 0:
-			result2 = "2" // 可能是CDN
+			result2 = "1" // 检测到至少一个可能的CDN的IP - CDN的使用通常与DNS解锁相关，而不是原生解锁
 		default:
-			result2 = "1" // 多个非CDN的IP，可能是负载均衡
+			result2 = "0" // 解析到多个非CDN的IP，可能是使用负载均衡的原生解锁 - 多个非CDN的IP可能表示服务提供商使用了自己的负载均衡系统
 		}
 	}()
-
 	// 随机前缀DNS解析检测 - 是否存在通配符DNS记录
 	go func() {
 		defer wg.Done()
 		testDomain := fmt.Sprintf("test%d.%s", rand.Int(), hostname)
 		addrs, err := net.DefaultResolver.LookupHost(ctx, testDomain)
 		if err != nil || len(addrs) == 0 {
-			result3 = "1" // 正常情况
+			result3 = "0" // 正常情况，不通配
 			return
 		}
 		if len(addrs) > 0 {
-			result3 = "0" // 可能存在通配符DNS记录
+			result3 = "1" // 可能存在通配符DNS记录，可能是DNS解锁
 		}
 	}()
 	wg.Wait()
