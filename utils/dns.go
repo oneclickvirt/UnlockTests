@@ -183,11 +183,15 @@ func GetUnlockType(results ...string) string {
 	if status {
 		return ""
 	}
-	// 检查结果中是否有"0"
+	// 检查结果中是原生解锁的判断为多数
+	zeroCount := 0
 	for _, result := range results {
 		if result == "0" {
-			return "Native"
+			zeroCount++
 		}
+	}
+	if zeroCount >= 2 {
+		return "Native"
 	}
 	return "Via DNS"
 }
