@@ -45,17 +45,17 @@ func CheckDNSIP(ipStr string, referenceIP string) int {
 		if refIP != nil && ip.Mask(net.CIDRMask(24, 32)).Equal(refIP.Mask(net.CIDRMask(24, 32))) {
 			return 0 // 如果在同一子网内，返回0
 		}
+		return 1 // 如果IP不符合上述条件，返回1，意味着多数据中心，可能是DNS解锁
 	} else {
-		// 处理IPv6地址
-		// 检查IP是否在特殊IPv6地址范围内
+		// 检查IP是否为 链路本地地址、唯一本地地址和多播地址
 		if strings.HasPrefix(ipStr, "fe8") || strings.HasPrefix(ipStr, "FE8") ||
 			strings.HasPrefix(ipStr, "fc") || strings.HasPrefix(ipStr, "FC") ||
 			strings.HasPrefix(ipStr, "fd") || strings.HasPrefix(ipStr, "FD") ||
 			strings.HasPrefix(ipStr, "ff") || strings.HasPrefix(ipStr, "FF") {
-			return 0 // 如果IP在特殊IPv6地址范围内，返回0
+			return 2 // 可能在Proxy中
 		}
+		return 1
 	}
-	return 1 // 如果IP不符合上述条件，返回1，意味着多数据中心，可能是DNS解锁
 }
 
 // // lookupHostWithTimeout 检测网址的IP地址
