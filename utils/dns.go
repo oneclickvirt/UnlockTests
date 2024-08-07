@@ -172,15 +172,21 @@ func GetUnlockType(results ...string) string {
 			if model.EnableLoger {
 				Logger.Info(k)
 			}
-			// 去除IPV6地址
-			if strings.Count(k, ":") > 4 {
+			ip := net.ParseIP(strings.TrimSpace(k))
+			if ip == nil {
+				// 无效的 IP 地址跳过检测
 				continue
 			}
-			// 检测非V6地址是不是都是公共DNS
-			_, exists := model.CommonPublicDNS[k]
-			if !exists {
-				status = false
-				break
+			if ip.To4() != nil {
+				// 检测非V6地址是不是都是公共DNS
+				_, exists := model.CommonPublicDNS[k]
+				if !exists {
+					status = false
+					break
+				}
+			} else {
+				// 去除IPV6地址的检测
+				continue
 			}
 		}
 	}
