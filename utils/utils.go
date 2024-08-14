@@ -258,6 +258,10 @@ func PrintTH(c *http.Client) model.Result {
 	return model.Result{Name: "Thailand", Status: model.PrintHead, Info: "AIS Play"}
 }
 
+func PrintTW(c *http.Client) model.Result {
+	return model.Result{Name: "Taiwan", Status: model.PrintHead, Info: "CatchPlay+"}
+}
+
 func PrintGame(c *http.Client) model.Result {
 	return model.Result{Name: "Game", Status: model.PrintHead, Info: "Kancolle Japan"}
 }

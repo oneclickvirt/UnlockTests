@@ -12,7 +12,7 @@ import (
 // api.viu.now.com 双栈 且 post 请求
 func ViuTV(c *http.Client) model.Result {
 	name := "Viu.TV"
-	hostname := "viu.now.com "
+	hostname := "viu.now.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}

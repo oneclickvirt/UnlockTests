@@ -89,8 +89,6 @@ TV360 - 登录认证已过期
 
 Salto - Get remote error: tls: unrecognized name
 
-Catchplay - unauthorized 原 token 已过期
-
 PCRJP - stream error: stream ID 1; INTERNAL_ERROR; received from peer
 
 PrettyDerby - stream error: stream ID 1; INTERNAL_ERROR; received from peer
@@ -130,6 +128,8 @@ HBOSpain - api-discovery.hbo.eu 的 host 已经为空了
 HBO_Nordic - 被合并了
 
 HBO_Portugal - 被合并了
+
+PopcornFlix - 已关服
 ```
 
 </details>

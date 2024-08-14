@@ -268,7 +268,6 @@ func NorthAmerica() [](func(c *http.Client) model.Result) {
 		us.EncoreTVB,
 		us.DiscoveryPlus,
 		us.PeacockTV,
-		us.Popcornflix,
 		us.Crunchyroll,
 		us.Crackle,
 		us.DirectvStream,
@@ -303,6 +302,7 @@ func Europe() [](func(c *http.Client) model.Result) {
 		// FR
 		utils.PrintFR,
 		fr.CanalPlus,
+		fr.FranceTV,
 		fr.Molotov,
 		// DE
 		utils.PrintDE,
@@ -401,6 +401,8 @@ func Japan() [](func(c *http.Client) model.Result) {
 		jp.FOD,
 		jp.Radiko,
 		jp.RakutenTV,
+		jp.RakutenMagazine,
+		jp.NHKPlus,
 		jp.J_COM_ON_DEMAND,
 		// Game
 		utils.PrintGame,
@@ -515,6 +517,9 @@ func SouthEastAsia() [](func(c *http.Client) model.Result) {
 		asia.HotStar,
 		asia.HBOGO,
 		asia.BilibiliSEA,
+		// TW
+		utils.PrintTW,
+		tw.Catchplay,
 		// SG
 		utils.PrintSG,
 		sg.MeWatch,

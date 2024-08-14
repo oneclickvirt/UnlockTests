@@ -57,10 +57,12 @@ func MetaAI(c *http.Client) model.Result {
 		} else if code != "" && len(code) < 10 {
 			region = code
 		}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
 		if region != "" {
-			result1, result2, result3 := utils.CheckDNS(hostname)
-			unlockType := utils.GetUnlockType(result1, result2, result3)
 			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
+		} else {
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

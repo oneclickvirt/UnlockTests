@@ -3,16 +3,16 @@ package tw
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Catchplay
 // sunapi.catchplay.com 仅 ipv4 且 get 请求
-// unauthorized 有问题
 func Catchplay(c *http.Client) model.Result {
 	name := "CatchPlay+"
 	hostname := "catchplay.com"
@@ -37,20 +37,25 @@ func Catchplay(c *http.Client) model.Result {
 	body := string(b)
 	var res struct {
 		Code string `json:"code"`
+		Data struct {
+			IsoCode string `json:"isoCode"`
+		} `json:"data"`
 	}
+	// fmt.Println(body)
 	if err = json.Unmarshal(b, &res); err != nil {
 		if strings.Contains(body, "is not allowed") && strings.Contains(body, "The location") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		//fmt.Println(body)
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.Code == "100016" {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if res.Code == "0" {
+	}
+	region := res.Data.IsoCode
+	if res.Code == "0" || region != "" {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region), UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get sunapi.catchplay.com failed with code: %d", resp.StatusCode)}

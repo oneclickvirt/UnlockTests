@@ -16,6 +16,18 @@ func Test(t *testing.T) {
 	}
 	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
+	res = NHKPlus(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
+
+	res = RakutenMagazine(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
+
 	res = Kancolle(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)

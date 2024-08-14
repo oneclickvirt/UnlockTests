@@ -162,6 +162,7 @@ func GetUnlockType(results ...string) string {
 		}
 	}
 	// 检测是否只有常见的nameserver，此时去判断是否原生解锁无意义
+	// 识别不出nameserver时，不做是否DNS解锁的判断
 	var status bool = true
 	nameservers := get_nameserver_from_resolv()
 	if nameservers != nil {
@@ -189,6 +190,8 @@ func GetUnlockType(results ...string) string {
 				continue
 			}
 		}
+	} else {
+		return ""
 	}
 	if status {
 		return ""

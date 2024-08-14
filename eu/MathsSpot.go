@@ -57,6 +57,9 @@ func MathsSpot(c *http.Client) model.Result {
 	apiPath := utils.ReParse(body, `fetch\("(/[^"]+)\/reportEvent"`)
 	region := utils.ReParse(body, `"countryCode"\s{0,}:\s{0,}"([^"]+)"`)
 	nggFeVersion := utils.ReParse(body, `"NEXT_PUBLIC_FE_VERSION"\s{0,}:\s{0,}"([^"]+)"`)
+	if nggFeVersion == "berlin-v1.34.800_redisexp-arm.1" {
+		nggFeVersion = "berlin-v1.34.810_redisexp-arm.1"
+	}
 
 	if apiPath == "" || region == "" || nggFeVersion == "" {
 		return model.Result{Name: name, Status: model.StatusNo}
