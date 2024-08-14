@@ -48,8 +48,8 @@ func MetaAI(c *http.Client) model.Result {
 	if strings.Contains(body, "AbraGeoBlockedErrorRoot") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "AbraGeoBlocked"}
 	}
-	// 检查是否成功
-	if strings.Contains(body, "AbraHomeRootConversationQuery") {
+	// 检查是否成功 AbraHomeRootConversationQuery --> AbraHomeRoot.react
+	if strings.Contains(body, "AbraHomeRoot.react") {
 		var region, code string
 		code = utils.ReParse(body, `"code"\s*:\s*"(.*?)"`)
 		if code != "" && strings.Contains(code, "_") {

@@ -69,9 +69,31 @@ func BahamutAnime(c *http.Client) model.Result {
 	}
 	if (strings.Contains(body2, "animeSn") ||
 		strings.Contains(body2, "\u88dd\u7f6e\u9a57\u8b49\u7570\u5e38\uff01")) && strings.Contains(body3, "data-geo") {
+		var location string
+		resp4, err4 := client.R().Get("https://ani.gamer.com.tw/cdn-cgi/trace")
+		if err4 != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err4}
+		}
+		defer resp4.Body.Close()
+		b, err = io.ReadAll(resp4.Body)
+		if err != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		}
+		bodyString := string(b)
+		index := strings.Index(bodyString, "loc=")
+		if index != -1 {
+			bodyString = bodyString[index+4:]
+			index = strings.Index(bodyString, "\n")
+			if index != -1 {
+				loc := bodyString[:index]
+				if len(loc) == 2 {
+					location = strings.ToLower(loc)
+				}
+			}
+		}
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+		return model.Result{Name: name, Status: model.StatusYes, Region: location, UnlockType: unlockType}
 	} else if resp2.StatusCode == 403 || resp2.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

@@ -244,12 +244,13 @@ func NorthAmerica() [](func(c *http.Client) model.Result) {
 		us.Hulu,
 		us.NFLPlus,
 		us.ESPNPlus,
-		us.Epix,
+		us.MGMPlus,
 		us.Starz,
 		us.Philo,
 		us.FXNOW,
 		us.HBOMax,
 		us.Shudder,
+		us.AMCPlus,
 		uk.BritBox,
 		// us.Crackle,
 		us.AETV,
@@ -269,6 +270,7 @@ func NorthAmerica() [](func(c *http.Client) model.Result) {
 		us.PeacockTV,
 		us.Popcornflix,
 		us.Crunchyroll,
+		us.Crackle,
 		us.DirectvStream,
 		eu.MathsSpot,
 		// CA
@@ -468,6 +470,7 @@ func Oceania() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		us.NBATV,
 		us.AcornTV,
+		us.AMCPlus,
 		uk.BritBox,
 		// AU
 		utils.PrintAU,

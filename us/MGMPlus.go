@@ -2,18 +2,19 @@ package us
 
 import (
 	"encoding/json"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
-// Epix
-// api.epix.com 仅 ipv4 且 post 请求
-func Epix(c *http.Client) model.Result {
+// MGMPlus
+// api.epix.com mgmplus.com 仅 ipv4 且 post 请求
+func MGMPlus(c *http.Client) model.Result {
 	name := "MGM+"
-	hostname := "epix.com"
+	hostname := "mgmplus.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}

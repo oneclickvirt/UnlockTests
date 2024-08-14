@@ -2,9 +2,10 @@ package jp
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
 
 // Lemino
@@ -39,7 +40,7 @@ func Lemino(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode == 403 || resp.StatusCode == 451 {
+	if resp.StatusCode == 403 || resp.StatusCode == 451 || resp.StatusCode == 500 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
 		result1, result2, result3 := utils.CheckDNS(hostname)

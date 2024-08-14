@@ -16,6 +16,12 @@ func Test(t *testing.T) {
 	}
 	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
+	res = AMCPlus(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
+
 	res = CWTV(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
@@ -52,7 +58,7 @@ func Test(t *testing.T) {
 	}
 	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
-	res = Epix(req)
+	res = MGMPlus(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}
@@ -180,6 +186,12 @@ func Test(t *testing.T) {
 	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
 	res = NBCTV(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
+	
+	res = Crackle(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}

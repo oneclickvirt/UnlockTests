@@ -18,6 +18,7 @@ func EroGameSpace(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url := "https://erogamescape.org/"
+	// url := "https://erogamescape.org/~ap2/ero/toukei_kaiseki/"
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {

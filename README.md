@@ -87,8 +87,6 @@ KPLUS - ssoToken 已过期
 
 TV360 - 登录认证已过期
 
-Crackle - Platform Key is not specified
-
 Salto - Get remote error: tls: unrecognized name
 
 Catchplay - unauthorized 原 token 已过期
