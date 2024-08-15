@@ -272,6 +272,7 @@ func NorthAmerica() [](func(c *http.Client) model.Result) {
 		us.Crackle,
 		us.DirectvStream,
 		eu.MathsSpot,
+		eu.Viaplay,
 		// CA
 		utils.PrintCA,
 		asia.HotStar,
@@ -289,6 +290,8 @@ func Europe() [](func(c *http.Client) model.Result) {
 		us.HBOMax,
 		eu.SetantaSports,
 		eu.MathsSpot,
+		// SE
+		eu.Viaplay,
 		// GB
 		utils.PrintGB,
 		asia.HotStar,

@@ -34,6 +34,9 @@ func Spotify(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == 403 {
+		return model.Result{Name: name, Status: model.StatusBanned}
+	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
