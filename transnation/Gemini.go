@@ -31,7 +31,7 @@ func Gemini(c *http.Client) model.Result {
 	body := string(b)
 	if resp.StatusCode == 200 {
 		status := false
-		if strings.Contains(body, "45631641,null,true") {
+		if strings.Contains(body, "45631641,null,true") || strings.Contains(body, "45617354,null,true") {
 			status = true
 		}
 		region := utils.ReParse(body, `,2,1,200,"([A-Z]{3})"`)

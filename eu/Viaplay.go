@@ -43,6 +43,9 @@ func Viaplay(c *http.Client) model.Result {
 		defer resp2.Body.Close()
 		if resp2.StatusCode == 302 {
 			region := utils.ReParse(resp2.Header.Get("Location"), `/([a-z]{2})/`)
+			if region == "" {
+				region = utils.ReParse(resp2.Header.Get("Location"), `viaplay.([a-z]{2})`)
+			}
 			result1, result2, result3 := utils.CheckDNS(hostname)
 			unlockType := utils.GetUnlockType(result1, result2, result3)
 			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
