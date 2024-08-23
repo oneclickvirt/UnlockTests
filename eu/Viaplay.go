@@ -23,7 +23,7 @@ func Viaplay(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode == 403 {
+	if resp.StatusCode == 403 || resp.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
 	if resp.StatusCode == 302 && resp.Header.Get("Location") == "/region-blocked" {
@@ -41,6 +41,9 @@ func Viaplay(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 		}
 		defer resp2.Body.Close()
+		if resp2.StatusCode == 404 {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
 		if resp2.StatusCode == 302 {
 			region := utils.ReParse(resp2.Header.Get("Location"), `/([a-z]{2})/`)
 			if region == "" {

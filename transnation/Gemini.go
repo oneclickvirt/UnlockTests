@@ -46,6 +46,9 @@ func Gemini(c *http.Client) model.Result {
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
+	if resp.StatusCode == 302 {
+		return model.Result{Name: name, Status: model.StatusNetworkErr}
+	}
 	return model.Result{Name: name, Status: model.StatusNo}
 	// return model.Result{Name: name, Status: model.StatusUnexpected,
 	// 	Err: fmt.Errorf("get gemini.google.com failed with code: %d", resp.StatusCode)}

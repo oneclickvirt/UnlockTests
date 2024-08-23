@@ -3,11 +3,12 @@ package nl
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // NPOStartPlus
@@ -63,7 +64,10 @@ func NPOStartPlus(c *http.Client) model.Result {
 		// fmt.Println(body)
 		// fmt.Println(resp2.StatusCode)
 		// {"status":451,"body":"Dit programma mag niet bekeken worden vanaf jouw locatie."}
-		if resp2.StatusCode == 451 || strings.Contains(body, "Dit programma mag niet bekeken worden vanaf jouw locatie.") {
+		if resp2.StatusCode == 403 {
+			return model.Result{Name: name, Status: model.StatusBanned}
+		} else if resp2.StatusCode == 451 ||
+			strings.Contains(body, "Dit programma mag niet bekeken worden vanaf jouw locatie.") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		} else if resp2.StatusCode == 200 {
 			result1, result2, result3 := utils.CheckDNS(hostname)
