@@ -2,11 +2,12 @@ package us
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // DirecTVGO
@@ -38,7 +39,11 @@ func DirecTVGO(c *http.Client) model.Result {
 		if len(parts) >= 4 {
 			region := parts[3]
 			region = strings.ToUpper(region)
-			return model.Result{Name: name, Status: model.StatusYes, Region: region, UnlockType: unlockType}
+			if !strings.Contains(region, "HTTPS") && !strings.Contains(region, "FALSE") {
+				return model.Result{Name: name, Status: model.StatusYes, Region: region, UnlockType: unlockType}
+			} else {
+				return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+			}
 		}
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}

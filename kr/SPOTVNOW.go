@@ -58,7 +58,7 @@ func SPOTVNOW(c *http.Client) model.Result {
 			if strings.Contains(body, "CLIENT_GEO") || strings.Contains(body, "ACCESS_DENIED") {
 				return model.Result{Name: name, Status: model.StatusNo}
 			}
-			return model.Result{Name: name, Status: model.StatusErr, Err: err}
+			return model.Result{Name: name, Status: model.StatusUnexpected}
 		}
 		if res2[0].ErrorSubcode == "CLIENT_GEO" {
 			return model.Result{Name: name, Status: model.StatusNo, Region: res2[0].ClientGeo}

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// WorldFlipper
+// WorldFlipper - 已废弃
 // api.worldflipper.jp 双栈 且 get 请求
 func WorldFlipper(c *http.Client) model.Result {
 	name := "World Flipper Japan"
