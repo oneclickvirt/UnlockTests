@@ -8,6 +8,7 @@ import (
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
+
 // J_COM_ON_DEMAND
 // linkvod.myjcom.jp 仅 ipv4 且 get 请求
 func J_COM_ON_DEMAND(c *http.Client) model.Result {

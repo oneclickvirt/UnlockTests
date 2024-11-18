@@ -17,7 +17,7 @@ func Afreeca(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "https://vod.afreecatv.com/player/97464151"
+	url := "https://vod.sooplive.co.kr/player/97464151"
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
@@ -29,7 +29,7 @@ func Afreeca(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
-	if !strings.Contains(body, "document.location.href='https://vod.afreecatv.com'") {
+	if !strings.Contains(body, "document.location.href='https://vod.afreecatv.com'") && !strings.Contains(body, "document.location.href='https://vod.sooplive.co.kr'") {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}

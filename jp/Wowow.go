@@ -5,12 +5,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 func getFirstLink(jsonStr string) string {
@@ -69,6 +70,40 @@ func getProgramUrl(htmlStr string) string {
 	return ""
 }
 
+// 通过 program ID 获取详细信息
+func getProgramDetails(c *http.Client, programID string) (string, error) {
+	apiURL := "https://www.wowow.co.jp/API/new_prg/programdetail.php"
+	data := fmt.Sprintf(`{"prg_cd": "%s", "mode": "19"}`, programID)
+	headers := map[string]string{
+		"Content-Type": "application/json;charset=UTF-8",
+		"Accept":       "application/json, text/plain, */*",
+		"Origin":       "https://www.wowow.co.jp",
+		"Referer":      "https://www.wowow.co.jp/",
+	}
+
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().SetBody(data).Post(apiURL)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body from program details API")
+	}
+
+	var res struct {
+		ArchiveURL string `json:"archive_url"`
+	}
+	if err := json.Unmarshal(b, &res); err != nil {
+		return "", fmt.Errorf("failed to parse program details response: %v", err)
+	}
+
+	return res.ArchiveURL, nil
+}
+
 func getMetaId(htmlStr string) string {
 	lines := strings.Split(htmlStr, "\n")
 	for _, line := range lines {
@@ -125,6 +160,7 @@ func Wowow(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "1-1", Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
+
 	// 获取第一个剧集的链接
 	playUrl := getFirstLink(body)
 	if playUrl == "" {
@@ -143,40 +179,20 @@ func Wowow(c *http.Client) model.Result {
 	}
 	body2 := string(b2)
 
-	// 获取真实链接
-	wodUrl := getWodUrl(body2)
-	if wodUrl == "" {
-		programUrl := getProgramUrl(body2)
-		// 第二次请求的二次请求：获取真实链接
-		resp22, err22 := client.R().Get(programUrl)
-		if err22 != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "2-2", Err: err22}
-		}
-		defer resp22.Body.Close()
-		b22, err22 := io.ReadAll(resp22.Body)
-		if err22 != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-		}
-		body = string(b22)
-		tempList := strings.Split(body, "\"refId\":\"")
-		if len(tempList) >= 2 {
-			for _, l := range tempList {
-				if strings.Contains(l, "media_meta") {
-					tpList := strings.Split(l, "\"")
-					if len(tpList) >= 2 {
-						wodUrl = "https://wod.wowow.co.jp/content/" + tpList[0]
-						break
-					}
-				}
-			}
-		}
-		if wodUrl == "" {
-			return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to get WOD URL")}
-		}
+	// 获取 program ID
+	programID := getProgramUrl(body2)
+	if programID == "" {
+		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to get program ID")}
 	}
 
-	// 第三次请求：获取 meta_id
-	resp3, err := client.R().Get(wodUrl)
+	// 新增逻辑：通过 program ID 获取 archive URL
+	archiveURL, err := getProgramDetails(c, programID)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to get archive URL: %v", err)}
+	}
+
+	// 使用 archive URL 获取 meta ID
+	resp3, err := client.R().Get(archiveURL)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "3", Err: err}
 	}
@@ -185,8 +201,10 @@ func Wowow(c *http.Client) model.Result {
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "3", Err: fmt.Errorf("can not parse body")}
 	}
-	body = string(b3)
-	metaId := getMetaId(body)
+	body3 := string(b3)
+
+	// 提取 meta_id
+	metaId := getMetaId(body3)
 	if metaId == "" {
 		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to get meta ID")}
 	}
@@ -194,6 +212,7 @@ func Wowow(c *http.Client) model.Result {
 	// 生成 vUid
 	hash := md5.Sum([]byte(fmt.Sprintf("%d", timestamp)))
 	vUid := hex.EncodeToString(hash[:])
+
 	// 最终测试请求
 	authUrl := "https://mapi.wowow.co.jp/api/v1/playback/auth"
 	data := fmt.Sprintf(`{"meta_id":"%s","vuid":"%s","device_code":1,"app_id":1,"ua":"%s"}`, metaId, vUid, model.UA_Browser)
@@ -211,20 +230,19 @@ func Wowow(c *http.Client) model.Result {
 		"x-requested-with":   "XMLHttpRequest",
 		"User-Agent":         model.UA_Browser,
 	}
-	resp, body, err = utils.PostJson(c, authUrl, data, headers4)
+	resp4, body4, err := utils.PostJson(c, authUrl, data, headers4)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "4", Err: err}
 	}
-	//fmt.Println(body)
-	// {"error":{"message":"サポート外ネットワークからの接続です。日本国外からの接続、VPN・プロキシ経由の接続等ではご利用いただけません。","code":2055,"type":"Forbidden",
-	if strings.Contains(body, "VPN") || strings.Contains(body, "Forbidden") {
+
+	if strings.Contains(body4, "VPN") || strings.Contains(body4, "Forbidden") {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if strings.Contains(body, "playback_session_id") {
+	} else if strings.Contains(body4, "playback_session_id") {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{
 		Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("get mapi.wowow.co.jp failed with code: %d", resp.StatusCode)}
+		Err: fmt.Errorf("get mapi.wowow.co.jp failed with code: %d", resp4.StatusCode)}
 }

@@ -18,10 +18,10 @@ func Viaplay(c *http.Client) model.Result {
 	}
 	url := "https://checkout.viaplay.pl/?recommended=viaplay"
 	client := utils.Req(c)
-	resp, err := client.R().Get(url)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
-	}
+	resp, _ := client.R().Get(url)
+	// if err != nil {
+	// 	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	// }
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 || resp.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusBanned}

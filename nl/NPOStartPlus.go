@@ -66,7 +66,7 @@ func NPOStartPlus(c *http.Client) model.Result {
 		// {"status":451,"body":"Dit programma mag niet bekeken worden vanaf jouw locatie."}
 		if resp2.StatusCode == 403 {
 			return model.Result{Name: name, Status: model.StatusBanned}
-		} else if resp2.StatusCode == 451 ||
+		} else if resp2.StatusCode == 451 || resp2.StatusCode == 401 ||
 			strings.Contains(body, "Dit programma mag niet bekeken worden vanaf jouw locatie.") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		} else if resp2.StatusCode == 200 {

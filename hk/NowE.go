@@ -34,7 +34,7 @@ func NowE(c *http.Client) model.Result {
 	}
 	if res.ResponseCode == "GEO_CHECK_FAIL" {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if res.ResponseCode == "SUCCESS" {
+	} else if res.ResponseCode == "SUCCESS" || res.ResponseCode == "ASSET_MISSING" {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}

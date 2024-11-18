@@ -60,13 +60,15 @@ func SPOTVNOW(c *http.Client) model.Result {
 			}
 			return model.Result{Name: name, Status: model.StatusUnexpected}
 		}
-		if res2[0].ErrorSubcode == "CLIENT_GEO" {
+		if res2[0].ErrorSubcode == "CLIENT_GEO" || resp.StatusCode == 403 {
 			return model.Result{Name: name, Status: model.StatusNo, Region: res2[0].ClientGeo}
 		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res1.AccountId != "0" {
 		return model.Result{Name: name, Status: model.StatusYes, Region: "kr"}
+	} else if resp.StatusCode == 200 {
+		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get edge.api.brightcove.com with code: %d", resp.StatusCode)}

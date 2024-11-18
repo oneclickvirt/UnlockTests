@@ -11,11 +11,11 @@ import (
 // www.showtime.com 仅 ipv4 且 get 请求
 func SHOWTIME(c *http.Client) model.Result {
 	name := "SHOWTIME"
-	hostname := "showtime.com"
+	hostname := "paramountpluswithshowtime.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "https://www.showtime.com/"
+	url := "https://www.paramountpluswithshowtime.com/"
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {

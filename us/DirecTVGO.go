@@ -30,9 +30,9 @@ func DirecTVGO(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	body := string(b)
-	if strings.Contains(body, "proximamente") || resp.StatusCode == 403 || resp.StatusCode == 404 {
+	if strings.Contains(body, "proximamente") || resp.StatusCode == 403 || resp.StatusCode == 404 || resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 200 {
+	} else if resp.StatusCode == 301 {
 		parts := strings.Split(body, "/")
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
