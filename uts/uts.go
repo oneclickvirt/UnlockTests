@@ -339,6 +339,7 @@ func HongKong() [](func(c *http.Client) model.Result) {
 		hk.NowE,
 		hk.ViuTV,
 		hk.MyTvSuper,
+		asia.GooglePlayStore,
 		asia.HBOGO,
 		hk.BilibiliHKMO,
 		tw.BahamutAnime,
