@@ -1,9 +1,10 @@
 package jp
 
 import (
+	"net/http"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
 
 // Hulu
@@ -38,6 +39,9 @@ func Hulu(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == 403 {
+		return model.Result{Name: name, Status: model.StatusBanned}
+	}
 	if resp.Request.URL.Path == "/restrict.html" || resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

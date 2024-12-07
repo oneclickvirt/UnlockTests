@@ -120,6 +120,9 @@ func OpenAI(c *http.Client) model.Result {
 		}
 		return model.Result{Name: name, Status: model.StatusNo, Info: "429 Rate limit"}
 	}
+	if location == "T1" {
+		return model.Result{Name: name, Status: model.StatusYes, Region: "TOR"}
+	}
 	if !VPN && !unsupportedCountry && reqStatus1 && reqStatus2 && reqStatus3 {
 		if location != "" {
 			loc := strings.ToLower(location)

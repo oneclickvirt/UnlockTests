@@ -2,10 +2,11 @@ package eu
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // RakutenTV
@@ -23,6 +24,9 @@ func RakutenTV(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == 403 {
+		return model.Result{Name: name, Status: model.StatusBanned}
+	}
 	//fmt.Println(body)
 	if strings.Contains(body, "forbidden_vpn") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "VPN Forbidden"}

@@ -40,7 +40,10 @@ func HotStar(c *http.Client) model.Result {
 	//}
 	//body := string(b)
 	//fmt.Println(body)
-	if resp1.StatusCode == 301 || resp.StatusCode == 475 || resp.StatusCode == 403 {
+	if resp1.StatusCode == 472 || resp.StatusCode == 473 || resp.StatusCode == 474 {
+		return model.Result{Name: name, Status: model.StatusBanned}
+	}
+	if resp1.StatusCode == 301 || resp.StatusCode == 403 || resp.StatusCode == 475 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	u := resp1.Header.Get("Location")

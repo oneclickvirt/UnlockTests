@@ -3,11 +3,12 @@ package us
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Starz
@@ -27,6 +28,9 @@ func Starz(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == 403 {
+		return model.Result{Name: name, Status: model.StatusBanned}
+	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
@@ -45,6 +49,9 @@ func Starz(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 		}
 		defer resp2.Body.Close()
+		if resp2.StatusCode == 403 {
+			return model.Result{Name: name, Status: model.StatusBanned}
+		}
 		b2, err2 := io.ReadAll(resp2.Body)
 		if err2 != nil {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}

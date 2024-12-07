@@ -26,6 +26,9 @@ func SonyLiv(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}
 	}
 	defer resp1.Body.Close()
+	if resp1.StatusCode == 403 {
+		return model.Result{Name: name, Status: model.StatusBanned}
+	}
 	b, err := io.ReadAll(resp1.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}

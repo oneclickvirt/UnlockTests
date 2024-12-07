@@ -2,11 +2,12 @@ package it
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // RaiPlay
@@ -24,6 +25,9 @@ func RaiPlay(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == 403 {
+		return model.Result{Name: name, Status: model.StatusBanned}
+	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
@@ -31,7 +35,7 @@ func RaiPlay(c *http.Client) model.Result {
 	body := string(b)
 	// fmt.Println(body)
 	if strings.Contains(body, "video_no_available") || strings.Contains(body, "<geoprotection>N</geoprotection>") ||
-		resp.StatusCode == 403 || resp.StatusCode == 451 {
+		resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
 		result1, result2, result3 := utils.CheckDNS(hostname)

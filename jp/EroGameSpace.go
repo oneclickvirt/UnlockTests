@@ -2,42 +2,63 @@ package jp
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // EroGameSpace
-// erogamescape.org 仅 ipv4 且 get 请求
+// erogamescape.org 仅支持 IPv4 且仅接受 GET 请求
 func EroGameSpace(c *http.Client) model.Result {
-	name := "EroGameSpace"
-	hostname := "erogamescape.org"
-	if c == nil {
-		return model.Result{Name: name}
-	}
-	url := "https://erogamescape.org/"
-	// url := "https://erogamescape.org/~ap2/ero/toukei_kaiseki/"
+	const (
+		name     = "EroGameSpace"
+		hostname = "erogamescape.org"
+		url      = "https://erogamescape.org/"
+	)
+	// 发起请求
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return model.Result{
+			Name:   name,
+			Status: model.StatusNetworkErr,
+			Err:    err,
+		}
 	}
 	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
+	// 读取响应体
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return model.Result{
+			Name:   name,
+			Status: model.StatusNetworkErr,
+			Err:    err,
+		}
 	}
-	body := string(b)
-	//fmt.Println(body)
-	if resp.StatusCode == 403 || resp.StatusCode == 451 {
+	body := string(bodyBytes)
+	// 根据 HTTP 响应状态码判断结果
+	switch resp.StatusCode {
+	case 403, 451:
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 200 && strings.Contains(body, "18歳") {
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+	case 200:
+		// 检查响应内容是否包含 "18歳" 字样
+		if strings.Contains(body, "18歳") {
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{
+				Name:       name,
+				Status:     model.StatusYes,
+				UnlockType: unlockType,
+			}
+		}
 	}
-	return model.Result{Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("get erogamescape.org failed with code: %d", resp.StatusCode)}
+	// 返回意外结果的错误
+	return model.Result{
+		Name:   name,
+		Status: model.StatusUnexpected,
+		Err:    fmt.Errorf("unexpected response from %s with status code: %d", hostname, resp.StatusCode),
+	}
 }

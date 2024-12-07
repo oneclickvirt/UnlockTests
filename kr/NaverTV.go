@@ -47,6 +47,9 @@ func NaverTV(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().Get(reqURL)
 	if err != nil {
+		if strings.Contains(err.Error(), "EOF") {
+			return model.Result{Name: name, Status: model.StatusBanned}
+		}
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
