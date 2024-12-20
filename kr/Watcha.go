@@ -2,9 +2,10 @@ package kr
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
 
 // Watcha
@@ -46,7 +47,11 @@ func Watcha(c *http.Client) model.Result {
 	} else if resp.StatusCode == 200 {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "kr"}
+	} else if resp.StatusCode == 302 && resp.Header.Get("Location") == "/ja-JP/browse/theater" {
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "jp"}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get watcha.com failed with code: %d", resp.StatusCode)}

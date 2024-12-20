@@ -2,11 +2,12 @@ package us
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // TubiTV
@@ -17,7 +18,7 @@ func TubiTV(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "https://tubitv.com/home"
+	url := "https://tubitv.com/"
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {

@@ -2,11 +2,12 @@ package jp
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // DAnimeStore
@@ -32,7 +33,7 @@ func DAnimeStore(c *http.Client) model.Result {
 	//fmt.Println(body)
 	if resp.StatusCode == 403 || resp.StatusCode == 451 || strings.Contains(body, "海外") {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 200 && body != "" {
+	} else if (resp.StatusCode == 200 && body != "") || resp.StatusCode == 302 {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}

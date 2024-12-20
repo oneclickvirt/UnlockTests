@@ -41,6 +41,9 @@ func Channel5(c *http.Client) model.Result {
 		code string `json:"code"`
 	}
 	if err := json.Unmarshal(b, &res); err != nil {
+		if err.Error() == `invalid character '<' looking for beginning of value` {
+			return model.Result{Name: name, Status: model.StatusBanned}
+		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res.code == "3000" || strings.Contains(body, "this service is only available in restricted regions") {
