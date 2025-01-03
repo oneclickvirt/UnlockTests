@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -35,11 +36,7 @@ func getWodUrl(htmlStr string) string {
 				tpList := strings.Split(tempList[1], "\"")
 				if len(tpList) >= 2 {
 					return "https://wod.wowow.co.jp/content/" + tpList[0]
-				} else {
-					return ""
 				}
-			} else {
-				return ""
 			}
 		}
 	}
@@ -59,11 +56,7 @@ func getProgramUrl(htmlStr string) string {
 							return "https:" + l
 						}
 					}
-				} else {
-					return ""
 				}
-			} else {
-				return ""
 			}
 		}
 	}
@@ -80,7 +73,6 @@ func getProgramDetails(c *http.Client, programID string) (string, error) {
 		"Origin":       "https://www.wowow.co.jp",
 		"Referer":      "https://www.wowow.co.jp/",
 	}
-
 	client := utils.Req(c)
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().SetBody(data).Post(apiURL)
@@ -88,20 +80,60 @@ func getProgramDetails(c *http.Client, programID string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body from program details API")
 	}
-
 	var res struct {
 		ArchiveURL string `json:"archive_url"`
 	}
 	if err := json.Unmarshal(b, &res); err != nil {
 		return "", fmt.Errorf("failed to parse program details response: %v", err)
 	}
-
 	return res.ArchiveURL, nil
+}
+
+// 尝试使用推荐列表方法获取 archiveURL
+func tryRecommendListMethod(c *http.Client) (string, error) {
+	url := "https://www.wowow.co.jp/assets/config/top_recommend_list.json"
+	headers := map[string]string{
+		"Accept":           "application/json, text/javascript, */*; q=0.01",
+		"Referer":          "https://www.wowow.co.jp/",
+		"X-Requested-With": "XMLHttpRequest",
+	}
+	client := utils.Req(c)
+	client = utils.SetReqHeaders(client, headers)
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	var res struct {
+		DramaOriginal []interface{} `json:"drama_original"`
+	}
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if err := json.Unmarshal(b, &res); err != nil {
+		return "", err
+	}
+	// 遍历所有剧集ID尝试获取archiveURL
+	for _, id := range res.DramaOriginal {
+		var programID string
+		if str, ok := id.(string); ok {
+			programID = str
+		} else if num, ok := id.(float64); ok {
+			programID = strconv.FormatFloat(num, 'f', 0, 64)
+		} else {
+			continue
+		}
+		archiveURL, err := getProgramDetails(c, programID)
+		if err == nil && archiveURL != "" {
+			return archiveURL, nil
+		}
+	}
+	return "", fmt.Errorf("no valid archive URL found in recommend list")
 }
 
 func getMetaId(htmlStr string) string {
@@ -113,11 +145,7 @@ func getMetaId(htmlStr string) string {
 				tpList := strings.Split(tempList[1], "\"")
 				if len(tpList) >= 2 {
 					return tpList[0]
-				} else {
-					return ""
 				}
-			} else {
-				return ""
 			}
 		}
 	}
@@ -125,23 +153,20 @@ func getMetaId(htmlStr string) string {
 }
 
 // Wowow
-// www.wowow.co.jp 仅 ipv4 且 get 请求
 func Wowow(c *http.Client) model.Result {
 	name := "WOWOW"
 	hostname := "wowow.co.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	// 获取当前时间戳
 	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
-	// 第一次请求：获取原创剧集列表
+	var wodUrl string
+	var firstMethodFailed bool
+	// 第一种方法：通过原创剧集列表
 	url := fmt.Sprintf("https://www.wowow.co.jp/drama/original/json/lineup.json?_=%d", timestamp)
 	headers := map[string]string{
 		"Accept":             "application/json, text/javascript, */*; q=0.01",
 		"Referer":            "https://www.wowow.co.jp/drama/original/",
-		"Sec-Fetch-Dest":     "empty",
-		"Sec-Fetch-Mode":     "cors",
-		"Sec-Fetch-Site":     "same-origin",
 		"X-Requested-With":   "XMLHttpRequest",
 		"sec-ch-ua":          model.UA_SecCHUA,
 		"sec-ch-ua-mobile":   "?0",
@@ -151,68 +176,61 @@ func Wowow(c *http.Client) model.Result {
 	client := utils.Req(c)
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().Get(url)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "1-1", Err: err}
+	if err == nil {
+		b, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err == nil {
+			playUrl := getFirstLink(string(b))
+			if playUrl != "" {
+				resp2, err := client.R().Get(playUrl)
+				if err == nil {
+					b2, err := io.ReadAll(resp2.Body)
+					resp2.Body.Close()
+					if err == nil {
+						programID := getProgramUrl(string(b2))
+						if programID != "" {
+							archiveURL, err := getProgramDetails(c, programID)
+							if err == nil {
+								wodUrl = archiveURL
+							}
+						}
+					}
+				}
+			}
+		}
 	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "1-1", Err: fmt.Errorf("can not parse body")}
+	// 如果第一种方法失败，尝试第二种方法
+	if wodUrl == "" {
+		firstMethodFailed = true
+		archiveURL, err := tryRecommendListMethod(c)
+		if err == nil {
+			wodUrl = archiveURL
+		}
 	}
-	body := string(b)
-
-	// 获取第一个剧集的链接
-	playUrl := getFirstLink(body)
-	if playUrl == "" {
-		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to get play URL")}
+	// 如果两种方法都失败了
+	if wodUrl == "" {
+		if firstMethodFailed {
+			return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("both methods failed to get wod URL")}
+		}
+		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to get wod URL")}
 	}
-
-	// 第二次请求：获取真实链接
-	resp2, err := client.R().Get(playUrl)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "2-1", Err: err}
-	}
-	defer resp2.Body.Close()
-	b2, err := io.ReadAll(resp2.Body)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "2-1", Err: fmt.Errorf("can not parse body")}
-	}
-	body2 := string(b2)
-
-	// 获取 program ID
-	programID := getProgramUrl(body2)
-	if programID == "" {
-		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to get program ID")}
-	}
-
-	// 新增逻辑：通过 program ID 获取 archive URL
-	archiveURL, err := getProgramDetails(c, programID)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to get archive URL: %v", err)}
-	}
-
-	// 使用 archive URL 获取 meta ID
-	resp3, err := client.R().Get(archiveURL)
+	// 获取 meta_id
+	resp3, err := client.R().Get(wodUrl)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "3", Err: err}
 	}
-	defer resp3.Body.Close()
 	b3, err := io.ReadAll(resp3.Body)
+	resp3.Body.Close()
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "3", Err: fmt.Errorf("can not parse body")}
 	}
-	body3 := string(b3)
-
-	// 提取 meta_id
-	metaId := getMetaId(body3)
+	metaId := getMetaId(string(b3))
 	if metaId == "" {
 		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to get meta ID")}
 	}
-
 	// 生成 vUid
 	hash := md5.Sum([]byte(fmt.Sprintf("%d", timestamp)))
 	vUid := hex.EncodeToString(hash[:])
-
 	// 最终测试请求
 	authUrl := "https://mapi.wowow.co.jp/api/v1/playback/auth"
 	data := fmt.Sprintf(`{"meta_id":"%s","vuid":"%s","device_code":1,"app_id":1,"ua":"%s"}`, metaId, vUid, model.UA_Browser)
@@ -234,7 +252,6 @@ func Wowow(c *http.Client) model.Result {
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "4", Err: err}
 	}
-
 	if strings.Contains(body4, "VPN") || strings.Contains(body4, "Forbidden") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if strings.Contains(body4, "playback_session_id") {
