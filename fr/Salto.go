@@ -14,6 +14,9 @@ import (
 func Salto(c *http.Client) model.Result {
 	name := "Salto"
 	url := "https://www.salto.fr/"
+	if c == nil {
+		return model.Result{Name: name}
+	}
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
