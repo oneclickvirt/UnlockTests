@@ -13,6 +13,9 @@ import (
 func Claude(c *http.Client) model.Result {
 	name := "Claude"
 	hostname := "claude.ai"
+	if c == nil {
+		return model.Result{Name: name}
+	}
 	url1 := "https://claude.ai/"
 	headers1 := map[string]string{
 		"User-Agent": model.UA_Browser,
