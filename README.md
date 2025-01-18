@@ -104,8 +104,6 @@ BilibiliID - 对应URL请求无论如何都返回为空 {"code":10004001,"messag
 BilibiliTH - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
 
 BilibiliVN - 对应URL请求无论如何都返回为空 {"code":10004001,"message":"10004001","ttl":1,"data":null}
-
-TVer - get platform-api.tver.jp failed with code: 400
 ```
 
 ### 无需支持
@@ -135,7 +133,7 @@ WorldFlipper - 已关服
 ## 在Golang中使用
 
 ```
-go get github.com/oneclickvirt/UnlockTests@latest
+go get -u github.com/oneclickvirt/UnlockTests@latest
 ```
 
 ## Thanks

@@ -446,6 +446,7 @@ func Multination() [](func(c *http.Client) model.Result) {
 		transnation.Spotify,
 		transnation.Steam,
 		transnation.OpenAI,
+		transnation.Claude,
 		transnation.Sora,
 		transnation.Gemini,
 		transnation.MetaAI,
