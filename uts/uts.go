@@ -288,6 +288,7 @@ func Europe() [](func(c *http.Client) model.Result) {
 		eu.RakutenTV,
 		eu.SkyShowTime,
 		us.HBOMax,
+		eu.MegogoTV,
 		eu.SetantaSports,
 		eu.MathsSpot,
 		// SE

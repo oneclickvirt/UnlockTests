@@ -46,8 +46,8 @@ func SonyLiv(c *http.Client) model.Result {
 	headers2 := map[string]string{
 		"accept":         "application/json, text/plain, */*",
 		"referer":        "https://www.sonyliv.com/",
-		"device_id":      "25a417c3b5f246a393fadb022adc82d5-1715309762699",
-		"app_version":    "3.5.59",
+		"device_id":      "767cba5309634d129d8839d4f5e6dc59-1736780961139",
+		"app_version":    "3.6.3",
 		"security_token": jwtToken,
 	}
 	url2 := "https://apiv2.sonyliv.com/AGL/1.4/A/ENG/WEB/ALL/USER/ULD"
@@ -86,7 +86,7 @@ func SonyLiv(c *http.Client) model.Result {
 		"accept":                    "application/json, text/plain, */*",
 		"origin":                    "https://www.sonyliv.com",
 		"referer":                   "https://www.sonyliv.com/",
-		"device_id":                 "25a417c3b5f246a393fadb022adc82d5-1715309762699",
+		"device_id":                 "767cba5309634d129d8839d4f5e6dc59-1736780961139",
 		"security_token":            jwtToken,
 	}
 	// 1000273613 1000045427

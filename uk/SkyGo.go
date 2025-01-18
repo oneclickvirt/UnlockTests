@@ -2,11 +2,12 @@ package uk
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // SkyGo
@@ -29,13 +30,14 @@ func SkyGo(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
-	if strings.Contains(body, "You don't have permission to access") || resp.StatusCode == 403 || resp.StatusCode == 200 ||
-		strings.Contains(body, "Access Denied") { // || resp.StatusCode == 451
-		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 302 {
+	if strings.Contains(body, "Sign in</h3>") || strings.Contains(body, "skygoSignin") {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+	} else if strings.Contains(body, "You don't have permission to access") ||
+		resp.StatusCode == 403 || resp.StatusCode == 200 ||
+		strings.Contains(body, "Access Denied") { // || resp.StatusCode == 451
+		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get skyid.sky.com failed with code: %d", resp.StatusCode)}

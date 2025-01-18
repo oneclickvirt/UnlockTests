@@ -17,7 +17,7 @@ func NowE(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	url1 := "https://webtvapi.nowe.com/16/1/getVodURL"
-	data1 := `{"contentId":"202403181904703","contentType":"Vod","pin":"","deviceName":"Browser","deviceId":"w-663bcc51-913c-913c-913c-913c913c","deviceType":"WEB","secureCookie":null,"callerReferenceNo":"W17151951620081575","profileId":null,"mupId":null}`
+	data1 := `{"contentId":"202310181863841","contentType":"Vod","pin":"","deviceName":"Browser","deviceId":"w-678913af-3998-3998-3998-39983998","deviceType":"WEB","secureCookie":null,"callerReferenceNo":"W17370372345461425","profileId":null,"mupId":null,"trackId":"738296446.226.1737037103860.2","sessionId":"c39f03e6-9e74-4d24-a82f-e0d0f328bb70"}`
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
@@ -27,20 +27,24 @@ func NowE(c *http.Client) model.Result {
 	}
 	defer resp.Body.Close()
 	var res struct {
-		ResponseCode string `json:"responseCode"`
+		ResponseCode        string `json:"responseCode"`         // 主要字段
+		OTTAPIResponseCode  string `json:"OTTAPI_ResponseCode"` // 备选字段
 	}
+	// fmt.Println(body)
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	if res.ResponseCode == "GEO_CHECK_FAIL" {
-		return model.Result{Name: name, Status: model.StatusNo}
-	} else if res.ResponseCode == "SUCCESS" || res.ResponseCode == "ASSET_MISSING" {
+	if res.OTTAPIResponseCode == "SUCCESS" || res.ResponseCode == "NOT_LOGIN" || res.ResponseCode == "ASSET_MISSING" {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
-	}
-	return model.Result{
-		Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("webtvapi.nowe.com get responseCode: %s", res.ResponseCode),
+	} else if res.ResponseCode == "GEO_CHECK_FAIL" {
+		return model.Result{Name: name, Status: model.StatusNo}
+	} else {
+		return model.Result{
+			Name:   name,
+			Status: model.StatusUnexpected,
+			Err:    fmt.Errorf("webtvapi.nowe.com get unexpected responseCode: %s", res.ResponseCode),
+		}
 	}
 }

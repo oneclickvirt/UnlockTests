@@ -107,6 +107,7 @@ func OpenAI(c *http.Client) model.Result {
 		for _, line := range tempList {
 			if strings.HasPrefix(line, "loc=") {
 				location = strings.ReplaceAll(line, "loc=", "")
+				break
 			}
 		}
 	}

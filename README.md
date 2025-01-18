@@ -79,8 +79,6 @@ GYAO 和 LINE VOOM
 ```
 ElevenSportsTW
 
-MegogoTV
-
 CineMax
 
 KPLUS - ssoToken 已过期

@@ -23,7 +23,7 @@ type Episode struct {
 }
 
 func getEpisodeID(body string) string {
-	if idx := strings.Index(body, `"newer-drama"`); idx != -1 {
+	if idx := strings.Index(body, `"variety.catchup.recomend"`); idx != -1 {
 		body = body[idx:]
 		if idx = strings.Index(body, `"id"`); idx != -1 {
 			body = body[idx:]
