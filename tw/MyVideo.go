@@ -18,6 +18,9 @@ func MyVideo(c *http.Client) model.Result {
 		hostname = "myvideo.net.tw"
 		url      = "https://www.myvideo.net.tw/login.do"
 	)
+	if c == nil {
+		return model.Result{Name: name}
+	}
 	// 设置 HTTP 客户端的重定向行为
 	c.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse // 禁止自动跟随重定向
