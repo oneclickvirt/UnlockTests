@@ -18,6 +18,9 @@ func EroGameSpace(c *http.Client) model.Result {
 		hostname = "erogamescape.org"
 		url      = "https://erogamescape.org/"
 	)
+	if c == nil {
+		return model.Result{Name: name}
+	}
 	// 发起请求
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
