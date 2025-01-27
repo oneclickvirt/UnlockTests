@@ -22,12 +22,6 @@ func Test(t *testing.T) {
 	}
 	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
-	res = HBOGO(req)
-	if res.Err != nil {
-		fmt.Println(res.Err)
-	}
-	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
-
 	res = HotStar(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)

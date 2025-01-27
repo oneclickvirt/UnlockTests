@@ -341,7 +341,7 @@ func HongKong() [](func(c *http.Client) model.Result) {
 		hk.ViuTV,
 		hk.MyTvSuper,
 		asia.GooglePlayStore,
-		asia.HBOGO,
+		us.HBOMax,
 		hk.BilibiliHKMO,
 		tw.BahamutAnime,
 	}
@@ -381,7 +381,7 @@ func Taiwan() [](func(c *http.Client) model.Result) {
 		tw.HamiVideo,
 		tw.Catchplay,
 		tw.BahamutAnime,
-		asia.HBOGO,
+		us.HBOMax,
 		tw.BilibiliTW,
 	}
 	PreProcess(FuncList)
@@ -521,7 +521,7 @@ func Korea() [](func(c *http.Client) model.Result) {
 func SouthEastAsia() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
-		asia.HBOGO,
+		us.HBOMax,
 		asia.BilibiliSEA,
 		// TW
 		utils.PrintTW,

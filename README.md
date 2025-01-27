@@ -121,6 +121,8 @@ HBOGOEurope - api.ugw.hbogo.eu 已经 host 为空了 查询不到内容
 
 HBOSpain - api-discovery.hbo.eu 的 host 已经为空了
 
+HBOGO - 被 HBOMax 替代合并了
+
 HBO_Nordic - 被合并了
 
 HBO_Portugal - 被合并了

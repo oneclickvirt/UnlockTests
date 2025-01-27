@@ -3,11 +3,13 @@ package jp
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 type PlatformResponse struct {
@@ -29,7 +31,12 @@ func getEpisodeID(body string) string {
 			body = body[idx:]
 			parts := strings.Split(body, `"`)
 			if len(parts) > 3 {
-				return parts[3]
+				id := parts[3]
+				// 使用正则表达式验证ID格式
+				matched, _ := regexp.MatchString(`^[a-z0-9]{10}$`, id)
+				if matched {
+					return id
+				}
 			}
 		}
 	}

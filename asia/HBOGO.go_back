@@ -12,7 +12,7 @@ import (
 )
 
 // HBOGO
-// api2.hbogoasia.com 仅 ipv4 且 get 请求
+// api2.hbogoasia.com 仅 ipv4 且 get 请求  -- 已被 HBOMax 替代
 func HBOGO(c *http.Client) model.Result {
 	name := "HBO GO Asia"
 	hostname := "hbogoasia.com"

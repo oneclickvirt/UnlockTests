@@ -14,7 +14,7 @@ func Kancolle(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "http://203.104.209.7/kcscontents/news/"
+	url := "http://w00g.kancolle-server.com/kcscontents/news/"
 	headers := map[string]string{
 		"User-Agent": model.UA_Dalvik,
 	}
