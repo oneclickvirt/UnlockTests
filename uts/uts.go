@@ -375,10 +375,12 @@ func Taiwan() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		tw.KKTV,
 		tw.LiTV,
+		tw.Ofiii,
 		tw.MyVideo,
 		tw.Tw4gtv,
 		tw.LineTV,
 		tw.HamiVideo,
+		tw.FridayVideo,
 		tw.Catchplay,
 		tw.BahamutAnime,
 		us.HBOMax,
@@ -409,6 +411,7 @@ func Japan() [](func(c *http.Client) model.Result) {
 		jp.RakutenMagazine,
 		jp.NHKPlus,
 		jp.J_COM_ON_DEMAND,
+		jp.MGStage,
 		// Game
 		utils.PrintGame,
 		jp.Kancolle,
@@ -511,6 +514,7 @@ func Korea() [](func(c *http.Client) model.Result) {
 		kr.CoupangPlay,
 		kr.SPOTVNOW,
 		kr.NaverTV,
+		kr.PandaTV,
 		kr.Afreeca,
 		kr.KBSDomestic,
 	}

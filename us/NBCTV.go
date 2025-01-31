@@ -38,22 +38,36 @@ func NBCTV(c *http.Client) model.Result {
 	}
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().SetBodyJsonString(`{"adobeMvpdId":null,"serviceZip":null,"device":"web"}`).Post(url)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusErr, Err: err}
+	if err == nil {
+		defer resp.Body.Close()
+		b, err := io.ReadAll(resp.Body)
+		if err == nil {
+			body := string(b)
+			// fmt.Println(body)
+			if strings.Contains(body, `"restricted":false`) {
+				result1, result2, result3 := utils.CheckDNS(hostname)
+				unlockType := utils.GetUnlockType(result1, result2, result3)
+				return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+			} else if strings.Contains(body, `"restricted":true`) || body == "" {
+				return model.Result{Name: name, Status: model.StatusNo}
+			}
+		}
 	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
+	url = "https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location/dnsfeed"
+	client = utils.Req(c)
+	resp, err = client.R().Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	body := string(b)
-	// fmt.Println(body)
-	if strings.Contains(body, `"restricted":false`) {
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Status: model.StatusNetworkErr, Err: err}
+	}
+	if strings.Contains(string(body), `"country":"US"`) {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
-	} else if strings.Contains(body, `"restricted":true`) || body == "" {
-		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("getgeolocation.digitalsvc.apps.nbcuni.com failed with code: %d", resp.StatusCode)}

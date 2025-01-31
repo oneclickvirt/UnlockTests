@@ -16,11 +16,17 @@ func AnimeFesta(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "https://api-animefesta.iowl.jp/v1/titles/1305"
+	url := "https://api-animefesta.iowl.jp/v1/titles/1560"
 	client := utils.Req(c)
 	headers := map[string]string{
-		"Origin":  "https://animefesta.iowl.jp",
-		"Referer": "https://animefesta.iowl.jp/",
+		"Origin":                 "https://animefesta.iowl.jp",
+		"Referer":                "https://animefesta.iowl.jp/",
+		"accept":                 "application/json",
+		"accept-language":        "en-US,en;q=0.9",
+		"anime-user-tracking-id": "yEZr4P_U7JEdBucZOkv1Y",
+		"authorization":          "",
+		"sec-gpc":                "1",
+		"x-requested-with":       "XMLHttpRequest",
 	}
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().Get(url)

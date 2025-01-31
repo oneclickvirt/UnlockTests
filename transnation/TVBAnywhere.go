@@ -39,7 +39,7 @@ func TVBAnywhere(c *http.Client) model.Result {
 	if err := json.Unmarshal(b, &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	if res.AllowInThisCountry && res.Country != "" {
+	if (res.AllowInThisCountry && res.Country != "") || res.Country == "HK" {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
