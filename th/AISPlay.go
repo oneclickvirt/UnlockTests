@@ -174,7 +174,7 @@ func AISPlay(c *http.Client) model.Result {
 	}
 
 	result := extractHeaderValue(resp, "X-Geo-Protection-System-Status")
-	fmt.Println(result)
+	// fmt.Println(result)
 	switch result {
 	case "BLOCK":
 		return model.Result{Name: name, Status: model.StatusNo}

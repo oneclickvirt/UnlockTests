@@ -16,7 +16,20 @@ func Watcha(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "https://watcha.com/"
+	// 首先检查 API 接口
+	apiURL := "https://watcha.com/api/aio_browses/tvod/all?size=3"
+	client := utils.Req(c)
+	// 检查 API 接口
+	resp1, err := client.R().Get(apiURL)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	defer resp1.Body.Close()
+	if resp1.StatusCode == 451 {
+		return model.Result{Name: name, Status: model.StatusNo}
+	}
+	// 检查主页面
+	url := "https://watcha.com/browse/theater"
 	headers := map[string]string{
 		"User-Agent":                model.UA_Browser,
 		"host":                      "watcha.com",
@@ -25,34 +38,34 @@ func Watcha(c *http.Client) model.Result {
 		"sec-ch-ua-mobile":          "?0",
 		"sec-ch-ua-platform":        "\"Windows\"",
 		"upgrade-insecure-requests": "1",
-		"accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' -H 'sec-fetch-site: none' -H 'sec-fetch-mode: navigate' -H 'sec-fetch-user: ?1' -H 'sec-fetch-dest: document' -H 'accept-language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+		"accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
 	}
-	client := utils.Req(c)
 	client = utils.SetReqHeaders(client, headers)
-	resp, err := client.R().Get(url)
+	resp2, err := client.R().Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
-	defer resp.Body.Close()
-	//b, err := io.ReadAll(resp.Body)
-	//if err != nil {
-	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-	//}
-	//body := string(b)
-	//fmt.Println(body)
-	if resp.StatusCode == 451 {
+	defer resp2.Body.Close()
+	// 检查各种状态码
+	if resp2.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 403 {
+	} else if resp2.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusBanned}
-	} else if resp.StatusCode == 200 {
+	} else if resp2.StatusCode == 200 {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "kr"}
-	} else if resp.StatusCode == 302 && resp.Header.Get("Location") == "/ja-JP/browse/theater" {
+	} else if resp2.StatusCode == 302 {
+		location := resp2.Header.Get("Location")
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "jp"}
+		switch location {
+		case "/ja-JP/browse/theater":
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "jp"}
+		case "/ko-KR/browse/theater":
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "kr"}
+		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("get watcha.com failed with code: %d", resp.StatusCode)}
+		Err: fmt.Errorf("get watcha.com failed with code: %d", resp2.StatusCode)}
 }

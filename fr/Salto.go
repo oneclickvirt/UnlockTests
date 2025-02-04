@@ -23,9 +23,9 @@ func Salto(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err == nil {
-		fmt.Println(string(b), resp.StatusCode)
+		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get geo.salto.fr failed with code: %d", resp.StatusCode)}

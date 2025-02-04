@@ -2,6 +2,8 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com) [![Build and Release](https://github.com/oneclickvirt/UnlockTests/actions/workflows/main.yaml/badge.svg)](https://github.com/oneclickvirt/UnlockTests/actions/workflows/main.yaml)
 
+[<img src="https://api.gitsponsors.com/api/badge/img?id=807989375" height="20">](https://api.gitsponsors.com/api/badge/link?p=HYcyVL/QcRsW5E3VC2mPZnaAdjsqIdoVKZdrcZu6PaIHP2B2oikl8HhupvR5fLIoClrL/5KIJokR896YV4hwM3Rm3QRoZueHedGa+T5//Qgvsxx3E5C3g8HCxwH1G/EWPyhSv2S+mUnYfk4Ill7HyA==)
+
 解锁测试模块 (Unlock Tests Module)
 
 ## 使用
