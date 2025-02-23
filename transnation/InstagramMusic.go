@@ -17,36 +17,31 @@ func Instagram(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "https://www.instagram.com/graphql/query"
-	payload := `av=0&__d=www&__user=0&__a=1&__req=6&__hs=20004.HYP%3Ainstagram_web_pkg.2.1..0.0&dpr=1&__ccg=UNKNOWN&__rev=1017147356&__s=atfa8i%3Afuzizb%3Agxoi6b&__hsi=7423427084978664422&__dyn=7xeUjG1mxu1syUbFp41twpUnwgU7SbzEdF8aUco2qwJw5ux609vCwjE1xoswaq0yE462mcw5Mx62G5UswoEcE7O2l0Fwqo31w9O1TwQzXwae4UaEW2G0AEco5G0zK5o4q0HUvw5rwSyES1TwVwDwHg2ZwrUdUbGwmk0zU8oC1Iwqo5q3e3zhA6bwIxe6V89F8uwm9EO2e2e0N9Wy8&__csr=l6g8QtdvveiiQsFl-cEGnKTVmPuvWjh8BJ4gyFr--VozoSHyQGjDBiKVUkWyfKmFlQl2AEZ2RBKLUyubAkwO49VUCquvqzoFzbK2ScogihqhrCK4qAgmAAqC-USibBDxaHJ5AyZoWezk8Kex2icy801dXo2CwhE7e0PU1pqz8Z0kGa1AwaS0O83pCxx166yet2H807JU1nFEaO03n8tx8gbwAg9U-0yU4VAKQ0Fy0acStpho9830oP8U8kGx5pEHo24CVo7i0DUdU66bwzweW15zgC9IMj5i0bTzE0aeE05ny05OE&__comet_req=7&lsd=AVpXrud7Bzo&jazoest=21036&__spin_r=1017147356&__spin_b=trunk&__spin_t=1728401306&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=PolarisPostActionLoadPostQueryQuery&variables=%7B%22shortcode%22%3A%22DAt7m0-P0u_%22%2C%22fetch_tagged_user_count%22%3Anull%2C%22hoisted_comment_id%22%3Anull%2C%22hoisted_reply_id%22%3Anull%7D&server_timestamps=true&doc_id=8845758582119845`
+	url := "https://www.instagram.com/api/graphql"
+	payload := `av=0&__d=www&__user=0&__a=1&__req=3&__hs=19750.HYP%3Ainstagram_web_pkg.2.1..0.0&dpr=1&__ccg=UNKNOWN&__rev=1011068636&__s=drshru%3Agu4p3s%3A0d8tzk&__hsi=7328972521009111950&__dyn=7xeUjG1mxu1syUbFp60DU98nwgU29zEdEc8co2qwJw5ux609vCwjE1xoswIwuo2awlU-cw5Mx62G3i1ywOwv89k2C1Fwc60AEC7U2czXwae4UaEW2G1NwwwNwKwHw8Xxm16wUwtEvw4JwJCwLyES1Twoob82ZwrUdUbGwmk1xwmo6O1FwlE6PhA6bxy4UjK5V8&__csr=gtneJ9lGF4HlRX-VHjmipBDGAhGuWV4uEyXyp22u6pU-mcx3BCGjHS-yabGq4rhoWBAAAKamtnBy8PJeUgUymlVF48AGGWxCiUC4E9HG78og01bZqx106Ag0clE0kVwdy0Nx4w2TU0iGDgChwmUrw2wVFQ9Bg3fw4uxfo2ow0asW&__comet_req=7&lsd=AVrkL73GMdk&jazoest=2909&__spin_r=1011068636&__spin_b=trunk&__spin_t=1706409389&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=PolarisPostActionLoadPostQueryQuery&variables=%7B%22shortcode%22%3A%22C2YEAdOh9AB%22%2C%22fetch_comment_count%22%3A40%2C%22fetch_related_profile_media_count%22%3A3%2C%22parent_comment_count%22%3A24%2C%22child_comment_count%22%3A3%2C%22fetch_like_count%22%3A10%2C%22fetch_tagged_user_count%22%3Anull%2C%22fetch_preview_comment_count%22%3A2%2C%22has_threaded_comments%22%3Atrue%2C%22hoisted_comment_id%22%3Anull%2C%22hoisted_reply_id%22%3Anull%7D&server_timestamps=true&doc_id=10015901848480474`
 	headers := map[string]string{
 		"Accept":                      "*/*",
 		"Accept-Language":             "zh-CN,zh;q=0.9",
 		"Connection":                  "keep-alive",
 		"Content-Type":                "application/x-www-form-urlencoded",
-		"Cookie":                      "csrftoken=IU6ZrkJP0ad06W4BvMKZfO; dpr=1.25; mid=ZwVGSwALAAGVQAfVcST--xXCdSEz; ig_did=ABFD3E31-FA87-4196-A81D-BC00BF6D22FA; ig_nrcb=1; ps_l=1; ps_n=1; datr=HEcFZ6tVauqNOeJjFQAXeJOE; wd=1439x1012",
+		"Cookie":                      "csrftoken=mmCtHhtfZRG-K3WgoYMemg; dpr=1.75; _js_ig_did=809EA442-22F7-4844-9470-ABC2AC4DE7AE; _js_datr=rb21ZbL7KR_5DN8m_43oEtgn; mid=ZbW9rgALAAECR590Ukv8bAlT8YQX; ig_did=809EA442-22F7-4844-9470-ABC2AC4DE7AE; ig_nrcb=1",
 		"Origin":                      "https://www.instagram.com",
-		"Referer":                     "https://www.instagram.com/p/DAt7m0-P0u_/",
+		"Referer":                     "https://www.instagram.com/p/C2YEAdOh9AB/",
 		"X-ASBD-ID":                   "129477",
-		"X-CSRFToken":                 "IU6ZrkJP0ad06W4BvMKZfO",
+		"X-CSRFToken":                 "mmCtHhtfZRG-K3WgoYMemg",
 		"X-FB-Friendly-Name":          "PolarisPostActionLoadPostQueryQuery",
-		"X-FB-LSD":                    "AVpXrud7Bzo",
+		"X-FB-LSD":                    "AVrkL73GMdk",
 		"X-IG-App-ID":                 "936619743392459",
-		"dpr":                         "1.25",
+		"dpr":                         "1.75",
 		"sec-ch-prefers-color-scheme": "light",
-		"sec-ch-ua":                   `"Microsoft Edge";v="129", "Not=A?Brand";v="8", "Chromium";v="129"`,
-		"sec-ch-ua-full-version-list": `"Microsoft Edge";v="129.0.2792.65", "Not=A?Brand";v="8.0.0.0", "Chromium";v="129.0.6668.71"`,
+		"sec-ch-ua":                   `"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"`,
+		"sec-ch-ua-full-version-list": `"Not_A Brand";v="8.0.0.0", "Chromium";v="120.0.6099.225", "Google Chrome";v="120.0.6099.225"`,
 		"sec-ch-ua-mobile":            "?0",
 		"sec-ch-ua-model":             `""`,
 		"sec-ch-ua-platform":          `"Windows"`,
 		"sec-ch-ua-platform-version":  `"10.0.0"`,
 		"viewport-width":              "1640",
-		"sec-fetch-dest":              "empty",
-		"sec-fetch-mode":              "cors",
-		"sec-fetch-site":              "same-origin",
-		"User-Agent":                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0",
 	}
-
 	resp, body, err := utils.PostJson(c, url, payload, headers)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}

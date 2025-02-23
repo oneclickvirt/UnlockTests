@@ -1,6 +1,6 @@
 package model
 
-const UnlockTestsVersion = "v0.0.25"
+const UnlockTestsVersion = "v0.0.26"
 
 var EnableLoger = false
 
@@ -127,6 +127,43 @@ var GptSupportCountry = []string{
 	"se", "ch", "th", "tg", "to", "tt", "tn", "tr", "tv", "ug", "ae", "us",
 	"uy", "vu", "zm", "bo", "bn", "cg", "cz", "va", "fm", "md", "ps", "kr",
 	"tw", "tz", "tl", "gb",
+}
+
+var ClaudeSupportCountry = []string{
+	"al", "dz", "ad", "ao", "ag", "ar", "am", "au", "at", "az", "bs", "bh",
+	"bd", "bb", "be", "bz", "bj", "bt", "bo", "ba", "bw", "br", "bn", "bg",
+	"bf", "bi", "cv", "kh", "cm", "ca", "td", "cl", "co", "km", "cg", "cr",
+	"ci", "hr", "cy", "cz", "dk", "dj", "dm", "do", "ec", "eg", "sv", "gq",
+	"ee", "sz", "fj", "fi", "fr", "ga", "gm", "ge", "de", "gh", "gr", "gd",
+	"gt", "gn", "gw", "gy", "ht", "hn", "hu", "is", "in", "id", "iq", "ie",
+	"il", "it", "jm", "jp", "jo", "kz", "ke", "ki", "kw", "kg", "la", "lv",
+	"lb", "ls", "lr", "li", "lt", "lu", "mg", "mw", "my", "mv", "mt", "mh",
+	"mr", "mu", "mx", "fm", "md", "mc", "mn", "me", "ma", "mz", "na", "nr",
+	"np", "nl", "nz", "ne", "ng", "mk", "no", "om", "pk", "pw", "ps", "pa",
+	"pg", "py", "pe", "ph", "pl", "pt", "qa", "ro", "rw", "kn", "lc", "vc",
+	"ws", "sm", "st", "sa", "sn", "rs", "sc", "sl", "sg", "sk", "si", "sb",
+	"za", "kr", "es", "lk", "sr", "se", "ch", "tw", "tj", "tz", "th", "tl",
+	"tg", "to", "tt", "tn", "tr", "tm", "tv", "ug", "ua", "ae", "gb", "us",
+	"uy", "uz", "vu", "va", "vn", "zm", "zw",
+}
+
+var AppleSupportCountry = []string{
+	"alb", "dza", "afg", "arg", "are", "abw", "omn", "aze", "egy", "eth", "irl", "est", "and", "ago", "aia", "atg",
+	"aut", "ala", "aus", "mac", "brb", "png", "bhs", "pak", "pry", "pse", "bhr", "pan", "bra", "blr", "bmu", "bgr",
+	"mnp", "mkd", "ben", "bel", "isl", "bol", "pri", "pol", "bih", "bwa", "blz", "btn", "bfa", "bdi", "bvt", "iot",
+	"gnq", "dnk", "deu", "tls", "tgo", "dom", "dma", "rus", "ecu", "eri", "fra", "fro", "pyf", "guf", "atf", "phl",
+	"fin", "cpv", "flk", "gmb", "cog", "cod", "col", "cri", "grd", "grl", "geo", "ggy", "glp", "gum", "guy", "kaz",
+	"hti", "kor", "nld", "bes", "sxm", "hmd", "mne", "hnd", "kir", "dji", "kgz", "gin", "gnb", "can", "gha", "gab",
+	"khm", "cze", "zwe", "cmr", "qat", "cym", "cck", "com", "xks", "civ", "kwt", "hrv", "ken", "cok", "cuw", "lva",
+	"lso", "lao", "lbn", "lbr", "lby", "ltu", "lie", "reu", "lux", "rwa", "rou", "mdg", "mlt", "mdv", "mwi", "mys",
+	"mli", "mhl", "mtq", "myt", "imn", "mus", "mrt", "usa", "umi", "asm", "vir", "mng", "msr", "bgd", "per", "fsm",
+	"mmr", "mda", "mar", "mco", "moz", "mex", "nam", "zaf", "ata", "sgs", "ssd", "npl", "nic", "ner", "nga", "niu",
+	"nor", "nfk", "plw", "pcn", "prt", "jpn", "swe", "che", "slv", "wsm", "srb", "sle", "sen", "cyp", "syc", "sau",
+	"blm", "cxr", "stp", "shn", "kna", "lca", "maf", "smr", "spm", "vct", "lka", "svk", "svn", "sjm", "swz", "sdn",
+	"sur", "som", "slb", "tjk", "twn", "tha", "tza", "ton", "tca", "tto", "tun", "tuv", "tur", "tkm", "tkl", "wlf",
+	"vut", "gtm", "ven", "brn", "uga", "ukr", "ury", "uzb", "esp", "esh", "grc", "hkg", "sgp", "ncl", "nzl", "hun",
+	"jam", "arm", "yem", "irq", "isr", "ita", "ind", "idn", "gbr", "vgb", "jor", "vnm", "zmb", "jey", "tcd", "gib",
+	"chl", "caf", "chn", "nru", "vat", "fji",
 }
 
 var DiscoveryPlusSupportCountry = []string{

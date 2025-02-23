@@ -55,11 +55,11 @@ func Claude(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusYes, Region: "TOR"}
 	}
 	loc := strings.ToLower(location)
-	exit := utils.GetRegion(loc, model.GptSupportCountry)
+	exit := utils.GetRegion(loc, model.ClaudeSupportCountry)
 	if exit {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(location), UnlockType: unlockType}
+		return model.Result{Name: name, Status: model.StatusYes, Region: loc, UnlockType: unlockType}
 	}
-	return model.Result{Name: name, Status: model.StatusNo, Region: strings.ToLower(location)}
+	return model.Result{Name: name, Status: model.StatusNo, Region: loc}
 }
