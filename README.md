@@ -94,8 +94,6 @@ TV360 - 登录认证已过期
 Salto - Get remote error: tls: unrecognized name
 
 PCRJP - stream error: stream ID 1; INTERNAL_ERROR; received from peer
-
-PrettyDerby - stream error: stream ID 1; INTERNAL_ERROR; received from peer
 ```
 
 ### 部分失效

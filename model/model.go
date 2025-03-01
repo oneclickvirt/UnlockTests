@@ -170,6 +170,12 @@ var DiscoveryPlusSupportCountry = []string{
 	"at", "br", "ca", "dk", "fi", "de", "in", "ie", "it", "nl", "no", "es",
 	"se", "gb", "us"}
 
+var SonyLivSupportCountry = []string{
+	"AE", "AF", "AT", "AU", "BD", "BE", "BH", "BT", "CA", "CH", "CN", "DE", "DK", "ES", "FI",
+	"FR", "GB", "GR", "HK", "ID", "IE", "IN", "IT", "KW", "LK", "MO", "MV", "MY", "NL", "NO",
+	"NP", "NZ", "OM", "PH", "PK", "PL", "PT", "QA", "SA", "SE", "SG", "TH", "TW", "US",
+}
+
 var NLZIETSupportCountry = []string{
 	"be", "bg", "cz", "dk", "de", "ee", "ie", "el", "es", "fr",
 	"hr", "it", "cy", "lv", "lt", "lu", "hu", "mt", "nl", "at",

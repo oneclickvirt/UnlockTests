@@ -240,37 +240,35 @@ func ProcessFunction(FuncList [](func(c *http.Client) model.Result), c *http.Cli
 
 func NorthAmerica() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		us.Fox,
-		us.Hulu,
-		us.NFLPlus,
-		us.ESPNPlus,
-		us.MGMPlus,
-		us.Starz,
-		us.Philo,
-		us.FXNOW,
-		us.HBOMax,
-		us.Shudder,
+		us.AcornTV,
+		us.AETV,
 		us.AMCPlus,
 		uk.BritBox,
-		// us.Crackle,
-		us.AETV,
-		us.NBCTV,
 		us.CWTV,
-		us.NBATV,
-		us.FuboTV,
-		us.TubiTV,
-		// us.NBCTV,
-		us.TLCGO,
-		us.SlingTV,
-		us.PlutoTV,
-		us.AcornTV,
-		us.SHOWTIME,
-		us.EncoreTVB,
-		us.DiscoveryPlus,
-		us.PeacockTV,
-		us.Crunchyroll,
 		us.Crackle,
+		us.Crunchyroll,
 		us.DirectvStream,
+		us.DiscoveryPlus,
+		us.EncoreTVB,
+		us.ESPNPlus,
+		us.FuboTV,
+		us.FXNOW,
+		us.Fox,
+		us.HBOMax,
+		us.Hulu,
+		us.MGMPlus,
+		us.NBATV,
+		us.NBCTV,
+		us.NFLPlus,
+		us.PeacockTV,
+		us.Philo,
+		us.PlutoTV,
+		us.SHOWTIME,
+		us.SlingTV,
+		us.Starz,
+		us.Shudder,
+		us.TLCGO,
+		us.TubiTV,
 		eu.MathsSpot,
 		eu.Viaplay,
 		// CA
@@ -337,13 +335,13 @@ func Europe() [](func(c *http.Client) model.Result) {
 
 func HongKong() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		asia.GooglePlayStore,
+		hk.BilibiliHKMO,
+		hk.MyTvSuper,
 		hk.NowE,
 		hk.ViuTV,
-		hk.MyTvSuper,
-		asia.GooglePlayStore,
-		us.HBOMax,
-		hk.BilibiliHKMO,
 		tw.BahamutAnime,
+		us.HBOMax,
 	}
 	PreProcess(FuncList)
 	return FuncList
@@ -351,9 +349,9 @@ func HongKong() [](func(c *http.Client) model.Result) {
 
 func Africa() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		africa.BeinConnect,
 		africa.DSTV,
 		africa.Showmax,
-		africa.BeinConnect,
 	}
 	PreProcess(FuncList)
 	return FuncList
@@ -362,9 +360,9 @@ func Africa() [](func(c *http.Client) model.Result) {
 func India() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
-		in.Zee5,
 		in.JioCinema,
 		in.MXPlayer,
+		in.Zee5,
 		us.NBATV,
 	}
 	PreProcess(FuncList)
@@ -373,18 +371,18 @@ func India() [](func(c *http.Client) model.Result) {
 
 func Taiwan() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		tw.BahamutAnime,
+		tw.BilibiliTW,
+		tw.Catchplay,
+		tw.FridayVideo,
+		tw.HamiVideo,
+		us.HBOMax,
 		tw.KKTV,
 		tw.LiTV,
-		tw.Ofiii,
-		tw.MyVideo,
-		tw.Tw4gtv,
 		tw.LineTV,
-		tw.HamiVideo,
-		tw.FridayVideo,
-		tw.Catchplay,
-		tw.BahamutAnime,
-		us.HBOMax,
-		tw.BilibiliTW,
+		tw.MyVideo,
+		tw.Ofiii,
+		tw.Tw4gtv,
 	}
 	PreProcess(FuncList)
 	return FuncList
@@ -392,26 +390,26 @@ func Taiwan() [](func(c *http.Client) model.Result) {
 
 func Japan() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		jp.Abema,
+		jp.DAnimeStore,
 		jp.DMM,
 		jp.DMMTV,
-		jp.Abema,
+		jp.FOD,
+		jp.Hulu,
+		jp.J_COM_ON_DEMAND,
+		jp.Lemino,
+		jp.MGStage,
+		jp.NHKPlus,
 		jp.Niconico,
-		jp.AnimeFesta,
+		jp.Radiko,
+		jp.RakutenMagazine,
+		jp.RakutenTV,
+		jp.TVer,
 		jp.Telasa,
 		jp.UNext,
-		jp.Hulu,
-		jp.TVer,
-		jp.Lemino,
-		jp.Wowow,
 		jp.VideoMarket,
-		jp.DAnimeStore,
-		jp.FOD,
-		jp.Radiko,
-		jp.RakutenTV,
-		jp.RakutenMagazine,
-		jp.NHKPlus,
-		jp.J_COM_ON_DEMAND,
-		jp.MGStage,
+		jp.Wowow,
+		jp.AnimeFesta,
 		// Game
 		utils.PrintGame,
 		jp.Kancolle,

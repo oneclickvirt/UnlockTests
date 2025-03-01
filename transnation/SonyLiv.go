@@ -12,14 +12,14 @@ import (
 )
 
 // SonyLiv
-// www.sonyliv.com 双栈 且 get 请求 - 有问题，获取不到地区
+// www.sonyliv.com 双栈 且 get 请求
 func SonyLiv(c *http.Client) model.Result {
 	name := "SonyLiv"
 	hostname := "www.sonyliv.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "https://www.sonyliv.com/"
+	url := "https://www.sonyliv.com/signin"
 	client := utils.Req(c)
 	resp1, err1 := client.R().Get(url)
 	if err1 != nil {
@@ -37,12 +37,18 @@ func SonyLiv(c *http.Client) model.Result {
 	if strings.Contains(body1, "geolocation_notsupported") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
+	region := utils.ReParse(body1, `country_code:"([A-Z]{2})"`)
+	exit := utils.GetRegion(region, model.SonyLivSupportCountry)
+	if region != "" && exit {
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: strings.ToLower(region)}
+	}
 	jwtToken := utils.ReParse(body1, `resultObj:"([^"]+)`)
 	if jwtToken == "" {
 		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("can not find jwtToken")}
 	}
 	// fmt.Println(jwtToken)
-	// 获取不到region
 	headers2 := map[string]string{
 		"accept":         "application/json, text/plain, */*",
 		"referer":        "https://www.sonyliv.com/",
@@ -63,7 +69,7 @@ func SonyLiv(c *http.Client) model.Result {
 	}
 	body2 := string(b)
 	// fmt.Println(body2)
-	var region string
+	// var region string
 	if body2 != "" && strings.Contains(body2, "country_code") {
 		var res1 struct {
 			ResultObj struct {
@@ -118,6 +124,7 @@ func SonyLiv(c *http.Client) model.Result {
 	if res2.ResultCode == "KO" || strings.Contains(body3, "It seems you are trying to access SonyLIV via <b>VPN, Proxy</b> or a <b>Routed Service</b>.") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Proxy Detected", Region: strings.ToLower(region)}
 	}
-	return model.Result{Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("get apiv2.sonyliv.com failed with code: %d", resp3.StatusCode)}
+	return model.Result{Name: name, Status: model.StatusNo}
+	// return model.Result{Name: name, Status: model.StatusUnexpected,
+	// 	Err: fmt.Errorf("get apiv2.sonyliv.com failed with code: %d", resp3.StatusCode)}
 }

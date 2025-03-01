@@ -25,15 +25,21 @@ func TubiTV(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	//b, err := io.ReadAll(resp.Body)
-	//if err != nil {
-	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-	//}
-	//body := string(b)
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
-		return model.Result{Name: name, Status: model.StatusYes}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+	}
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+	} else if resp.StatusCode == 503 {
+		body := string(b)
+		if strings.Contains(body, "geoblock") {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
 	}
 	if resp.StatusCode == 302 {
 		url2 := "https://gdpr.tubi.tv"
