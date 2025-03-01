@@ -18,29 +18,36 @@ func Viaplay(c *http.Client) model.Result {
 	}
 	url := "https://checkout.viaplay.pl/?recommended=viaplay"
 	client := utils.Req(c)
-	resp, _ := client.R().Get(url)
-	// if err != nil {
-	// 	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
-	// }
-	defer resp.Body.Close()
+	// 发送请求并检查错误
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+	}
+	defer func() {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}()
+	// 处理 HTTP 状态码
 	if resp.StatusCode == 403 || resp.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
 	if resp.StatusCode == 302 && resp.Header.Get("Location") == "/region-blocked" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	// b, err := io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-	// }
-	// body := string(b)
+	// 进一步检查 Viaplay 主站
 	if resp.StatusCode == 200 {
 		url2 := "https://viaplay.com/"
 		resp2, err2 := client.R().Get(url2)
 		if err2 != nil {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 		}
-		defer resp2.Body.Close()
+		// 避免空指针
+		defer func() {
+			if resp2 != nil && resp2.Body != nil {
+				resp2.Body.Close()
+			}
+		}()
 		if resp2.StatusCode == 404 {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
@@ -55,6 +62,7 @@ func Viaplay(c *http.Client) model.Result {
 		}
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
+	// 未知状态码，返回错误
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get checkout.viaplay.pl failed with code: %d", resp.StatusCode)}
 }
