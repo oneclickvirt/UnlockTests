@@ -4,7 +4,7 @@
 
 [![Build and Release](https://github.com/oneclickvirt/UnlockTests/actions/workflows/main.yaml/badge.svg)](https://github.com/oneclickvirt/UnlockTests/actions/workflows/main.yaml)
 
-[<img src="https://api.gitsponsors.com/api/badge/img?id=807989375" height="20">](https://api.gitsponsors.com/api/badge/link?p=HYcyVL/QcRsW5E3VC2mPZnaAdjsqIdoVKZdrcZu6PaIHP2B2oikl8HhupvR5fLIoClrL/5KIJokR896YV4hwM3Rm3QRoZueHedGa+T5//Qgvsxx3E5C3g8HCxwH1G/EWPyhSv2S+mUnYfk4Ill7HyA==)
+
 
 解锁测试模块 (Unlock Tests Module)
 
