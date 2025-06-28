@@ -25,7 +25,22 @@ jobs:
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
           TAG="v0.0.27-$(date +'%Y%m%d%H%M%S')"
+          echo "TAG=${TAG}" >> $GITHUB_ENV
           git tag $TAG
           git push origin $TAG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update README.md
+        if: success() # 仅在测试成功后运行
+        run: |
+          sed -i "s|go get -u github.com/oneclickvirt/UnlockTests@.*|go get -u github.com/oneclickvirt/UnlockTests@${TAG}|" README.md
+        env:
+          TAG: ${{ env.TAG }}
+      - name: Commit and Push README.md
+        if: success() # 仅在测试成功后运行
+        run: |
+          git add README.md
+          git commit -m "Update README.md with new tag ${TAG}"
+          git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
