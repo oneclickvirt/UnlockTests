@@ -3,11 +3,12 @@ package kr
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // SPOTVNOW
@@ -67,7 +68,7 @@ func SPOTVNOW(c *http.Client) model.Result {
 	}
 	if res1.AccountId != "0" {
 		return model.Result{Name: name, Status: model.StatusYes, Region: "kr"}
-	} else if resp.StatusCode == 200 {
+	} else if resp.StatusCode == 200 || resp.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusYes}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,

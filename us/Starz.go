@@ -22,7 +22,7 @@ func Starz(c *http.Client) model.Result {
 	client := utils.Req(c)
 	client.Headers.Set("Referer", "https://www.starz.com/us/en/")
 	// client.Headers.Set("Authtokenauthorization", "")
-	url := "https://www.starz.com/sapi/header/v1/starz/us/09b397fc9eb64d5080687fc8a218775b" // 请求有tls校验
+	url := "https://www.starz.com/sapi/header/v1/starz/us/109448574b2147ccbc494b429ff5ef1b" // 请求有tls校验
 	resp, err := client.R().Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
@@ -41,6 +41,10 @@ func Starz(c *http.Client) model.Result {
 		url2 := "https://auth.starz.com/api/v4/User/geolocation"
 		headers2 := map[string]string{
 			"AuthTokenAuthorization": authorization,
+			"BestAvailableToken":     "true",
+			"Origin":                 "https://www.starz.com",
+			"Referer":                "https://www.starz.com/",
+			"X-Client-Features":      "DeviceCount",
 		}
 		client2 := utils.Req(c)
 		client2 = utils.SetReqHeaders(client2, headers2)
@@ -49,9 +53,6 @@ func Starz(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 		}
 		defer resp2.Body.Close()
-		if resp2.StatusCode == 403 {
-			return model.Result{Name: name, Status: model.StatusBanned}
-		}
 		b2, err2 := io.ReadAll(resp2.Body)
 		if err2 != nil {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}

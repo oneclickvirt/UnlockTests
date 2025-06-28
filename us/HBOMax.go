@@ -120,22 +120,34 @@ func HBOMax(c *http.Client) model.Result {
 			strings.Join(
 				strings.Split(body, "\"url\":\"/")[1:], " ")),
 		" "))
-	status := model.StatusNo
 	if region != "" && strings.Contains(availableRegion, region) {
-		status = model.StatusYes
-		// DNS检测
+		// VPN检测
+		vpnCheckResp, err := client.R().
+			SetHeader("Content-Type", "application/x-www-form-urlencoded").
+			SetBody("st=eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiJ0b2tlbi0wOWQxOTg4Yy1mZmUzLTQxMDEtOWI5My0yNDU1ZTkyNGQ1YjYiLCJpc3MiOiJmcGEtaXNzdWVyIiwic3ViIjoiVVNFUklEOmJvbHQ6YjYzOTgxZWQtNzA2MC00ZGYwLThkZGItZjA2YjFkNWRjZWVkIiwiaWF0IjoxNzQzODQwMzgwLCJleHAiOjIwNTkyMDAzODAsInR5cGUiOiJBQ0NFU1NfVE9LRU4iLCJzdWJkaXZpc2lvbiI6ImJlYW1fYW1lciIsInNjb3BlIjoiZGVmYXVsdCIsImlpZCI6IjQwYTgzZjNlLTY4OTktNDE3Mi1hMWY2LWJjZDVjN2ZkNjA4NSIsInZlcnNpb24iOiJ2MyIsImFub255bW91cyI6ZmFsc2UsImRldmljZUlkIjoiNWY3YzViZjQtYjc4Ny00NDRjLWJhYTYtMzU5MzgwYWFiM2RmIn0.f5HTgIV2v0nQQDp5LQG0xqLrxyACdvnMDiWO_viX_CUGqtc5ncSjp_LgM30QFkkMnINFhzKEGRpsZvb-o3Pj_Z39uRBr5LCeiCPR7ssV-_SXyRFVRRDEB2lpxyz7jmdD1SxvA06HnEwTbZQzlbZ7g9GXq02yNdEfHlqYEh_4WF88UbXfeieYTd4TH7kwN1RE50NfQUS6f0WmzpAbpiULyd87mpTeynchFNMMz-YHVzZ_-nDW6geihXc3tS0FKVSR8fdOSPQFzEYOLCfhInufiPahiXI-OKF89aShAqM-y4Hx_eukGnsq3mO5wa3unnqVr9Kzc61BIhHh1Hs2bqYiYg").
+			Post("https://default.any-any.prd.api.max.com/any/playback/v1/playbackInfo")
+		if err != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		}
+		vpnCheckBody, err := io.ReadAll(vpnCheckResp.Body)
+		if err != nil {
+			return model.Result{Status: model.StatusNetworkErr, Err: err}
+		}
+		if strings.Contains(string(vpnCheckBody), "VPN") {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{
 			Name:       name,
-			Status:     status,
+			Status:     model.StatusYes,
 			Region:     strings.ToLower(region),
 			UnlockType: unlockType,
 		}
 	}
 	return model.Result{
 		Name:   name,
-		Status: status,
+		Status: model.StatusNo,
 		Region: strings.ToLower(region),
 	}
 }

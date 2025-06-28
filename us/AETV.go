@@ -5,11 +5,22 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+// extractAETVCountryCode extracts country code from AETN meta tag
+func extractAETVCountryCode(html string) string {
+	re := regexp.MustCompile(`<meta\s+name=["']aetn:countryCode["']\s+content=["']([A-Z]{2})["']\s*/?>`)
+	matches := re.FindStringSubmatch(html)
+	if len(matches) == 2 {
+		return matches[1]
+	}
+	return ""
+}
 
 // AETV
 // ccpa-service.sp-prod.net 仅 ipv4 且 post 请求
@@ -19,7 +30,32 @@ func AETV(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	// 第一阶段检查：通过Geo API检测
+	url3 := "https://www.aetv.com/"
+	client3 := utils.Req(c)
+	resp3, err3 := client3.R().Get(url3)
+	if err3 == nil {
+		defer resp3.Body.Close()
+		b3, err3 := io.ReadAll(resp3.Body)
+		if err3 == nil {
+			body3 := string(b3)
+			region := extractAETVCountryCode(body3)
+			switch region {
+			case "US":
+				result1, result2, result3 := utils.CheckDNS(hostname)
+				unlockType := utils.GetUnlockType(result1, result2, result3)
+				return model.Result{
+					Name:       name,
+					Status:     model.StatusYes,
+					Region:     "us",
+					UnlockType: unlockType,
+				}
+			case "":
+				// 继续到下一阶段检查
+			default:
+				return model.Result{Name: name, Status: model.StatusNo}
+			}
+		}
+	}
 	url0 := "https://geo.privacymanager.io/"
 	client0 := utils.Req(c)
 	resp0, err0 := client0.R().Get(url0)
@@ -44,7 +80,6 @@ func AETV(c *http.Client) model.Result {
 			}
 		}
 	}
-	// 第二阶段检查：平台API检测
 	url1 := "https://link.theplatform.com/s/xc6n8B/UR27JDU0bu2s/"
 	client1 := utils.Req(c)
 	resp1, err1 := client1.R().Post(url1)
@@ -58,7 +93,6 @@ func AETV(c *http.Client) model.Result {
 			}
 		}
 	}
-	// 第三阶段检查：直接访问播放页面
 	url2 := "https://play.aetv.com/"
 	client2 := utils.Req(c)
 	resp2, err2 := client2.R().Post(url2)
@@ -87,7 +121,6 @@ func AETV(c *http.Client) model.Result {
 			}
 		}
 	}
-	// 错误处理
 	var statusCode int
 	var errMsg string
 	if err2 != nil {

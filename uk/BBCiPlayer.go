@@ -33,11 +33,11 @@ func BBCiPlayer(c *http.Client) model.Result {
 		if strings.Contains(body, "geolocation") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		if strings.Contains(body, "vs-hls-push-uk") {
-			result1, result2, result3 := utils.CheckDNS(hostname)
-			unlockType := utils.GetUnlockType(result1, result2, result3)
-			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
-		}
+		// if strings.Contains(body, "vs-hls-push-uk") {
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+		// }
 	} else if resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

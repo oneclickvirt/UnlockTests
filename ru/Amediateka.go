@@ -29,7 +29,7 @@ func Amediateka(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
-	if strings.Contains(body, "VPN") || resp.StatusCode == 451 {
+	if strings.Contains(body, "VPN") || resp.StatusCode == 451 || resp.StatusCode == 455 || resp.StatusCode == 503 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if resp.StatusCode == 301 && resp.Header.Get("Location") == "https://www.amediateka.ru/unavailable/index.html" {

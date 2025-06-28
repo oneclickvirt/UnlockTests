@@ -13,18 +13,47 @@ import (
 )
 
 type PlatformResponse struct {
-	PlatformUID   string `json:"platform_uid"`
-	PlatformToken string `json:"platform_token"`
+	Result struct {
+		PlatformUID   string `json:"platform_uid"`
+		PlatformToken string `json:"platform_token"`
+	} `json:"result"`
 }
 
 type Episode struct {
-	AccountID  string `json:"accountID"`
-	PlayerID   string `json:"playerID"`
-	VideoID    string `json:"videoID"`
-	VideoRefID string `json:"videoRefID"`
+	Video struct {
+		AccountID  string `json:"accountID"`
+		PlayerID   string `json:"playerID"`
+		VideoID    string `json:"videoID"`
+		VideoRefID string `json:"videoRefID"`
+	} `json:"video"`
 }
 
 func getEpisodeID(body string) string {
+	var homeResp struct {
+		Result struct {
+			Components []struct {
+				ComponentID string `json:"componentID"`
+				Contents    []struct {
+					Content struct {
+						EpisodeID string `json:"id"`
+					} `json:"content"`
+				} `json:"contents"`
+			} `json:"components"`
+		} `json:"result"`
+	}
+	if err := json.Unmarshal([]byte(body), &homeResp); err == nil {
+		for _, component := range homeResp.Result.Components {
+			if component.ComponentID == "variety.catchup.recomend" && len(component.Contents) > 0 {
+				for _, content := range component.Contents {
+					id := content.Content.EpisodeID
+					matched, _ := regexp.MatchString(`^[a-z0-9]{10}$`, id)
+					if matched {
+						return id
+					}
+				}
+			}
+		}
+	}
 	if idx := strings.Index(body, `"variety.catchup.recomend"`); idx != -1 {
 		body = body[idx:]
 		if idx = strings.Index(body, `"id"`); idx != -1 {
@@ -32,7 +61,6 @@ func getEpisodeID(body string) string {
 			parts := strings.Split(body, `"`)
 			if len(parts) > 3 {
 				id := parts[3]
-				// 使用正则表达式验证ID格式
 				matched, _ := regexp.MatchString(`^[a-z0-9]{10}$`, id)
 				if matched {
 					return id
@@ -44,6 +72,11 @@ func getEpisodeID(body string) string {
 }
 
 func getPolicyKey(body string) string {
+	re := regexp.MustCompile(`policyKey:"([^"]+)"`)
+	matches := re.FindStringSubmatch(body)
+	if len(matches) > 1 {
+		return matches[1]
+	}
 	if idx := strings.Index(body, `policyKey:"`); idx != -1 {
 		body = body[idx+len(`policyKey:"`):]
 		parts := strings.Split(body, `"`)
@@ -55,6 +88,11 @@ func getPolicyKey(body string) string {
 }
 
 func getDeliveryConfigID(body string) string {
+	re := regexp.MustCompile(`deliveryConfigId:"([^"]+)"`)
+	matches := re.FindStringSubmatch(body)
+	if len(matches) > 1 {
+		return matches[1]
+	}
 	if idx := strings.Index(body, `deliveryConfigId:"`); idx != -1 {
 		body = body[idx+len(`deliveryConfigId:"`):]
 		parts := strings.Split(body, `"`)
@@ -67,7 +105,6 @@ func getDeliveryConfigID(body string) string {
 
 // TVer
 // edge.api.brightcove.com 仅 ipv4 且 get 请求
-// 双重检测逻辑
 func TVer(c *http.Client) model.Result {
 	firstCheck := FirstTVer(c)
 	if firstCheck.Status == model.StatusNetworkErr || firstCheck.Status == model.StatusErr {
@@ -82,14 +119,12 @@ func TVer(c *http.Client) model.Result {
 }
 
 // FirstTVer
-// 主要的检测逻辑
 func FirstTVer(c *http.Client) model.Result {
 	name := "TVer"
 	hostname := "tver.jp"
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	// 创建平台用户
 	headers := map[string]string{
 		"content-type":       "application/x-www-form-urlencoded",
 		"origin":             "https://s.tver.jp",
@@ -116,11 +151,9 @@ func FirstTVer(c *http.Client) model.Result {
 	if err := json.Unmarshal([]byte(body), &platformResp); err != nil {
 		return model.Result{Name: name, Status: model.StatusUnexpected}
 	}
-
-	// 获取当前播放的剧集
 	url := fmt.Sprintf("https://platform-api.tver.jp/service/api/v1/callHome?"+
-		"platform_uid=%s&platform_token=%s&require_data=mylist%%2Cresume%%2Clater", platformResp.PlatformUID,
-		platformResp.PlatformToken)
+		"platform_uid=%s&platform_token=%s&require_data=mylist%%2Cresume%%2Clater", platformResp.Result.PlatformUID,
+		platformResp.Result.PlatformToken)
 	headers2 := map[string]string{
 		"origin":               "https://tver.jp",
 		"referer":              "https://tver.jp/",
@@ -145,16 +178,14 @@ func FirstTVer(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body2 := string(b)
-	if res.StatusCode != 200 {
+	if resp2.StatusCode != 200 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr,
-			Err: fmt.Errorf("2. get platform-api.tver.jp failed with code: %d", res.StatusCode)}
+			Err: fmt.Errorf("2. get platform-api.tver.jp failed with code: %d", resp2.StatusCode)}
 	}
 	episodeId := getEpisodeID(body2)
 	if episodeId == "" {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("failed (No Episode ID)")}
 	}
-
-	// 获取剧集的信息
 	url = fmt.Sprintf("https://statics.tver.jp/content/episode/%s.json", episodeId)
 	headers3 := map[string]string{
 		"origin":             "https://tver.jp",
@@ -178,19 +209,16 @@ func FirstTVer(c *http.Client) model.Result {
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
-	//body = string(b3)
-	if res.StatusCode != 200 {
+	if resp3.StatusCode != 200 {
 		return model.Result{Name: name, Status: model.StatusNetworkErr,
-			Err: fmt.Errorf("get platform-api.tver.jp failed with code: %d", res.StatusCode)}
+			Err: fmt.Errorf("get statics.tver.jp failed with code: %d", resp3.StatusCode)}
 	}
 	var episode Episode
 	if err := json.Unmarshal(b3, &episode); err != nil {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("failed (Parsing JSON)")}
 	}
-
-	// 获取 Brightcove 播放器信息
-	url = fmt.Sprintf("https://players.brightcove.net/%s/%s_default/index.min.js", episode.AccountID,
-		episode.PlayerID)
+	url = fmt.Sprintf("https://players.brightcove.net/%s/%s_default/index.min.js", episode.Video.AccountID,
+		episode.Video.PlayerID)
 	headers4 := map[string]string{
 		"Referer":            "https://tver.jp/",
 		"Sec-Fetch-Dest":     "script",
@@ -208,37 +236,33 @@ func FirstTVer(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp4.Body.Close()
-	//b4, err := io.ReadAll(resp4.Body)
-	//if err != nil {
-	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-	//}
-	//body4 := string(b4)
-	if res.StatusCode != 200 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr,
-			Err: fmt.Errorf("get platform-api.tver.jp failed with code: %d", res.StatusCode)}
+	b4, err := io.ReadAll(resp4.Body)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
-	policyKey := getPolicyKey(body)
+	body4 := string(b4)
+	if resp4.StatusCode != 200 {
+		return model.Result{Name: name, Status: model.StatusNetworkErr,
+			Err: fmt.Errorf("get players.brightcove.net failed with code: %d", resp4.StatusCode)}
+	}
+	policyKey := getPolicyKey(body4)
 	if policyKey == "" {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("failed (No policyKey)")}
 	}
-
-	// 最终测试
 	var finalURL string
-	if episode.VideoRefID == "" {
-		deliveryConfigId := getDeliveryConfigID(body)
+	deliveryConfigId := getDeliveryConfigID(body4)
+	if episode.Video.VideoRefID == "" {
 		if deliveryConfigId != "" {
 			finalURL = fmt.Sprintf("https://edge.api.brightcove.com/playback/v1/accounts/%s/videos/%s?config_id=%s",
-				episode.AccountID, episode.VideoID, deliveryConfigId)
+				episode.Video.AccountID, episode.Video.VideoID, deliveryConfigId)
 		} else {
-			finalURL = fmt.Sprintf("https://edge.api.brightcove.com/playback/v1/accounts/%s/videos/ref%%3A%s",
-				episode.AccountID, episode.VideoRefID)
+			finalURL = fmt.Sprintf("https://edge.api.brightcove.com/playback/v1/accounts/%s/videos/%s",
+				episode.Video.AccountID, episode.Video.VideoID)
 		}
 	} else {
 		finalURL = fmt.Sprintf("https://edge.api.brightcove.com/playback/v1/accounts/%s/videos/ref%%3A%s",
-			episode.AccountID, episode.VideoRefID)
+			episode.Video.AccountID, episode.Video.VideoRefID)
 	}
-
-	// 构建请求
 	headers5 := map[string]string{
 		"accept":             fmt.Sprintf("application/json;pk=%s", policyKey),
 		"origin":             "https://tver.jp",
@@ -273,23 +297,25 @@ func FirstTVer(c *http.Client) model.Result {
 		ErrorCode    string `json:"error_code"`
 		Message      string `json:"message"`
 	}
-	if err := json.Unmarshal(b, &res1); err != nil {
-		if err := json.Unmarshal(b, &res2); err != nil {
+	if err := json.Unmarshal(b, &res2); err != nil {
+		if err := json.Unmarshal(b, &res1); err != nil {
 			if strings.Contains(body, "CLIENT_GEO") || strings.Contains(body, "ACCESS_DENIED") {
 				return model.Result{Name: name, Status: model.StatusNo}
 			}
 			return model.Result{Name: name, Status: model.StatusErr, Err: err}
 		}
-		if res2[0].ErrorSubcode == "CLIENT_GEO" {
+		if res1.AccountId != "" && res1.AccountId != "0" {
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "jp"}
+		}
+	} else {
+		if len(res2) > 0 && res2[0].ErrorSubcode == "CLIENT_GEO" {
 			return model.Result{Name: name, Status: model.StatusNo, Region: res2[0].ClientGeo}
 		}
-		return model.Result{Name: name, Status: model.StatusErr, Err: err}
+		return model.Result{Name: name, Status: model.StatusErr}
 	}
-	if res1.AccountId != "0" {
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "jp"}
-	}
+
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get edge.api.brightcove.com failed with code: %d", resp.StatusCode)}
 }
@@ -327,23 +353,21 @@ func AnotherTVer(c *http.Client) model.Result {
 		ErrorCode    string `json:"error_code"`
 		Message      string `json:"message"`
 	}
-	//fmt.Println(body)
-	if err := json.Unmarshal(b, &res1); err != nil {
-		if err := json.Unmarshal(b, &res2); err != nil {
+	if err := json.Unmarshal(b, &res2); err != nil {
+		if err := json.Unmarshal(b, &res1); err != nil {
 			if strings.Contains(body, "CLIENT_GEO") || strings.Contains(body, "ACCESS_DENIED") {
-				return model.Result{
-					Status: model.StatusNo,
-				}
+				return model.Result{Status: model.StatusNo}
 			}
 			return model.Result{Status: model.StatusErr, Err: err}
 		}
-		if res2[0].ErrorSubcode == "CLIENT_GEO" {
+		if res1.AccountId != "" && res1.AccountId != "0" {
+			return model.Result{Status: model.StatusYes, Region: "jp"}
+		}
+	} else {
+		if len(res2) > 0 && res2[0].ErrorSubcode == "CLIENT_GEO" {
 			return model.Result{Status: model.StatusNo, Region: res2[0].ClientGeo}
 		}
-		return model.Result{Status: model.StatusErr, Err: err}
-	}
-	if res1.AccountId != "0" {
-		return model.Result{Status: model.StatusYes, Region: "jp"}
+		return model.Result{Status: model.StatusErr}
 	}
 	return model.Result{Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get edge.api.brightcove.com failed with code: %d", resp.StatusCode)}

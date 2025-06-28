@@ -35,10 +35,12 @@ func Gemini(c *http.Client) model.Result {
 			status = true
 		}
 		region := utils.ReParse(body, `,2,1,200,"([A-Z]{3})"`)
+		region = utils.ThreeToTwoCode(strings.ToLower(region))
+		exit := utils.GetRegion(region, model.GeminiSupportCountry)
 		result1, result2, result3 := utils.CheckDNS("gemini.google.com")
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		if region != "" && status {
-			return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region), UnlockType: unlockType}
+		if region != "" && exit {
+			return model.Result{Name: name, Status: model.StatusYes, Region: region, UnlockType: unlockType}
 		} else if status {
 			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}

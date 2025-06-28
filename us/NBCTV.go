@@ -1,13 +1,14 @@
 package us
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/gofrs/uuid/v5"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"io"
-	"net/http"
-	"strings"
 )
 
 // NBCTV
@@ -42,14 +43,34 @@ func NBCTV(c *http.Client) model.Result {
 		defer resp.Body.Close()
 		b, err := io.ReadAll(resp.Body)
 		if err == nil {
-			body := string(b)
-			// fmt.Println(body)
-			if strings.Contains(body, `"restricted":false`) {
-				result1, result2, result3 := utils.CheckDNS(hostname)
-				unlockType := utils.GetUnlockType(result1, result2, result3)
-				return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
-			} else if strings.Contains(body, `"restricted":true`) || body == "" {
-				return model.Result{Name: name, Status: model.StatusNo}
+			var res struct {
+				Restricted  bool `json:"restricted"`
+				RequestInfo struct {
+					CountryCode string `json:"countryCode"`
+				} `json:"requestInfo"`
+				RestrictionDetails struct {
+					Code string `json:"code"`
+				} `json:"restrictionDetails"`
+			}
+			if jsonErr := json.Unmarshal(b, &res); jsonErr == nil {
+				if !res.Restricted {
+					result1, result2, result3 := utils.CheckDNS(hostname)
+					unlockType := utils.GetUnlockType(result1, result2, result3)
+					return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+				} else if res.RestrictionDetails.Code == "321" {
+					return model.Result{Name: name, Status: model.StatusNo}
+				}
+			} else {
+				body := string(b)
+				if body != "" && body != "{}" {
+					if body == `{"restricted":false}` || (len(body) > 20 && body[1:12] == `"restricted"` && body[13:18] == "false") {
+						result1, result2, result3 := utils.CheckDNS(hostname)
+						unlockType := utils.GetUnlockType(result1, result2, result3)
+						return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+					} else if body == `{"restricted":true}` || (len(body) > 20 && body[1:12] == `"restricted"` && body[13:17] == "true") {
+						return model.Result{Name: name, Status: model.StatusNo}
+					}
+				}
 			}
 		}
 	}
@@ -64,11 +85,14 @@ func NBCTV(c *http.Client) model.Result {
 	if err != nil {
 		return model.Result{Status: model.StatusNetworkErr, Err: err}
 	}
-	if strings.Contains(string(body), `"country":"US"`) {
+	var geoRes struct {
+		Country string `json:"country"`
+	}
+	if jsonErr := json.Unmarshal(body, &geoRes); jsonErr == nil && geoRes.Country == "US" {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("getgeolocation.digitalsvc.apps.nbcuni.com failed with code: %d", resp.StatusCode)}
+		Err: fmt.Errorf("geolocation.digitalsvc.apps.nbcuni.com failed with code: %d", resp.StatusCode)}
 }

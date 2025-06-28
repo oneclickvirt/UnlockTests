@@ -16,9 +16,28 @@ func DSTV(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "https://authentication.dstv.com/favicon.ico"
+	nowUrl := "https://now.dstv.com/"
 	client := utils.Req(c)
-	resp, err := client.R().Get(url)
+	resp, err := client.R().Get(nowUrl)
+	if err == nil {
+		defer resp.Body.Close()
+		switch resp.StatusCode {
+		case 451:
+			return model.Result{Name: name, Status: model.StatusNo}
+		case 200:
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+		case 403:
+			return model.Result{Name: name, Status: model.StatusNo}
+		case 404:
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+		}
+	}
+	url := "https://authentication.dstv.com/favicon.ico"
+	resp, err = client.R().Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}

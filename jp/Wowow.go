@@ -27,21 +27,21 @@ func getFirstLink(jsonStr string) string {
 	return dramas[0].Link
 }
 
-func getWodUrl(htmlStr string) string {
-	lines := strings.Split(htmlStr, "\n")
-	for _, line := range lines {
-		if strings.Contains(line, "https://wod.wowow.co.jp/content/") {
-			tempList := strings.Split(line, "https://wod.wowow.co.jp/content/")
-			if len(tempList) >= 2 {
-				tpList := strings.Split(tempList[1], "\"")
-				if len(tpList) >= 2 {
-					return "https://wod.wowow.co.jp/content/" + tpList[0]
-				}
-			}
-		}
-	}
-	return ""
-}
+// func getWodUrl(htmlStr string) string {
+// 	lines := strings.Split(htmlStr, "\n")
+// 	for _, line := range lines {
+// 		if strings.Contains(line, "https://wod.wowow.co.jp/content/") {
+// 			tempList := strings.Split(line, "https://wod.wowow.co.jp/content/")
+// 			if len(tempList) >= 2 {
+// 				tpList := strings.Split(tempList[1], "\"")
+// 				if len(tpList) >= 2 {
+// 					return "https://wod.wowow.co.jp/content/" + tpList[0]
+// 				}
+// 			}
+// 		}
+// 	}
+// 	return ""
+// }
 
 func getProgramUrl(htmlStr string) string {
 	lines := strings.Split(htmlStr, "\n")
@@ -162,7 +162,6 @@ func Wowow(c *http.Client) model.Result {
 	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
 	var wodUrl string
 	var firstMethodFailed bool
-	// 第一种方法：通过原创剧集列表
 	url := fmt.Sprintf("https://www.wowow.co.jp/drama/original/json/lineup.json?_=%d", timestamp)
 	headers := map[string]string{
 		"Accept":             "application/json, text/javascript, */*; q=0.01",
@@ -199,7 +198,6 @@ func Wowow(c *http.Client) model.Result {
 			}
 		}
 	}
-	// 如果第一种方法失败，尝试第二种方法
 	if wodUrl == "" {
 		firstMethodFailed = true
 		archiveURL, err := tryRecommendListMethod(c)
@@ -207,7 +205,6 @@ func Wowow(c *http.Client) model.Result {
 			wodUrl = archiveURL
 		}
 	}
-	// 如果两种方法都失败了
 	if wodUrl == "" {
 		if firstMethodFailed {
 			return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("both methods failed to get wod URL")}
@@ -252,9 +249,37 @@ func Wowow(c *http.Client) model.Result {
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Info: "4", Err: err}
 	}
-	if strings.Contains(body4, "VPN") || strings.Contains(body4, "Forbidden") {
-		return model.Result{Name: name, Status: model.StatusNo}
-	} else if strings.Contains(body4, "playback_session_id") {
+	if resp4.StatusCode == 403 {
+		var res struct {
+			Error struct {
+				Code int `json:"code"`
+			} `json:"error"`
+		}
+		if err := json.Unmarshal([]byte(body4), &res); err == nil {
+			switch res.Error.Code {
+			case 2055:
+				return model.Result{Name: name, Status: model.StatusNo}
+			case 2041, 2003:
+				result1, result2, result3 := utils.CheckDNS(hostname)
+				unlockType := utils.GetUnlockType(result1, result2, result3)
+				return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+			default:
+				if strings.Contains(body4, "VPN") || strings.Contains(body4, "Forbidden") {
+					return model.Result{Name: name, Status: model.StatusNo}
+				}
+			}
+		} else {
+			if strings.Contains(body4, "VPN") || strings.Contains(body4, "Forbidden") {
+				return model.Result{Name: name, Status: model.StatusNo}
+			}
+		}
+	}
+	if resp4.StatusCode == 201 {
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+	}
+	if strings.Contains(body4, "playback_session_id") {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}

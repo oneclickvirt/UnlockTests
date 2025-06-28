@@ -66,14 +66,6 @@ rm -rf /usr/bin/ut
 
 <details>
 
-### 同态检测
-
-可能需要拆分检测
-
-```
-GYAO 和 LINE VOOM
-```
-
 ### 无效检测
 
 需要重新构建检测逻辑
@@ -130,6 +122,8 @@ HBO_Portugal - 被合并了
 PopcornFlix - 已关服
 
 WorldFlipper - 已关服
+
+KonosubaFD - 已关服
 ```
 
 </details>

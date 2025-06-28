@@ -25,11 +25,14 @@ func CoupangPlay(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	//fmt.Println(resp.Request.URL.String())
 	if resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
+	if resp.StatusCode == 302 && resp.Header.Get("Location") == "https://www.coupangplay.com/not-available" {
+		return model.Result{Name: name, Status: model.StatusNo}
+	}
+	b, err := io.ReadAll(resp.Body)
+	//fmt.Println(resp.Request.URL.String())
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}

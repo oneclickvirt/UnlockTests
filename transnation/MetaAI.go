@@ -44,13 +44,11 @@ func MetaAI(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
-	// 检查是否被阻止
-	if strings.Contains(body, "AbraGeoBlockedErrorRoot") {
-		return model.Result{Name: name, Status: model.StatusNo, Info: "AbraGeoBlocked"}
+	if strings.Contains(body, "GeoBlockedErrorRoot") {
+		return model.Result{Name: name, Status: model.StatusNo, Info: "GeoBlocked"}
 	}
-	// 检查是否成功 AbraHomeRootConversationQuery --> AbraHomeRoot.react
 	if strings.Contains(body, "AbraHomeRoot.react") || strings.Contains(body, "AbraHomeRootConversationQuery") ||
-		strings.Contains(body, "AbraRateLimitedErrorRoot") {
+		strings.Contains(body, "HomeRootQuery") || strings.Contains(body, "AbraRateLimitedErrorRoot") {
 		var region, code string
 		code = utils.ReParse(body, `"code"\s*:\s*"(.*?)"`)
 		if code != "" && strings.Contains(code, "_") {

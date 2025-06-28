@@ -1,6 +1,6 @@
 package model
 
-const UnlockTestsVersion = "v0.0.26"
+const UnlockTestsVersion = "v0.0.27"
 
 var EnableLoger = false
 
@@ -180,4 +180,31 @@ var NLZIETSupportCountry = []string{
 	"be", "bg", "cz", "dk", "de", "ee", "ie", "el", "es", "fr",
 	"hr", "it", "cy", "lv", "lt", "lu", "hu", "mt", "nl", "at",
 	"pl", "pt", "ro", "si", "sk", "fi", "se",
+}
+
+var GeminiSupportCountry = []string{
+	"ax", "al", "dz", "as", "ad", "ao", "ai", "aq", "ag", "ar",
+	"am", "aw", "au", "at", "az", "bh", "bd", "bb", "be", "bz",
+	"bj", "bm", "bt", "bo", "ba", "bw", "br", "io", "vg", "bn",
+	"bg", "bf", "bi", "cv", "kh", "cm", "ca", "bq", "ky", "cf",
+	"td", "cl", "cx", "cc", "co", "km", "ck", "cr", "ci", "hr",
+	"cw", "cz", "cd", "dk", "dj", "dm", "do", "ec", "eg", "sv",
+	"gq", "er", "ee", "sz", "et", "fk", "fo", "fj", "fi", "fr",
+	"gf", "pf", "tf", "ga", "ge", "de", "gh", "gi", "gr", "gl",
+	"gd", "gp", "gu", "gt", "gg", "gn", "gw", "gy", "ht", "hm",
+	"hn", "hu", "is", "in", "id", "iq", "ie", "im", "il", "it",
+	"jm", "jp", "je", "jo", "kz", "ke", "ki", "xk", "kw", "kg",
+	"la", "lv", "lb", "ls", "lr", "ly", "li", "lt", "lu", "mg",
+	"mw", "my", "mv", "ml", "mt", "mh", "mq", "mr", "mu", "yt",
+	"mx", "fm", "md", "mc", "mn", "me", "ms", "ma", "mz", "mm",
+	"na", "nr", "np", "nl", "nc", "nz", "ni", "ne", "ng", "nu",
+	"nf", "mk", "mp", "no", "om", "pk", "pw", "ps", "pa", "pg",
+	"py", "pe", "ph", "pn", "pl", "pt", "pr", "qa", "cy", "cg",
+	"re", "ro", "rw", "bl", "sh", "kn", "lc", "mf", "pm", "vc",
+	"ws", "sm", "st", "sa", "sn", "rs", "sc", "sl", "sg", "sx",
+	"sk", "si", "sb", "so", "za", "gs", "kr", "ss", "es", "lk",
+	"sd", "sr", "sj", "se", "ch", "tw", "tj", "tz", "th", "bs",
+	"gm", "tl", "tg", "tk", "to", "tt", "tn", "tr", "tm", "tc",
+	"tv", "vi", "ug", "ua", "ae", "gb", "us", "um", "uy", "uz",
+	"vu", "va", "ve", "vn", "wf", "eh", "ye", "zm", "zw",
 }

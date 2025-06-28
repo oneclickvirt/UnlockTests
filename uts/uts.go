@@ -413,7 +413,6 @@ func Japan() [](func(c *http.Client) model.Result) {
 		utils.PrintGame,
 		jp.Kancolle,
 		jp.PrettyDerby,
-		jp.KonosubaFD,
 		jp.PCRJP,
 		jp.ProjectSekai,
 		jp.NETRIDE,

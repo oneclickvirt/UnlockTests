@@ -3,12 +3,13 @@ package us
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gofrs/uuid/v5"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/gofrs/uuid/v5"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // TLCGO
@@ -18,6 +19,28 @@ func TLCGO(c *http.Client) model.Result {
 	hostname := "tlc.com"
 	if c == nil {
 		return model.Result{Name: name}
+	}
+	client0 := utils.Req(c)
+	headers0 := map[string]string{
+		"app-id": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuZXR3b3JrIjoiYWxsIiwicHJvZHVjdCI6InByaXNtIiwicGxhdGZvcm0iOiJ3ZWIiLCJhcHBJZCI6ImFsbC1wcmlzbS13ZWItNzI4aGtyIn0.4Fk4E28ffoFgCIcgNSG8xX5TP2n3PIU6c3jadumKULo",
+	}
+	client0 = utils.SetReqHeaders(client0, headers0)
+	resp0, err0 := client0.R().Get("https://atlas.ngtv.io/v2/locate")
+	if err0 == nil {
+		defer resp0.Body.Close()
+		if resp0.StatusCode == 200 {
+			b0, err0 := io.ReadAll(resp0.Body)
+			if err0 == nil {
+				body0 := string(b0)
+				if strings.Contains(body0, `"country": "US"`) {
+					result1, result2, result3 := utils.CheckDNS(hostname)
+					unlockType := utils.GetUnlockType(result1, result2, result3)
+					return model.Result{Name: name, Status: model.StatusYes, Region: "US", UnlockType: unlockType}
+				} else {
+					return model.Result{Name: name, Status: model.StatusNo}
+				}
+			}
+		}
 	}
 	fakeDeviceId, _ := uuid.NewV4()
 	url := fmt.Sprintf("https://us1-prod-direct.tlc.com/token?deviceId=%s&realm=go&shortlived=true", fakeDeviceId)

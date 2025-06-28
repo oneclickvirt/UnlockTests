@@ -2,11 +2,12 @@ package transnation
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // WikipediaEditable
@@ -32,6 +33,8 @@ func WikipediaEditable(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusYes}
+	} else if resp.StatusCode == 429 {
+		return model.Result{Name: name, Status: model.StatusBanned}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get zh.wikipedia.org failed with code: %d", resp.StatusCode)}
