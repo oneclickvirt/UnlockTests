@@ -33,7 +33,7 @@ jobs:
       - name: Update README.md
         if: success() # 仅在测试成功后运行
         run: |
-          sed -i "s|go get -u github.com/oneclickvirt/UnlockTests@.*|go get -u github.com/oneclickvirt/UnlockTests@${TAG}|" README.md
+          sed -i "s|go get github.com/oneclickvirt/UnlockTests@.*|go get github.com/oneclickvirt/UnlockTests@${TAG}|" README.md
         env:
           TAG: ${{ env.TAG }}
       - name: Commit and Push README.md
