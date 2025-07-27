@@ -58,15 +58,6 @@ func CheckDNSIP(ipStr string, referenceIP string) int {
 	}
 }
 
-// // lookupHostWithTimeout 检测网址的IP地址
-// func lookupHostWithTimeout(hostname string, timeout time.Duration) ([]string, error) {
-// 	// 创建带有超时的上下文
-// 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-// 	defer cancel()
-// 	// 使用默认解析器查找主机地址
-// 	return net.DefaultResolver.LookupHost(ctx, hostname)
-// }
-
 // isPossibleCDNIP 检查是否可能是CDN IP
 func isPossibleCDNIP(ip string) bool {
 	for _, prefix := range model.CdnPrefixes {
@@ -211,3 +202,12 @@ func GetUnlockType(results ...string) string {
 	}
 	return "Via DNS"
 }
+
+// // lookupHostWithTimeout 检测网址的IP地址
+// func lookupHostWithTimeout(hostname string, timeout time.Duration) ([]string, error) {
+// 	// 创建带有超时的上下文
+// 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+// 	defer cancel()
+// 	// 使用默认解析器查找主机地址
+// 	return net.DefaultResolver.LookupHost(ctx, hostname)
+// }

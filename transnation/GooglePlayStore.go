@@ -47,32 +47,25 @@ func GooglePlayStore(c *http.Client) model.Result {
 		"sec-fetch-site":            "none",
 		"sec-fetch-user":            "?1",
 		"upgrade-insecure-requests": "1",
-		"user-agent":                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
 	}
 	client = utils.SetReqHeaders(client, headers)
-	// 发送请求
 	resp, err := client.R().Get(url)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	// 读取响应内容
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("无法解析响应内容")}
 	}
 	body := string(b)
-	// 检查响应状态码
 	if resp.StatusCode != 200 {
 		return model.Result{Name: name, Status: model.StatusUnexpected}
 	}
-	// 提取并检查区域信息
 	region := extractGooglePlayStoreRegion(body)
 	if region != "" {
-		// 检查DNS解析结果
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		// 特殊处理中国区域
 		if strings.ToUpper(region) == "CN" {
 			return model.Result{
 				Name:       name,
@@ -81,7 +74,6 @@ func GooglePlayStore(c *http.Client) model.Result {
 				UnlockType: unlockType,
 			}
 		}
-		// 其他区域返回成功状态
 		return model.Result{
 			Name:       name,
 			Status:     model.StatusYes,
@@ -89,6 +81,5 @@ func GooglePlayStore(c *http.Client) model.Result {
 			UnlockType: unlockType,
 		}
 	}
-	// 如果无法提取区域信息，返回检测失败
 	return model.Result{Name: name, Status: model.StatusNo}
 }
