@@ -134,6 +134,6 @@ func AETV(c *http.Client) model.Result {
 	return model.Result{
 		Name:   name,
 		Status: model.StatusUnexpected,
-		Err:    errMsg,
+		Err: fmt.Errorf("get aetv.com failed with code: %s", errMsg),
 	}
 }
