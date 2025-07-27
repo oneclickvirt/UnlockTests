@@ -35,9 +35,9 @@ func Test(t *testing.T) {
 		close(results)
 	}()
 	for res := range results {
-		fmt.Printf(res.Name + ": ")
+		fmt.Print(res.Name + ": ")
 		if res.Err != nil {
-			fmt.Printf(res.Err.Error() + " ")
+			fmt.Print(res.Err.Error() + " ")
 		}
 		fmt.Println(res.Status, res.Region, res.Info, res.UnlockType)
 	}
