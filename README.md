@@ -131,7 +131,7 @@ KonosubaFD - 已关服
 ## 在Golang中使用
 
 ```
-go get github.com/oneclickvirt/UnlockTests@v0.0.28-20250727155204
+go get github.com/oneclickvirt/UnlockTests@v0.0.28-20250924054500
 ```
 
 ## Thanks
