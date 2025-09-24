@@ -61,10 +61,12 @@ var CommonPublicDNS = map[string]bool{
 	"94.140.15.15":    true, // AdGuard DNS
 	"185.228.168.9":   true, // CleanBrowsing
 	"185.228.169.9":   true, // CleanBrowsing
+	"185.228.168.168": true, // CleanBrowsing
 	"76.76.19.19":     true, // Alternate DNS
 	"76.223.122.150":  true, // Alternate DNS
 	"77.88.8.8":       true, // Yandex.DNS
 	"77.88.8.1":       true, // Yandex.DNS
+	"77.88.8.7":       true, // Yandex.DNS
 	"156.154.70.1":    true, // Neustar DNS
 	"156.154.71.1":    true, // Neustar DNS
 	"8.26.56.26":      true, // Comodo Secure DNS
@@ -84,6 +86,34 @@ var CommonPublicDNS = map[string]bool{
 	"210.2.4.8":       true, // sDNS
 	"168.95.1.1":      true, // HiNet DNS (台湾)
 	"168.95.192.1":    true, // HiNet DNS (台湾)
+	"101.101.101.101": true, // TWNIC Quad101 (台湾)
+	"101.102.103.104": true, // TWNIC Quad101 (台湾)
+	"168.126.63.1":    true, // KT DNS (韩国)
+	"168.126.63.2":    true, // KT DNS (韩国)
+	"210.220.163.82":  true, // SK Broadband (韩国)
+	"219.250.36.130":  true, // SK Broadband (韩国)
+	"210.130.0.17":    true, // IIJ DNS (日本)
+	"210.157.131.66":  true, // IIJ DNS (日本)
+	"163.43.5.145":    true, // Sakura Internet (日本)
+	"163.43.5.148":    true, // Sakura Internet (日本)
+	"153.128.20.131":  true, // OCN NTT (日本)
+	"153.156.4.10":    true, // OCN NTT (日本)
+	"103.47.220.220":  true, // Safe Surfer (亚太)
+	"103.47.220.210":  true, // Safe Surfer (亚太)
+	"149.112.121.20":  true, // CIRA Canadian Shield (加拿大)
+	"149.112.122.220": true, // CIRA Canadian Shield (加拿大)
+	"75.75.75.75":     true, // Comcast DNS (美国)
+	"94.2.2.1":        true, // Hurricane Electric (美国)
+	"185.121.177.177": true, // OpenNIC (英国)
+	"185.121.177.53":  true, // OpenNIC (英国)
+	"46.182.19.48":    true, // Digitalcourage (德国)
+	"194.150.168.168": true, // Digitalcourage (德国)
+	"80.67.169.12":    true, // FDN (法国)
+	"80.67.169.40":    true, // FDN (法国)
+	"200.160.0.10":    true, // NIC.br (巴西)
+	"200.160.0.11":    true, // NIC.br (巴西)
+	"196.24.40.4":     true, // ZA Domains (南非)
+	"196.24.41.4":     true, // ZA Domains (南非)
 }
 
 var CdnPrefixes = []string{
