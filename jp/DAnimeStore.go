@@ -30,7 +30,6 @@ func DAnimeStore(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
-	//fmt.Println(body)
 	if resp.StatusCode == 403 || resp.StatusCode == 451 || strings.Contains(body, "海外") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if (resp.StatusCode == 200 && body != "") || resp.StatusCode == 302 {

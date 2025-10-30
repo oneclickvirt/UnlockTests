@@ -64,7 +64,6 @@ func OpenAI(c *http.Client) model.Result {
 
 	var reqStatus1, reqStatus2, reqStatus3 bool
 	if err1 != nil {
-		//fmt.Println(err1)
 		reqStatus1 = false
 	} else {
 		reqStatus1 = true
@@ -76,7 +75,6 @@ func OpenAI(c *http.Client) model.Result {
 		body1 = string(b1)
 	}
 	if err2 != nil {
-		//fmt.Println(err2)
 		reqStatus2 = false
 	} else {
 		reqStatus2 = true
@@ -88,7 +86,6 @@ func OpenAI(c *http.Client) model.Result {
 		body2 = string(b2)
 	}
 	if err3 != nil {
-		//fmt.Println(err3)
 		reqStatus3 = false
 	} else {
 		reqStatus3 = true

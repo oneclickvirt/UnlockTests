@@ -38,7 +38,6 @@ func Abema(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
-	// fmt.Println(body)
 	var abemaRes struct {
 		Message        string `json:"message"`
 		IsoCountryCode string `json:"isoCountryCode"`

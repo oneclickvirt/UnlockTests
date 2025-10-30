@@ -23,12 +23,6 @@ func Steam(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp.Body.Close()
-	//b, err := io.ReadAll(resp.Body)
-	//if err != nil {
-	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-	//}
-	//body := string(b)
-	//fmt.Println(body)
 	cookies := resp.Header.Get("Set-Cookie")
 	if strings.Contains(cookies, "steamCountry=") {
 		region := strings.ToLower(strings.ReplaceAll(cookies, "steamCountry=", "")[0:2])
@@ -38,17 +32,9 @@ func Steam(c *http.Client) model.Result {
 				Info: "Community Unavailable"}
 		} else {
 			defer resp2.Body.Close()
-			//b2, err2 := io.ReadAll(resp.Body)
-			//if err2 != nil {
-			//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-			//}
-			//body2 := string(b2)
-			//fmt.Println(body2)
 		}
 		return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region), Info: "Community Available"}
 	} else {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	//return model.Result{Name: name, Status: model.StatusUnexpected,
-	//	Err: fmt.Errorf("get store.steampowered.com failed with code: %d", resp.StatusCode)}
 }

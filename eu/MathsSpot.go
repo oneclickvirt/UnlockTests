@@ -49,7 +49,6 @@ func MathsSpot(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
-	//fmt.Println(body)
 	if len(body) > 0 && strings.Contains(body, "FailureServiceNotInRegion") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
@@ -101,7 +100,6 @@ func MathsSpot(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body2 := string(b)
-	//fmt.Println(body2)
 	status := utils.ReParse(body2, `"status"\s{0,}:\s{0,}"([^"]+)"`)
 	switch status {
 	case "FailureServiceNotInRegion":

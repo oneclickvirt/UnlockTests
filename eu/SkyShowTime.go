@@ -2,11 +2,12 @@ package eu
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // SkyShowTime
@@ -34,14 +35,12 @@ func SkyShowTime(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
-	//fmt.Println(body)
 	if strings.Contains(body, "Access Denied") ||
 		strings.Contains(resp.Request.URL.String(), "where-can-i-stream") ||
 		strings.Contains(body, "is not available in your location") ||
 		resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
-		// fmt.Println(resp.Request.URL.String())
 		var region string
 		tempList := strings.Split(body, "\n")
 		for _, line := range tempList {

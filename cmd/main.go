@@ -8,9 +8,9 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/oneclickvirt/UnlockTests/executor"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"github.com/oneclickvirt/UnlockTests/uts"
 	. "github.com/oneclickvirt/defaultset"
 )
 
@@ -45,31 +45,31 @@ func main() {
 		return
 	}
 	if Iface != "" {
-		uts.SetupInterface(Iface)
+		executor.SetupInterface(Iface)
 	}
 	if DnsServers != "" {
-		uts.SetupDnsServers(DnsServers)
+		executor.SetupDnsServers(DnsServers)
 	}
 	if httpProxy != "" {
 		fmt.Println(httpProxy)
-		uts.SetupHttpProxy(httpProxy)
+		executor.SetupHttpProxy(httpProxy)
 	}
 	if mode == 4 {
 		client = utils.Ipv4HttpClient
-		uts.IPV6 = false
+		executor.IPV6 = false
 	}
 	if mode == 6 {
 		client = utils.Ipv6HttpClient
-		uts.IPV4 = false
+		executor.IPV4 = false
 	}
 	if language == "zh" {
 		fmt.Println("项目地址: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
 	} else {
 		fmt.Println("Github Repo: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
 	}
-	uts.GetIpv4Info(showIP)
-	uts.GetIpv6Info(showIP)
-	readStatus := uts.ReadSelect(language, flagString)
+	executor.GetIpv4Info(showIP)
+	executor.GetIpv6Info(showIP)
+	readStatus := executor.ReadSelect(language, flagString)
 	if !readStatus {
 		return
 	}
@@ -78,16 +78,16 @@ func main() {
 	} else {
 		fmt.Println("Test time: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
 	}
-	if uts.IPV4 {
+	if executor.IPV4 {
 		fmt.Println(Blue("IPV4:"))
-		fmt.Print(uts.RunTests(client, "ipv4", language, useBar))
+		fmt.Print(executor.RunTests(client, "ipv4", language, useBar))
 	}
-	if uts.IPV6 {
+	if executor.IPV6 {
 		fmt.Println(Blue("IPV6:"))
 		if mode == 6 {
-			fmt.Print(uts.RunTests(client, "ipv6", language, useBar))
+			fmt.Print(executor.RunTests(client, "ipv6", language, useBar))
 		} else {
-			fmt.Print(uts.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
+			fmt.Print(executor.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
 		}
 	}
 	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {

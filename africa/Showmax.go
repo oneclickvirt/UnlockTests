@@ -46,7 +46,6 @@ func Showmax(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
-	//fmt.Println(body)
 	regionStart := strings.Index(body, "activeTerritory")
 	if regionStart == -1 {
 		return model.Result{Name: name, Status: model.StatusNo}

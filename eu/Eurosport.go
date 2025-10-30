@@ -3,12 +3,13 @@ package eu
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gofrs/uuid/v5"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/gofrs/uuid/v5"
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Eurosport
@@ -47,8 +48,6 @@ func Eurosport(c *http.Client) model.Result {
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
-	//body1 := string(b)
-	//fmt.Println(body1)
 	var res1 struct {
 		Data struct {
 			Attributes struct {
@@ -63,7 +62,6 @@ func Eurosport(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if res1.Data.Attributes.Token != "" {
-		//fmt.Println(res1.Data.Attributes.Token)
 		sourceSystemId := "eurosport-vid2133403"
 		playbackUrl := fmt.Sprintf("https://eu3-prod-direct.eurosport.ro/playback/v2/videoPlaybackInfo/sourceSystemId/%s?usePreAuth=true", sourceSystemId)
 		headers2 := map[string]string{
@@ -80,7 +78,6 @@ func Eurosport(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 		}
 		body2 := string(b)
-		//fmt.Println(body2)
 		isBlocked := strings.Contains(body2, "access.denied.geoblocked")
 		isOK := strings.Contains(body2, "eurosport-vod")
 		if (!isBlocked && !isOK) || isBlocked {

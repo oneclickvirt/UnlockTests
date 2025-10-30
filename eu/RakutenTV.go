@@ -27,7 +27,6 @@ func RakutenTV(c *http.Client) model.Result {
 	if resp.StatusCode == 403 {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
-	//fmt.Println(body)
 	if strings.Contains(body, "forbidden_vpn") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "VPN Forbidden"}
 	}

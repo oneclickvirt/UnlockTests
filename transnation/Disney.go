@@ -3,12 +3,13 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // DisneyPlus
@@ -103,7 +104,6 @@ func DisneyPlus(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	defer resp4.Body.Close()
-	//fmt.Println(body4)
 	if utils.ReParse(body4, `"inSupportedLocation"\s*:\s*(false|true)`) != "true" {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "UnSupported"}
 	}

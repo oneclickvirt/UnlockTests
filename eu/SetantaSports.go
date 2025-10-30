@@ -3,10 +3,11 @@ package eu
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // SetantaSports
@@ -35,8 +36,6 @@ func SetantaSports(c *http.Client) model.Result {
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
-	//body := string(b)
-	//fmt.Println(body)
 	var consentResponse struct {
 		OutsideAllowedTerritories bool `json:"outsideAllowedTerritories"`
 	}

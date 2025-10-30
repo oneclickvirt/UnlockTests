@@ -3,11 +3,12 @@ package transnation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // NetflixCDN
@@ -78,32 +79,12 @@ func Netflix(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}
 	}
 	defer resp1.Body.Close()
-	//b1, err1 := io.ReadAll(resp1.Body)
-	//if err1 != nil {
-	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-	//}
-	//body1 := string(b1)
-	//if body1 == "" {
-	//	return model.Result{
-	//		Name: name, Status: model.StatusNo,
-	//	}
-	//}
 	client2 := utils.Req(c)
 	resp2, err2 := client2.R().Get(url2)
 	if err2 != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 	}
 	defer resp2.Body.Close()
-	//b2, err2 := io.ReadAll(resp2.Body)
-	//if err2 != nil {
-	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-	//}
-	//body2 := string(b2)
-	//if body2 == "" {
-	//	return model.Result{
-	//		Name: name, Status: model.StatusNo,
-	//	}
-	//}
 	if resp1.StatusCode == 404 && resp2.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusRestricted, Info: "Originals Only"}
 	}
@@ -133,7 +114,6 @@ func Netflix(c *http.Client) model.Result {
 			unlockType := utils.GetUnlockType(result1, result2, result3)
 			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "us"}
 		}
-		//fmt.Println("nf", u)
 		t := strings.SplitN(u, "/", 5)
 		if len(t) < 5 {
 			return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("can not find region")}
