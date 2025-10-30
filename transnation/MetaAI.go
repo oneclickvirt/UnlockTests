@@ -67,11 +67,7 @@ func MetaAI(c *http.Client) model.Result {
 	if resp.StatusCode == 200 {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		if region != "" {
-			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
-		} else {
-			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
-		}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.meta.ai failed with code: %d", resp.StatusCode)}
