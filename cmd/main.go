@@ -20,8 +20,9 @@ func main() {
 	}()
 	client := utils.AutoHttpClient
 	mode := 0
-	var showVersion, help, showIP, useBar bool
-	var Iface, DnsServers, httpProxy, language, flagString string
+	var showVersion, help, showIP, useBar, cache bool
+	var Iface, DnsServers, httpProxy, socksProxy, language, flagString string
+	var conc uint64
 	utFlag := flag.NewFlagSet("ut", flag.ContinueOnError)
 	utFlag.BoolVar(&help, "h", false, "show help information")
 	utFlag.IntVar(&mode, "m", 0, "mode: 0 (both), 4 (only), or 6 (only); default is 0, example: -m 4")
@@ -30,9 +31,12 @@ func main() {
 	utFlag.BoolVar(&useBar, "b", true, "use progress bar; to disable, use: -b=false")
 	utFlag.BoolVar(&model.EnableLoger, "log", false, "enable logging")
 	utFlag.StringVar(&flagString, "f", "", "specify selection option in menu; example: -f 0")
-	utFlag.StringVar(&Iface, "I", "", "specify source IP/interface")
-	utFlag.StringVar(&DnsServers, "dns-servers", "", "specify DNS servers")
-	utFlag.StringVar(&httpProxy, "http-proxy", "", "specify HTTP proxy")
+	utFlag.StringVar(&Iface, "I", "", "bind IP address or network interface; example: -I 192.168.1.100 or -I eth0")
+	utFlag.StringVar(&DnsServers, "dns-servers", "", "specify DNS servers; example: -dns-servers \"1.1.1.1:53\"")
+	utFlag.StringVar(&httpProxy, "http-proxy", "", "specify HTTP proxy; example: -http-proxy \"http://username:password@127.0.0.1:1080\"")
+	utFlag.StringVar(&socksProxy, "socks-proxy", "", "specify SOCKS5 proxy; example: -socks-proxy \"socks5://username:password@127.0.0.1:1080\"")
+	utFlag.Uint64Var(&conc, "conc", 0, "max concurrent tests (0=unlimited); example: -conc 50")
+	utFlag.BoolVar(&cache, "cache", false, "enable caching and sequential region execution; example: -cache")
 	utFlag.StringVar(&language, "L", "zh", "language; specify 'en' for English or 'zh' for Chinese")
 	utFlag.Parse(os.Args[1:])
 	if help {
@@ -51,8 +55,16 @@ func main() {
 		executor.SetupDnsServers(DnsServers)
 	}
 	if httpProxy != "" {
-		fmt.Println(httpProxy)
 		executor.SetupHttpProxy(httpProxy)
+	}
+	if socksProxy != "" {
+		executor.SetupSocksProxy(socksProxy)
+	}
+	if conc > 0 {
+		executor.SetupConcurrency(conc)
+	}
+	if cache {
+		executor.EnableCache()
 	}
 	if mode == 4 {
 		client = utils.Ipv4HttpClient

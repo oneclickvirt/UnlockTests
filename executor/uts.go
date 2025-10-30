@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -42,6 +43,7 @@ import (
 	"github.com/oneclickvirt/UnlockTests/utils"
 	. "github.com/oneclickvirt/defaultset"
 	pb "github.com/schollz/progressbar/v3"
+	"golang.org/x/net/proxy"
 )
 
 var (
@@ -50,8 +52,14 @@ var (
 	wg                                              *sync.WaitGroup
 	IPV4, IPV6                                      = true, true
 	R                                               []*model.Result
+	resultMutex                                     sync.Mutex
 	Names                                           []string
 	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
+	sem                                             chan struct{}
+	cacheEnabled                                    = false
+	resultCache                                     = make(map[string]model.Result)
+	currentIPVersion                                string // 用于区分 IPv4/IPv6 的缓存
+	cacheMutex                                      sync.RWMutex
 )
 
 func NewBar(count int64) *pb.ProgressBar {
@@ -211,9 +219,51 @@ func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar 
 	wg.Add(1)
 	total++
 	go func() {
+		// 并发控制
+		if sem != nil {
+			sem <- struct{}{} // 获取一个通道资源
+			defer func() {
+				<-sem // 释放一个通道资源
+			}()
+		}
 		defer wg.Done()
+
+		// 获取测试名称用于缓存
+		testInfo := F(nil)
+		testName := testInfo.Name
+
+		// 检查缓存（区分 IPv4/IPv6）
+		if cacheEnabled {
+			cacheKey := testName + "_" + currentIPVersion
+			cacheMutex.RLock()
+			if cachedResult, exists := resultCache[cacheKey]; exists {
+				cacheMutex.RUnlock()
+				resultMutex.Lock()
+				R = append(R, &cachedResult)
+				resultMutex.Unlock()
+				if useProgressBar {
+					bar.Describe(cachedResult.Name + " " + ShowResult(&cachedResult))
+					bar.Add(1)
+				}
+				return
+			}
+			cacheMutex.RUnlock()
+		}
+
+		// 执行测试
 		res := F(c)
+
+		// 保存到缓存（区分 IPv4/IPv6）
+		if cacheEnabled {
+			cacheKey := testName + "_" + currentIPVersion
+			cacheMutex.Lock()
+			resultCache[cacheKey] = res
+			cacheMutex.Unlock()
+		}
+
+		resultMutex.Lock()
 		R = append(R, &res)
+		resultMutex.Unlock()
 		if useProgressBar {
 			bar.Describe(res.Name + " " + ShowResult(&res))
 			bar.Add(1)
@@ -851,6 +901,7 @@ func RunTests(client *http.Client, ipVersion, language string, useProgressBar bo
 	Names = []string{}
 	total = 0
 	wg = &sync.WaitGroup{}
+	currentIPVersion = ipVersion // 设置当前 IP 版本用于缓存
 	if useProgressBar {
 		bar = NewBar(0)
 	}
@@ -894,6 +945,60 @@ func SetupHttpProxy(httpProxy string) {
 			httpClient.Transport = utils.AutoTransport
 		}
 	}
+}
+
+func SetupSocksProxy(socksProxy string) {
+	proxyURL, err := url.Parse(socksProxy)
+	if err != nil {
+		log.Fatal("SOCKS5 proxy address is invalid: ", err)
+		return
+	}
+	var auth *proxy.Auth
+	if proxyURL.User != nil {
+		username := proxyURL.User.Username()
+		password, _ := proxyURL.User.Password()
+		auth = &proxy.Auth{
+			User:     username,
+			Password: password,
+		}
+	}
+	dialer, err := proxy.SOCKS5("tcp", proxyURL.Host, auth, utils.Dialer)
+	if err != nil {
+		log.Fatal("Failed to create SOCKS5 connection: ", err)
+		return
+	}
+	// 将 SOCKS5 dialer 包装为 ContextDialer
+	contextDialer := dialer.(proxy.ContextDialer)
+
+	// 为了保持 IPv4/IPv6 强制模式，我们需要包装 DialContext
+	// AutoTransport 使用 SOCKS5
+	utils.AutoTransport.DialContext = contextDialer.DialContext
+
+	// Ipv4Transport 使用 SOCKS5 但强制 tcp4
+	originalDialContext := contextDialer.DialContext
+	utils.Ipv4Transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return originalDialContext(ctx, "tcp4", addr)
+	}
+
+	// Ipv6Transport 使用 SOCKS5 但强制 tcp6
+	utils.Ipv6Transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return originalDialContext(ctx, "tcp6", addr)
+	}
+
+	// 清除 Proxy 设置，因为 SOCKS5 是通过 DialContext 实现的
+	for _, transport := range []*http.Transport{utils.Ipv4Transport, utils.Ipv6Transport, utils.AutoTransport} {
+		transport.Proxy = nil
+	}
+}
+
+func SetupConcurrency(conc uint64) {
+	if conc > 0 {
+		sem = make(chan struct{}, conc)
+	}
+}
+
+func EnableCache() {
+	cacheEnabled = true
 }
 
 func GetIpv4Info(showIP bool) {
