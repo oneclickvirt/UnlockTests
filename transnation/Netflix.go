@@ -70,8 +70,8 @@ func Netflix(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url1 := "https://www.netflix.com/title/81280792" // 乐高
-	url2 := "https://www.netflix.com/title/70143836" // 绝命毒师
+	url1 := "https://www.netflix.com/title/70143836" // 绝命毒师
+	url2 := "https://www.netflix.com/title/81280792" // 乐高
 	url3 := "https://www.netflix.com/title/80018499" // Test Patterns
 	client1 := utils.Req(c)
 	resp1, err1 := client1.R().Get(url1)
@@ -92,22 +92,24 @@ func Netflix(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
 	if (resp1.StatusCode == 200 || resp1.StatusCode == 301) || (resp2.StatusCode == 200 || resp2.StatusCode == 301) {
+		// 检查resp2的body内容,判断是否真正解锁
+		b2, err := io.ReadAll(resp2.Body)
+		if err != nil {
+			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		}
+		body2 := string(b2)
+		hasVideo := strings.Contains(body2, `property="og:video"`)
+		hasEpisodes := strings.Contains(body2, `data-uia="episodes"`)
+		hasPlayableVideo := strings.Contains(body2, `playableVideo`)
+		if !hasVideo && !hasEpisodes && !hasPlayableVideo {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
 		client3 := utils.Req(c)
 		resp3, err3 := client3.R().Get(url3)
 		if err3 != nil {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
 		}
 		defer resp3.Body.Close()
-		//b3, err3 := io.ReadAll(resp3.Body)
-		//if err3 != nil {
-		//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-		//}
-		//body3 := string(b3)
-		//if body3 == "" {
-		//	return model.Result{
-		//		Name: name, Status: model.StatusNo,
-		//	}
-		//}
 		u := resp3.Header.Get("location")
 		if u == "" {
 			result1, result2, result3 := utils.CheckDNS(hostname)
