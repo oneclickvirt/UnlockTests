@@ -5,11 +5,36 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+func extractRegionFromPage(body string) string {
+	re1 := regexp.MustCompile(`"country"\s*:\s*"([A-Z]{2})"`)
+	if matches := re1.FindStringSubmatch(body); len(matches) > 1 {
+		return matches[1]
+	}
+	re2 := regexp.MustCompile(`"requestCountry"\s*:\s*\{\s*"id"\s*:\s*"([A-Z]{2})"`)
+	if matches := re2.FindStringSubmatch(body); len(matches) > 1 {
+		return matches[1]
+	}
+	re3 := regexp.MustCompile(`"preferredLocale"\s*:\s*\{\s*"country"\s*:\s*"([A-Z]{2})"`)
+	if matches := re3.FindStringSubmatch(body); len(matches) > 1 {
+		return matches[1]
+	}
+	re4 := regexp.MustCompile(`"geo"\s*:\s*\{[^}]*"country"\s*:\s*"([A-Z]{2})"`)
+	if matches := re4.FindStringSubmatch(body); len(matches) > 1 {
+		return matches[1]
+	}
+	re5 := regexp.MustCompile(`data-country\s*=\s*"([A-Z]{2})"`)
+	if matches := re5.FindStringSubmatch(body); len(matches) > 1 {
+		return matches[1]
+	}
+	return ""
+}
 
 // NetflixCDN
 // api.fast.com 双栈 get 请求
@@ -104,26 +129,28 @@ func Netflix(c *http.Client) model.Result {
 		if !hasVideo && !hasEpisodes && !hasPlayableVideo {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		client3 := utils.Req(c)
-		resp3, err3 := client3.R().Get(url3)
-		if err3 != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
-		}
-		defer resp3.Body.Close()
-		u := resp3.Header.Get("location")
-		if u == "" {
-			result1, result2, result3 := utils.CheckDNS(hostname)
-			unlockType := utils.GetUnlockType(result1, result2, result3)
-			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "us"}
-		}
-		t := strings.SplitN(u, "/", 5)
-		if len(t) < 5 {
-			return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("can not find region")}
+		region := extractRegionFromPage(body2)
+		if region == "" {
+			client3 := utils.Req(c)
+			resp3, err3 := client3.R().Get(url3)
+			if err3 != nil {
+				return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
+			}
+			defer resp3.Body.Close()
+			u := resp3.Header.Get("location")
+			if u != "" {
+				t := strings.SplitN(u, "/", 5)
+				if len(t) >= 5 {
+					region = strings.SplitN(t[3], "-", 2)[0]
+				}
+			}
+			if region == "" {
+				region = "Unknown"
+			}
 		}
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType,
-			Region: strings.SplitN(t[3], "-", 2)[0]}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: strings.ToLower(region)}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.netflix.com failed with code: %d %d", resp1.StatusCode, resp2.StatusCode)}
