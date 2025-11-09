@@ -55,8 +55,6 @@ func NetflixCDN(c *http.Client) model.Result {
 	if err != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
-	//body := string(b)
-	//fmt.Println(body)
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "IP Banned By Netflix"}
 	}
@@ -117,19 +115,39 @@ func Netflix(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
 	if (resp1.StatusCode == 200 || resp1.StatusCode == 301) || (resp2.StatusCode == 200 || resp2.StatusCode == 301) {
-		// 检查resp2的body内容,判断是否真正解锁
-		b2, err := io.ReadAll(resp2.Body)
-		if err != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		var bodyToCheck string
+		var region string
+		if resp1.StatusCode == 200 || resp1.StatusCode == 301 {
+			b1, err := io.ReadAll(resp1.Body)
+			if err != nil {
+				return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+			}
+			body1 := string(b1)
+			hasVideo1 := strings.Contains(body1, `property="og:video"`)
+			hasEpisodes1 := strings.Contains(body1, `data-uia="episodes"`)
+			hasPlayableVideo1 := strings.Contains(body1, `playableVideo`)
+			if hasVideo1 || hasEpisodes1 || hasPlayableVideo1 {
+				bodyToCheck = body1
+				region = extractRegionFromPage(body1)
+			}
 		}
-		body2 := string(b2)
-		hasVideo := strings.Contains(body2, `property="og:video"`)
-		hasEpisodes := strings.Contains(body2, `data-uia="episodes"`)
-		hasPlayableVideo := strings.Contains(body2, `playableVideo`)
-		if !hasVideo && !hasEpisodes && !hasPlayableVideo {
+		if bodyToCheck == "" && (resp2.StatusCode == 200 || resp2.StatusCode == 301) {
+			b2, err := io.ReadAll(resp2.Body)
+			if err != nil {
+				return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+			}
+			body2 := string(b2)
+			hasVideo2 := strings.Contains(body2, `property="og:video"`)
+			hasEpisodes2 := strings.Contains(body2, `data-uia="episodes"`)
+			hasPlayableVideo2 := strings.Contains(body2, `playableVideo`)
+			if hasVideo2 || hasEpisodes2 || hasPlayableVideo2 {
+				bodyToCheck = body2
+				region = extractRegionFromPage(body2)
+			}
+		}
+		if bodyToCheck == "" {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		region := extractRegionFromPage(body2)
 		if region == "" {
 			client3 := utils.Req(c)
 			resp3, err3 := client3.R().Get(url3)
