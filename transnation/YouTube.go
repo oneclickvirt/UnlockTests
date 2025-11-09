@@ -55,7 +55,7 @@ func Youtube(c *http.Client) model.Result {
 		strings.Contains(body1, "/月") || strings.Contains(body1, "/month") {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "us"}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusNo}
 }
@@ -95,11 +95,22 @@ func YoutubeCDN(c *http.Client) model.Result {
 	result1, result2, result3 := utils.CheckDNS(hostname)
 	unlockType := utils.GetUnlockType(result1, result2, result3)
 	if i == -1 {
+		// 没有 - 分隔符，可能是 fra15s37 或 xxx.xxx 格式
 		i = strings.Index(body, ".")
-		return model.Result{
-			Name: name, Status: model.StatusYes, Info: "Youtube Video Server",
-			Region:     findAirCode(body[i+1:]),
-			UnlockType: unlockType,
+		if i != -1 {
+			// 有 . 分隔符，如 server.location
+			return model.Result{
+				Name: name, Status: model.StatusYes, Info: "Youtube Video Server",
+				Region:     findAirCode(body[i+1:]),
+				UnlockType: unlockType,
+			}
+		} else {
+			// 没有 . 分隔符，直接提取字母部分作为机场代码，如 fra15s37
+			return model.Result{
+				Name: name, Status: model.StatusYes, Info: "Youtube Video Server",
+				Region:     findAirCode(body),
+				UnlockType: unlockType,
+			}
 		}
 	} else {
 		isp := body[:i]
