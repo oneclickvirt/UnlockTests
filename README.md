@@ -229,7 +229,7 @@ KonosubaFD - 已关服
 ## 在Golang中使用
 
 ```
-go get github.com/oneclickvirt/UnlockTests@v0.0.30-20251109035206
+go get github.com/oneclickvirt/UnlockTests@v0.0.31-20251109084930
 ```
 
 ## Thanks
