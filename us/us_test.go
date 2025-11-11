@@ -184,8 +184,14 @@ func Test(t *testing.T) {
 		fmt.Println(res.Err)
 	}
 	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
-	
+
 	res = Crackle(req)
+	if res.Err != nil {
+		fmt.Println(res.Err)
+	}
+	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
+
+	res = Pornhub(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}

@@ -100,7 +100,7 @@ func ShowResult(r *model.Result) (s string) {
 			Logger.Info(r.Name + " " + r.Err.Error())
 		}
 		if r.Info != "" {
-			return Red("Failed") + Yellow(" (" + r.Info + ")")
+			return Red("Failed") + Yellow(" ("+r.Info+")")
 		}
 		return Red("Failed") + Yellow(" (Network Connection Failed)")
 	case model.StatusNoIPv6:
@@ -320,6 +320,7 @@ func NorthAmerica() [](func(c *http.Client) model.Result) {
 		us.PeacockTV,
 		us.Philo,
 		us.PlutoTV,
+		us.Pornhub,
 		us.SHOWTIME,
 		us.SlingTV,
 		us.Starz,
