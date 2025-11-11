@@ -18,9 +18,10 @@ func Bing(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	// 添加 cookiejar 处理
 	jar, _ := cookiejar.New(nil)
-	c.Jar = jar
+	clientCopy := *c
+	clientCopy.Jar = jar
+	c = &clientCopy
 	url := "https://www.bing.com"
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)

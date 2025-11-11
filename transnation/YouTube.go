@@ -122,7 +122,7 @@ func YoutubeCDN(c *http.Client) model.Result {
 	youtubeResult := Youtube(c)
 	if youtubeResult.Status == model.StatusNo {
 		return model.Result{
-			Name: name, Status: model.StatusNo, Info: cdnInfo + " But Main Service Unavailable",
+			Name: name, Status: model.StatusNo, Info: cdnInfo + " Main Service Unavailable",
 			Region: regionInfo,
 		}
 	}

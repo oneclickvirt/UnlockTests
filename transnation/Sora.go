@@ -17,9 +17,10 @@ func Sora(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	// 创建 cookie jar
 	jar, _ := cookiejar.New(nil)
-	c.Jar = jar
+	clientCopy := *c
+	clientCopy.Jar = jar
+	c = &clientCopy
 	// 第一次请求获取地区信息
 	client := utils.Req(c)
 	resp, err := client.R().Get("https://sora.com/cdn-cgi/trace")

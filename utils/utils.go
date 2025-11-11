@@ -112,10 +112,13 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*http.Client, error) {
 // Req
 // 为 req 设置请求
 func Req(c *http.Client) *req.Client {
-	client := req.C()
+	client := req.C().Clone()
 	client.ImpersonateChrome()
-	client.Transport.DialContext = c.Transport.(*http.Transport).DialContext
-	client.SetProxy(c.Transport.(*http.Transport).Proxy)
+	// 复制 Transport 以避免修改原始的 Transport
+	if transport, ok := c.Transport.(*http.Transport); ok {
+		client.Transport.DialContext = transport.DialContext
+		client.SetProxy(transport.Proxy)
+	}
 	client.R().
 		SetRetryCount(2).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
@@ -127,12 +130,15 @@ func Req(c *http.Client) *req.Client {
 // ReqDefault
 // 为 req 设置请求
 func ReqDefault(c *http.Client) *req.Client {
-	client := req.C()
+	client := req.C().Clone()
 	if client.Headers == nil {
 		client.Headers = make(http.Header)
 	}
-	client.Transport.DialContext = c.Transport.(*http.Transport).DialContext
-	client.SetProxy(c.Transport.(*http.Transport).Proxy)
+	// 复制 Transport 以避免修改原始的 Transport
+	if transport, ok := c.Transport.(*http.Transport); ok {
+		client.Transport.DialContext = transport.DialContext
+		client.SetProxy(transport.Proxy)
+	}
 	client.R().
 		SetRetryCount(2).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).

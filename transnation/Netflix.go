@@ -80,7 +80,7 @@ func NetflixCDN(c *http.Client) model.Result {
 			return model.Result{
 				Name: name, Status: model.StatusNo,
 				Region: res.Targets[0].Location.Country,
-				Info:   "But Main Service Unavailable",
+				Info:   "Main Service Unavailable",
 			}
 		}
 		return model.Result{
