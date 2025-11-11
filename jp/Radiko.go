@@ -2,12 +2,13 @@ package jp
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Radiko
@@ -40,13 +41,12 @@ func Radiko(c *http.Client) model.Result {
 			if strings.Contains(line, "JAPAN") {
 				// 使用 strings.Fields 来分割字符串，并获取第二个字段
 				fields := strings.Fields(line)
-				if len(fields) < 2 {
-					break
+				if len(fields) >= 2 {
+					secondField := fields[1]
+					// 使用正则表达式删除最后一个 '>' 字符之前的所有内容
+					re := regexp.MustCompile(`.*>`)
+					location = re.ReplaceAllString(secondField, "")
 				}
-				secondField := fields[1]
-				// 使用正则表达式删除最后一个 '>' 字符之前的所有内容
-				re := regexp.MustCompile(`.*>`)
-				location = re.ReplaceAllString(secondField, "")
 				break
 			}
 		}

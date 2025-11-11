@@ -3,11 +3,12 @@ package nz
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // MaoriTV
@@ -55,7 +56,7 @@ func MaoriTV(c *http.Client) model.Result {
 			}
 			return model.Result{Name: name, Status: model.StatusErr, Err: err}
 		}
-		if res2[0].ErrorSubcode == "CLIENT_GEO" {
+		if len(res2) > 0 && res2[0].ErrorSubcode == "CLIENT_GEO" {
 			return model.Result{Name: name, Status: model.StatusNo, Region: res2[0].ClientGeo}
 		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}

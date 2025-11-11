@@ -31,20 +31,23 @@ func PrimeVideo(c *http.Client) model.Result {
 	}
 	body := string(b)
 	if i := strings.Index(body, `"currentTerritory":`); i != -1 {
-		location := strings.ToLower(body[i+20 : i+22])
-		if location != "cn" && location != "cu" && location != "ir" && location != "kp" && location != "sy" {
-			result1, result2, result3 := utils.CheckDNS(hostname)
-			unlockType := utils.GetUnlockType(result1, result2, result3)
+		// 确保有足够的字符来提取
+		if i+22 <= len(body) {
+			location := strings.ToLower(body[i+20 : i+22])
+			if location != "cn" && location != "cu" && location != "ir" && location != "kp" && location != "sy" {
+				result1, result2, result3 := utils.CheckDNS(hostname)
+				unlockType := utils.GetUnlockType(result1, result2, result3)
+				return model.Result{
+					Name: name, Status: model.StatusYes,
+					Region:     location,
+					UnlockType: unlockType,
+				}
+			}
 			return model.Result{
-				Name: name, Status: model.StatusYes,
-				Region:     location,
-				UnlockType: unlockType,
+				Name: name, Status: model.StatusNo,
+				Region: location,
 			}
 		}
-		return model.Result{
-			Name: name, Status: model.StatusNo,
-			Region: location,
-		}
 	}
-	return model.Result{Name: name, Status: model.StatusNo}
+	return model.Result{Name: name, Status: model.StatusUnexpected}
 }

@@ -51,6 +51,12 @@ func Showmax(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	regionEnd := strings.Index(body[regionStart:], "\n")
+	if regionEnd == -1 {
+		regionEnd = len(body) - regionStart
+	}
+	if regionStart+len("activeTerritory")+1+regionEnd > len(body) {
+		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("invalid region data")}
+	}
 	region := strings.TrimSpace(body[regionStart+len("activeTerritory")+1 : regionStart+regionEnd])
 	if region != "" {
 		result1, result2, result3 := utils.CheckDNS(hostname)

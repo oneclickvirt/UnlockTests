@@ -2,11 +2,12 @@ package kr
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // KBSDomestic
@@ -34,12 +35,17 @@ func KBSDomestic(c *http.Client) model.Result {
 	for _, line := range tempList {
 		if strings.Contains(line, "ipck") && strings.Contains(line, "Domestic") {
 			tpList := strings.Split(line, "Domestic")
-			if strings.Contains(strings.Split(tpList[1], "\"")[1], "false") {
-				return model.Result{Name: name, Status: model.StatusNo}
-			} else if strings.Contains(strings.Split(tpList[1], "\"")[1], "true") {
-				result1, result2, result3 := utils.CheckDNS(hostname)
-				unlockType := utils.GetUnlockType(result1, result2, result3)
-				return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+			if len(tpList) >= 2 {
+				quoteParts := strings.Split(tpList[1], "\"")
+				if len(quoteParts) >= 2 {
+					if strings.Contains(quoteParts[1], "false") {
+						return model.Result{Name: name, Status: model.StatusNo}
+					} else if strings.Contains(quoteParts[1], "true") {
+						result1, result2, result3 := utils.CheckDNS(hostname)
+						unlockType := utils.GetUnlockType(result1, result2, result3)
+						return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+					}
+				}
 			}
 		}
 	}

@@ -72,18 +72,17 @@ func NetflixCDN(c *http.Client) model.Result {
 	if err := json.Unmarshal(b, &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	if res.Targets[0].Location.Country != "" {
+	if len(res.Targets) > 0 && res.Targets[0].Location.Country != "" {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		netflixResult := Netflix(c)
 		if netflixResult.Status == model.StatusNo || netflixResult.Status == model.StatusBanned || netflixResult.Status == model.StatusRestricted {
 			return model.Result{
 				Name: name, Status: model.StatusNo,
-				Region:     res.Targets[0].Location.Country,
-				Info:       "But Main Service Unavailable",
+				Region: res.Targets[0].Location.Country,
+				Info:   "But Main Service Unavailable",
 			}
 		}
-		
 		return model.Result{
 			Name: name, Status: model.StatusYes,
 			Region:     res.Targets[0].Location.Country,

@@ -61,7 +61,7 @@ func SPOTVNOW(c *http.Client) model.Result {
 			}
 			return model.Result{Name: name, Status: model.StatusUnexpected}
 		}
-		if res2[0].ErrorSubcode == "CLIENT_GEO" || resp.StatusCode == 403 {
+		if len(res2) > 0 && (res2[0].ErrorSubcode == "CLIENT_GEO" || resp.StatusCode == 403) {
 			return model.Result{Name: name, Status: model.StatusNo, Region: res2[0].ClientGeo}
 		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}

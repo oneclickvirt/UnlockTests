@@ -2,11 +2,11 @@ package vn
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
-	"log"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // KPLUS
@@ -28,13 +28,19 @@ func KPLUS(c *http.Client) model.Result {
 	url := "https://tvapi-sgn.solocoo.tv/v1/session"
 	resp, body, err := utils.PostJson(c, url, firstRequestData, headers)
 	if err != nil {
-		log.Fatalf("Failed to make first request: %v", err.Error())
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("failed to make first request: %v", err)}
 	}
 	defer resp.Body.Close()
 	//fmt.Println(body)
 	token := ""
 	if strings.Contains(body, "\"token\"") {
-		token = strings.Split(strings.Split(body, "\"token\":\"")[1], "\"")[0]
+		parts := strings.Split(body, "\"token\":\"")
+		if len(parts) >= 2 {
+			tokenParts := strings.Split(parts[1], "\"")
+			if len(tokenParts) >= 1 {
+				token = tokenParts[0]
+			}
+		}
 	}
 	if token == "" {
 		return model.Result{Name: name, Status: model.StatusErr, Err: fmt.Errorf("failed to extract token from response")}
@@ -48,7 +54,7 @@ func KPLUS(c *http.Client) model.Result {
 	}
 	secondResp, secondBody, secondErr := utils.PostJson(c, url2, secondRequestData, headers2)
 	if secondErr != nil {
-		log.Fatalf("Failed to make second request: %v", secondErr.Error())
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("failed to make second request: %v", secondErr)}
 	}
 	defer secondResp.Body.Close()
 	//fmt.Println(secondBody)

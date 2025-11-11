@@ -52,7 +52,10 @@ func MetaAI(c *http.Client) model.Result {
 		var region, code string
 		code = utils.ReParse(body, `"code"\s*:\s*"(.*?)"`)
 		if code != "" && strings.Contains(code, "_") {
-			region = strings.Split(code, "_")[1]
+			parts := strings.Split(code, "_")
+			if len(parts) >= 2 {
+				region = parts[1]
+			}
 		} else if code != "" && len(code) < 10 {
 			region = code
 		}

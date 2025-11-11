@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -226,6 +225,26 @@ func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar 
 	wg.Add(1)
 	total++
 	go func() {
+		// panic 恢复机制
+		defer func() {
+			if r := recover(); r != nil {
+				// 获取测试名称用于错误报告
+				testInfo := F(nil)
+				panicResult := model.Result{
+					Name:   testInfo.Name,
+					Status: model.StatusErr,
+					Err:    fmt.Errorf("panic recovered: %v", r),
+				}
+				resultMutex.Lock()
+				R = append(R, &panicResult)
+				resultMutex.Unlock()
+				if useProgressBar {
+					bar.Describe(panicResult.Name + " " + ShowResult(&panicResult))
+					bar.Add(1)
+				}
+			}
+		}()
+
 		// 并发控制
 		if sem != nil {
 			sem <- struct{}{} // 获取一个通道资源
@@ -958,7 +977,7 @@ func SetupHttpProxy(httpProxy string) {
 func SetupSocksProxy(socksProxy string) {
 	proxyURL, err := url.Parse(socksProxy)
 	if err != nil {
-		log.Fatal("SOCKS5 proxy address is invalid: ", err)
+		fmt.Printf("Warning: SOCKS5 proxy address is invalid: %v\n", err)
 		return
 	}
 	var auth *proxy.Auth
@@ -972,7 +991,7 @@ func SetupSocksProxy(socksProxy string) {
 	}
 	dialer, err := proxy.SOCKS5("tcp", proxyURL.Host, auth, utils.Dialer)
 	if err != nil {
-		log.Fatal("Failed to create SOCKS5 connection: ", err)
+		fmt.Printf("Warning: Failed to create SOCKS5 connection: %v\n", err)
 		return
 	}
 	// 将 SOCKS5 dialer 包装为 ContextDialer
