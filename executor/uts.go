@@ -940,6 +940,10 @@ func RunTests(client *http.Client, ipVersion, language string, useProgressBar bo
 	wg.Wait()
 	if useProgressBar {
 		bar.Finish()
+		// 确保进度条完全清除后再输出结果，避免显示重叠
+		// 先清除当前行，然后给一个短暂延时确保终端状态更新
+		fmt.Fprint(os.Stderr, "\r\033[K")
+		time.Sleep(50 * time.Millisecond)
 	}
 	return finallyPrintResult(language, ipVersion)
 }
