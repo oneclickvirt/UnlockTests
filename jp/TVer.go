@@ -140,7 +140,7 @@ func FirstTVer(c *http.Client) model.Result {
 	res, body, err := utils.PostJson(c, "https://platform-api.tver.jp/v2/api/platform_users/browser/create",
 		"device_type=pc", headers)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
@@ -170,7 +170,7 @@ func FirstTVer(c *http.Client) model.Result {
 	client2 = utils.SetReqHeaders(client2, headers2)
 	resp2, err := client2.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp2.Body.Close()
 	b, err := io.ReadAll(resp2.Body)
@@ -202,7 +202,7 @@ func FirstTVer(c *http.Client) model.Result {
 	client3 = utils.SetReqHeaders(client3, headers3)
 	resp3, err := client3.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp3.Body.Close()
 	b3, err := io.ReadAll(resp3.Body)
@@ -233,7 +233,7 @@ func FirstTVer(c *http.Client) model.Result {
 	client4 = utils.SetReqHeaders(client4, headers4)
 	resp4, err := client4.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp4.Body.Close()
 	b4, err := io.ReadAll(resp4.Body)
@@ -279,12 +279,12 @@ func FirstTVer(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers5)
 	resp, err := client.R().Get(finalURL)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err = io.ReadAll(resp.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	body = string(b)
 	var res1 struct {

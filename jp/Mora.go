@@ -19,7 +19,7 @@ func Mora(c *http.Client) model.Result {
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 || resp.StatusCode == 451 || resp.StatusCode == 500 {

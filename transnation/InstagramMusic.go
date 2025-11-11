@@ -44,7 +44,7 @@ func Instagram(c *http.Client) model.Result {
 	}
 	resp, body, err := utils.PostJson(c, url, payload, headers)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	if resp.StatusCode == 200 {
 		if strings.Contains(body, `"should_mute_audio":true`) {

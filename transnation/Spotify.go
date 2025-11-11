@@ -31,7 +31,7 @@ func Spotify(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().SetQueryString(payload).Post(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 {
@@ -39,7 +39,7 @@ func Spotify(c *http.Client) model.Result {
 	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	var res struct {
 		Status            int    `json:"status"`

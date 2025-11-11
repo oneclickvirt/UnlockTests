@@ -35,7 +35,7 @@ func MGMPlus(c *http.Client) model.Result {
 	}
 	resp0, body, err := utils.PostJson(c, url, payload, headers)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp0.Body.Close()
 	if strings.Contains(body, "error code") {
@@ -63,12 +63,12 @@ func MGMPlus(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers2)
 	resp2, err := client.R().SetBodyString("{}").Post(url2)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp2.Body.Close()
 	b, err := io.ReadAll(resp2.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	body2 := string(b)
 	var res2 struct {

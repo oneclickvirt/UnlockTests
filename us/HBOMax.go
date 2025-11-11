@@ -51,7 +51,7 @@ func HBOMax(c *http.Client) model.Result {
 		}).
 		Get("https://default.any-any.prd.api.max.com/token?realm=bolt&deviceId=afbb5daa-c327-461d-9460-d8e4b3ee4a1f")
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	tokenBody, err := io.ReadAll(tokenResp.Body)
 	if err != nil {
@@ -72,7 +72,7 @@ func HBOMax(c *http.Client) model.Result {
 		SetHeader("Content-Type", "application/json").
 		Post("https://default.any-any.prd.api.max.com/session-context/headwaiter/v1/bootstrap")
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	sessionBody, err := io.ReadAll(sessionResp.Body)
 	if err != nil {
@@ -94,7 +94,7 @@ func HBOMax(c *http.Client) model.Result {
 		SetHeader("Cookie", "st="+token).
 		Get(userURL)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	userBody, err := io.ReadAll(userResp.Body)
 	if err != nil {
@@ -108,7 +108,7 @@ func HBOMax(c *http.Client) model.Result {
 	// 验证区域可用性
 	checkResp, err := client.R().Get("https://www.max.com/")
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	checkBody, err := io.ReadAll(checkResp.Body)
 	if err != nil {
@@ -127,7 +127,7 @@ func HBOMax(c *http.Client) model.Result {
 			SetBody("st=eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiJ0b2tlbi0wOWQxOTg4Yy1mZmUzLTQxMDEtOWI5My0yNDU1ZTkyNGQ1YjYiLCJpc3MiOiJmcGEtaXNzdWVyIiwic3ViIjoiVVNFUklEOmJvbHQ6YjYzOTgxZWQtNzA2MC00ZGYwLThkZGItZjA2YjFkNWRjZWVkIiwiaWF0IjoxNzQzODQwMzgwLCJleHAiOjIwNTkyMDAzODAsInR5cGUiOiJBQ0NFU1NfVE9LRU4iLCJzdWJkaXZpc2lvbiI6ImJlYW1fYW1lciIsInNjb3BlIjoiZGVmYXVsdCIsImlpZCI6IjQwYTgzZjNlLTY4OTktNDE3Mi1hMWY2LWJjZDVjN2ZkNjA4NSIsInZlcnNpb24iOiJ2MyIsImFub255bW91cyI6ZmFsc2UsImRldmljZUlkIjoiNWY3YzViZjQtYjc4Ny00NDRjLWJhYTYtMzU5MzgwYWFiM2RmIn0.f5HTgIV2v0nQQDp5LQG0xqLrxyACdvnMDiWO_viX_CUGqtc5ncSjp_LgM30QFkkMnINFhzKEGRpsZvb-o3Pj_Z39uRBr5LCeiCPR7ssV-_SXyRFVRRDEB2lpxyz7jmdD1SxvA06HnEwTbZQzlbZ7g9GXq02yNdEfHlqYEh_4WF88UbXfeieYTd4TH7kwN1RE50NfQUS6f0WmzpAbpiULyd87mpTeynchFNMMz-YHVzZ_-nDW6geihXc3tS0FKVSR8fdOSPQFzEYOLCfhInufiPahiXI-OKF89aShAqM-y4Hx_eukGnsq3mO5wa3unnqVr9Kzc61BIhHh1Hs2bqYiYg").
 			Post("https://default.any-any.prd.api.max.com/any/playback/v1/playbackInfo")
 		if err != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+			return utils.HandleNetworkError(c, hostname, err, name)
 		}
 		vpnCheckBody, err := io.ReadAll(vpnCheckResp.Body)
 		if err != nil {

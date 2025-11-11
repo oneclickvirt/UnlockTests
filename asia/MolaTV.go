@@ -23,7 +23,7 @@ func MolaTV(c *http.Client) model.Result {
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
@@ -45,7 +45,7 @@ func MolaTV(c *http.Client) model.Result {
 		if strings.Contains(body, "\"isAllowed\":false") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	if !res.Data.Attributes.IsAllowed {
 		return model.Result{Name: name, Status: model.StatusNo}

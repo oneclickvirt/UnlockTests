@@ -60,7 +60,7 @@ func AnotherLiTV(c *http.Client) model.Result {
 	}
 	resp, body, err := utils.PostJson(c, url, payload, headers)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	var jsonResponse map[string]interface{}

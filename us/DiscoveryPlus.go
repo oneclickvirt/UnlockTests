@@ -63,7 +63,7 @@ func DiscoveryPlus(c *http.Client) model.Result {
 	defer resp2.Body.Close()
 	b2, err := io.ReadAll(resp2.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	var res2 struct {
 		Data struct {

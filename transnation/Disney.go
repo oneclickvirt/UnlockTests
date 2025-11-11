@@ -31,12 +31,12 @@ func DisneyPlus(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers)
 	resp1, err := client.R().SetBodyString(playload).Post(url1)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp1.Body.Close()
 	body1, err := io.ReadAll(resp1.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	if strings.Contains(string(body1), "403 ERROR") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Can not get assertion"}
@@ -65,12 +65,12 @@ func DisneyPlus(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers2)
 	resp2, err := client.R().SetFormDataFromValues(data).Post(url2)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp2.Body.Close()
 	body2, err := io.ReadAll(resp2.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	// fmt.Println(string(body2))
 	if strings.Contains(string(body2), "forbidden-location") || resp2.StatusCode == 403 {
@@ -86,7 +86,7 @@ func DisneyPlus(c *http.Client) model.Result {
 	// 三次请求获取地址
 	resp3, err := client.R().Get("https://disneyplus.com")
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp3.Body.Close()
 	if strings.Contains(resp3.Request.URL.String(), "preview") || strings.Contains(resp3.Request.URL.String(), "unavailable") {
@@ -101,7 +101,7 @@ func DisneyPlus(c *http.Client) model.Result {
 	}
 	resp4, body4, err := utils.PostJson(c, url4, playload4, headers4)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp4.Body.Close()
 	if utils.ReParse(body4, `"inSupportedLocation"\s*:\s*(false|true)`) != "true" {

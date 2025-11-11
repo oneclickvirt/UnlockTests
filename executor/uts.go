@@ -99,7 +99,14 @@ func ShowResult(r *model.Result) (s string) {
 			defer Logger.Sync()
 			Logger.Info(r.Name + " " + r.Err.Error())
 		}
-		return Red("NO") + Yellow(" (Network Err)")
+		if r.Info != "" {
+			return Red("Failed") + Yellow(" (" + r.Info + ")")
+		}
+		return Red("Failed") + Yellow(" (Network Connection Failed)")
+	case model.StatusNoIPv6:
+		return Yellow("N/A") + White(" (No IPv6 Support)")
+	case model.StatusDNSFailed:
+		return Yellow("N/A") + White(" (DNS Failed)")
 	case model.StatusRestricted:
 		return formatResult(Yellow, "Restricted", *r)
 	case model.StatusErr:

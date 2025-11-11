@@ -37,7 +37,7 @@ func JioCinema(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().Get(url1)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)

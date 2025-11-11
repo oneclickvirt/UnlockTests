@@ -25,7 +25,7 @@ func NPOStartPlus(c *http.Client) model.Result {
 	client := utils.Req(c)
 	resp, err := client.R().Get(tokenURL)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 {
@@ -33,7 +33,7 @@ func NPOStartPlus(c *http.Client) model.Result {
 	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	// body := string(b)
 	// fmt.Println(body)
@@ -56,7 +56,7 @@ func NPOStartPlus(c *http.Client) model.Result {
 			SetBodyString(`{"profileName":"dash","drmType":"playready","referrerUrl":"` + referrerURL + `"}`).
 			Post(streamURL)
 		if err2 != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+			return utils.HandleNetworkError(c, hostname, err, name)
 		}
 		defer resp2.Body.Close()
 		if resp2.StatusCode == 403 {
@@ -64,7 +64,7 @@ func NPOStartPlus(c *http.Client) model.Result {
 		}
 		b, err = io.ReadAll(resp2.Body)
 		if err != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+			return utils.HandleNetworkError(c, hostname, err, name)
 		}
 		body := string(b)
 		// fmt.Println(body)

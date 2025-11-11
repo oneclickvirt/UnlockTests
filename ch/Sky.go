@@ -22,7 +22,7 @@ func SkyCh(c *http.Client) model.Result {
 	url := "https://gateway.prd.sky.ch/user/customer/create"
 	resp, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 {
@@ -44,7 +44,7 @@ func SkyCh(c *http.Client) model.Result {
 	originalUrl := "https://sky.ch/"
 	resp2, err := client.R().Get(originalUrl)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp2.Body.Close()
 	b, err := io.ReadAll(resp2.Body)

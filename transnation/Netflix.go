@@ -48,7 +48,7 @@ func NetflixCDN(c *http.Client) model.Result {
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
@@ -108,13 +108,13 @@ func Netflix(c *http.Client) model.Result {
 	client1 := utils.Req(c)
 	resp1, err1 := client1.R().Get(url1)
 	if err1 != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}
+		return utils.HandleNetworkError(c, hostname, err1, name)
 	}
 	defer resp1.Body.Close()
 	client2 := utils.Req(c)
 	resp2, err2 := client2.R().Get(url2)
 	if err2 != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
+		return utils.HandleNetworkError(c, hostname, err2, name)
 	}
 	defer resp2.Body.Close()
 	if resp1.StatusCode == 404 && resp2.StatusCode == 404 {
@@ -162,7 +162,7 @@ func Netflix(c *http.Client) model.Result {
 				client3 := utils.Req(c)
 				resp3, err3 := client3.R().Get(url3)
 				if err3 != nil {
-					return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
+					return utils.HandleNetworkError(c, hostname, err3, name)
 				}
 				defer resp3.Body.Close()
 				u := resp3.Header.Get("location")

@@ -79,7 +79,7 @@ func AISPlay(c *http.Client) model.Result {
 	playload := "------WebKitFormBoundaryBj2RhUIW7BtRvfK0--"
 	resp, body, err := utils.PostJson(c, url, playload, headers)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	sId := extractValue(body, `"sid" : "`, `"`)
@@ -99,7 +99,7 @@ func AISPlay(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers)
 	resp, err = client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
@@ -134,7 +134,7 @@ func AISPlay(c *http.Client) model.Result {
 	client2 = utils.SetReqHeaders(client2, headers2)
 	resp2, err := client2.R().Get(realLiveUrl)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp2.Body.Close()
 	b, err = io.ReadAll(resp2.Body)
@@ -162,7 +162,7 @@ func AISPlay(c *http.Client) model.Result {
 	client3 = utils.SetReqHeaders(client3, headers3)
 	resp3, err := client3.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp3.Body.Close()
 
@@ -199,7 +199,7 @@ func AnotherAISPlay(c *http.Client) model.Result {
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)

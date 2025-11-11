@@ -38,7 +38,7 @@ func Hulu(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
@@ -67,7 +67,7 @@ func Hulu(c *http.Client) model.Result {
 		url2 := "https://auth.hulu.com/v4/web/password/authenticate"
 		resp, body, err = utils.PostJson(c, url2, playload, headers2)
 		if err != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+			return utils.HandleNetworkError(c, hostname, err, name)
 		}
 		defer resp.Body.Close()
 		b, err = io.ReadAll(resp.Body)

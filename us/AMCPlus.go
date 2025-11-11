@@ -37,7 +37,7 @@ func AMCPlus(c *http.Client) model.Result {
 	if resp1.StatusCode == 302 {
 		resp2, err2 := client.R().Get(resp1.Header.Get("Location"))
 		if err2 != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+			return utils.HandleNetworkError(c, hostname, err, name)
 		}
 		defer resp2.Body.Close()
 		if resp2.StatusCode == 301 {

@@ -22,7 +22,7 @@ func Watcha(c *http.Client) model.Result {
 	// 检查 API 接口
 	resp1, err := client.R().Get(apiURL)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp1.Body.Close()
 	if resp1.StatusCode == 451 {
@@ -43,7 +43,7 @@ func Watcha(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers)
 	resp2, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp2.Body.Close()
 	// 检查各种状态码

@@ -31,7 +31,7 @@ func SonyLiv(c *http.Client) model.Result {
 	}
 	b, err := io.ReadAll(resp1.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	body1 := string(b)
 	if strings.Contains(body1, "geolocation_notsupported") {
@@ -65,7 +65,7 @@ func SonyLiv(c *http.Client) model.Result {
 	defer resp2.Body.Close()
 	b, err = io.ReadAll(resp2.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	body2 := string(b)
 	// fmt.Println(body2)
@@ -105,7 +105,7 @@ func SonyLiv(c *http.Client) model.Result {
 	defer resp3.Body.Close()
 	b, err = io.ReadAll(resp3.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	body3 := string(b)
 	// fmt.Println(body3)

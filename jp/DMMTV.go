@@ -22,7 +22,7 @@ func DMMTV(c *http.Client) model.Result {
 		map[string]string{"User-Agent": model.UA_Browser},
 	)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	var res struct {

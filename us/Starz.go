@@ -25,7 +25,7 @@ func Starz(c *http.Client) model.Result {
 	url := "https://www.starz.com/sapi/header/v1/starz/us/109448574b2147ccbc494b429ff5ef1b" // 请求有tls校验
 	resp, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 {
@@ -33,7 +33,7 @@ func Starz(c *http.Client) model.Result {
 	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	authorization := string(b)
 	// fmt.Printf(authorization)

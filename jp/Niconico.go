@@ -53,7 +53,7 @@ func Niconico(c *http.Client) model.Result {
 	url11 := "https://live.nicovideo.jp/?cmnhd_ref=device=pc&site=nicolive&pos=header_servicelink&ref=WatchPage-Anchor"
 	resp, err := client1.R().Get(url11)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
@@ -80,7 +80,7 @@ func Niconico(c *http.Client) model.Result {
 	if liveID != "" {
 		resp, err = client1.R().Get("https://live.nicovideo.jp/watch/" + liveID)
 		if err != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+			return utils.HandleNetworkError(c, hostname, err, name)
 		}
 		defer resp.Body.Close()
 		b, err = io.ReadAll(resp.Body)

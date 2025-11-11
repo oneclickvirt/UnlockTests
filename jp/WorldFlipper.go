@@ -23,7 +23,7 @@ func WorldFlipper(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 || resp.StatusCode == 404 || resp.StatusCode == 451 {

@@ -21,7 +21,7 @@ func Joyn(c *http.Client) model.Result {
 	payload := `{"client_id":"b74b9f27-a994-4c45-b7eb-5b81b1c856e7","client_name":"web","anon_device_id":"b74b9f27-a994-4c45-b7eb-5b81b1c856e7"}`
 	resp, body, err := utils.PostJson(c, url, payload, nil)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	//fmt.Println(body)

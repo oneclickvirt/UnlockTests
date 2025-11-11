@@ -25,7 +25,7 @@ func Tw4gtv(c *http.Client) model.Result {
 	client := utils.Req(c)
 	resp, err := client.R().SetFormDataFromValues(data).Post(url1)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)

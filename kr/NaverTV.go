@@ -50,7 +50,7 @@ func NaverTV(c *http.Client) model.Result {
 		if strings.Contains(err.Error(), "EOF") {
 			return model.Result{Name: name, Status: model.StatusBanned}
 		}
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)

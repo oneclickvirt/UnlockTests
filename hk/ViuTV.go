@@ -20,7 +20,7 @@ func ViuTV(c *http.Client) model.Result {
 	payload := "{\"callerReferenceNo\":\"20210726112323\",\"contentId\":\"099\",\"contentType\":\"Channel\",\"channelno\":\"099\",\"mode\":\"prod\",\"deviceId\":\"29b3cb117a635d5b56\",\"deviceType\":\"ANDROID_WEB\"}"
 	resp, body, err := utils.PostJson(c, url, payload, map[string]string{"User-Agent": model.UA_Browser})
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	var res struct {
