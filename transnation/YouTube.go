@@ -93,28 +93,35 @@ func YoutubeCDN(c *http.Client) model.Result {
 	i = strings.Index(body, "-")
 	result1, result2, result3 := utils.CheckDNS(hostname)
 	unlockType := utils.GetUnlockType(result1, result2, result3)
+	
+	var regionInfo string
+	var cdnInfo string
+	
 	if i == -1 {
 		i = strings.Index(body, ".")
 		if i != -1 {
-			return model.Result{
-				Name: name, Status: model.StatusYes, Info: "Youtube Video Server",
-				Region:     findAirCode(body[i+1:]),
-				UnlockType: unlockType,
-			}
+			regionInfo = findAirCode(body[i+1:])
+			cdnInfo = "Youtube Video Server"
 		} else {
-			return model.Result{
-				Name: name, Status: model.StatusYes, Info: "Youtube Video Server",
-				Region:     findAirCode(body),
-				UnlockType: unlockType,
-			}
+			regionInfo = findAirCode(body)
+			cdnInfo = "Youtube Video Server"
 		}
 	} else {
 		isp := body[:i]
+		regionInfo = isp + " - " + findAirCode(body[i+1:])
+		cdnInfo = "Google Global CacheCDN - ISP Cooperation"
+	}
+	youtubeResult := Youtube(c)
+	if youtubeResult.Status == model.StatusNo {
 		return model.Result{
-			Name: name, Status: model.StatusYes, Info: "Google Global CacheCDN - ISP Cooperation",
-			Region:     isp + " - " + findAirCode(body[i+1:]),
-			UnlockType: unlockType,
+			Name: name, Status: model.StatusNo, Info: cdnInfo + " But Main Service Unavailable",
+			Region:     regionInfo,
 		}
+	}
+	return model.Result{
+		Name: name, Status: model.StatusYes, Info: cdnInfo,
+		Region:     regionInfo,
+		UnlockType: unlockType,
 	}
 }
 

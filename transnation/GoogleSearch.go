@@ -37,10 +37,10 @@ func GoogleSearch(c *http.Client) model.Result {
 		url := "https://www.google.com/search?q=curl/"
 		client2 := utils.Req(c)
 		resp2, err2 := client2.R().Get(url)
-		defer resp2.Body.Close()
 		if err2 != nil {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 		}
+		defer resp2.Body.Close()
 		b, err = io.ReadAll(resp2.Body)
 		if err != nil {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}

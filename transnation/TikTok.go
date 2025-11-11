@@ -46,7 +46,7 @@ func TikTok(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
 		}
 		defer resp2.Body.Close()
-		b, err = io.ReadAll(resp.Body)
+		b, err = io.ReadAll(resp2.Body)
 		if err != nil {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 		}
