@@ -1,6 +1,6 @@
 package model
 
-const UnlockTestsVersion = "v0.0.31"
+const UnlockTestsVersion = "v0.0.32"
 
 var EnableLoger = false
 
@@ -14,16 +14,16 @@ type Result struct {
 }
 
 const (
-	StatusUnexpected    = "Unknown"
-	StatusNetworkErr    = "NetworkError"
-	StatusErr           = "Error"
-	StatusRestricted    = "Restricted"
-	StatusYes           = "Yes"
-	StatusNo            = "No"
-	StatusBanned        = "Banned"
-	StatusNoIPv6        = "NoIPv6Support"     // 站点不支持IPv6
-	StatusDNSFailed     = "DNSResolveFailed"  // DNS解析失败
-	PrintHead           = "PrintHead"
+	StatusUnexpected = "Unknown"
+	StatusNetworkErr = "NetworkError"
+	StatusErr        = "Error"
+	StatusRestricted = "Restricted"
+	StatusYes        = "Yes"
+	StatusNo         = "No"
+	StatusBanned     = "Banned"
+	StatusNoIPv6     = "NoIPv6Support"    // 站点不支持IPv6
+	StatusDNSFailed  = "DNSResolveFailed" // DNS解析失败
+	PrintHead        = "PrintHead"
 	UA_Browser       = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 	UA_SecCHUA       = "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\""
 	UA_Dalvik        = "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36"
