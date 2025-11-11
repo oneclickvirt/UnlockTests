@@ -134,14 +134,12 @@ func Netflix(c *http.Client) model.Result {
 			}
 			body1 := string(b1)
 			hasOhNo1 = strings.Contains(body1, "Oh no!")
-			if !hasOhNo1 {
-				hasVideo1 := strings.Contains(body1, `property="og:video"`)
-				hasEpisodes1 := strings.Contains(body1, `data-uia="episodes"`)
-				hasPlayableVideo1 := strings.Contains(body1, `playableVideo`)
-				if hasVideo1 || hasEpisodes1 || hasPlayableVideo1 {
-					bodyToCheck = body1
-					region = extractRegionFromPage(body1)
-				}
+			hasVideo1 := strings.Contains(body1, `property="og:video"`)
+			hasEpisodes1 := strings.Contains(body1, `data-uia="episodes"`)
+			hasPlayableVideo1 := strings.Contains(body1, `playableVideo`)
+			if hasVideo1 || hasEpisodes1 || hasPlayableVideo1 {
+				bodyToCheck = body1
+				region = extractRegionFromPage(body1)
 			}
 		}
 		if bodyToCheck == "" && (resp2.StatusCode == 200 || resp2.StatusCode == 301) {
@@ -151,46 +149,41 @@ func Netflix(c *http.Client) model.Result {
 			}
 			body2 := string(b2)
 			hasOhNo2 = strings.Contains(body2, "Oh no!")
-			if !hasOhNo2 {
-				hasVideo2 := strings.Contains(body2, `property="og:video"`)
-				hasEpisodes2 := strings.Contains(body2, `data-uia="episodes"`)
-				hasPlayableVideo2 := strings.Contains(body2, `playableVideo`)
-				if hasVideo2 || hasEpisodes2 || hasPlayableVideo2 {
-					bodyToCheck = body2
-					region = extractRegionFromPage(body2)
+			hasVideo2 := strings.Contains(body2, `property="og:video"`)
+			hasEpisodes2 := strings.Contains(body2, `data-uia="episodes"`)
+			hasPlayableVideo2 := strings.Contains(body2, `playableVideo`)
+			if hasVideo2 || hasEpisodes2 || hasPlayableVideo2 {
+				bodyToCheck = body2
+				region = extractRegionFromPage(body2)
+			}
+		}
+		if bodyToCheck != "" {
+			if region == "" {
+				client3 := utils.Req(c)
+				resp3, err3 := client3.R().Get(url3)
+				if err3 != nil {
+					return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
+				}
+				defer resp3.Body.Close()
+				u := resp3.Header.Get("location")
+				if u != "" {
+					t := strings.SplitN(u, "/", 5)
+					if len(t) >= 5 {
+						region = strings.SplitN(t[3], "-", 2)[0]
+					}
+				}
+				if region == "" {
+					region = "Unknown"
 				}
 			}
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: strings.ToLower(region)}
 		}
 		if hasOhNo1 && hasOhNo2 {
-			if region == "" {
-				region = extractRegionFromPage(bodyToCheck)
-			}
-			return model.Result{Name: name, Status: model.StatusRestricted, Info: "Originals Only", Region: strings.ToLower(region)}
+			return model.Result{Name: name, Status: model.StatusRestricted, Info: "Originals Only"}
 		}
-		if bodyToCheck == "" {
-			return model.Result{Name: name, Status: model.StatusNo}
-		}
-		if region == "" {
-			client3 := utils.Req(c)
-			resp3, err3 := client3.R().Get(url3)
-			if err3 != nil {
-				return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err3}
-			}
-			defer resp3.Body.Close()
-			u := resp3.Header.Get("location")
-			if u != "" {
-				t := strings.SplitN(u, "/", 5)
-				if len(t) >= 5 {
-					region = strings.SplitN(t[3], "-", 2)[0]
-				}
-			}
-			if region == "" {
-				region = "Unknown"
-			}
-		}
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: strings.ToLower(region)}
+		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if (resp1.StatusCode == 301 || resp1.StatusCode == 302) && (resp2.StatusCode == 301 || resp2.StatusCode == 302) {
 		location1 := resp1.Header.Get("Location")
