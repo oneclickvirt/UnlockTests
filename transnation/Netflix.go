@@ -126,18 +126,22 @@ func Netflix(c *http.Client) model.Result {
 	if (resp1.StatusCode == 200 || resp1.StatusCode == 301) || (resp2.StatusCode == 200 || resp2.StatusCode == 301) {
 		var bodyToCheck string
 		var region string
+		var hasOhNo1, hasOhNo2 bool
 		if resp1.StatusCode == 200 || resp1.StatusCode == 301 {
 			b1, err := io.ReadAll(resp1.Body)
 			if err != nil {
 				return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 			}
 			body1 := string(b1)
-			hasVideo1 := strings.Contains(body1, `property="og:video"`)
-			hasEpisodes1 := strings.Contains(body1, `data-uia="episodes"`)
-			hasPlayableVideo1 := strings.Contains(body1, `playableVideo`)
-			if hasVideo1 || hasEpisodes1 || hasPlayableVideo1 {
-				bodyToCheck = body1
-				region = extractRegionFromPage(body1)
+			hasOhNo1 = strings.Contains(body1, "Oh no!")
+			if !hasOhNo1 {
+				hasVideo1 := strings.Contains(body1, `property="og:video"`)
+				hasEpisodes1 := strings.Contains(body1, `data-uia="episodes"`)
+				hasPlayableVideo1 := strings.Contains(body1, `playableVideo`)
+				if hasVideo1 || hasEpisodes1 || hasPlayableVideo1 {
+					bodyToCheck = body1
+					region = extractRegionFromPage(body1)
+				}
 			}
 		}
 		if bodyToCheck == "" && (resp2.StatusCode == 200 || resp2.StatusCode == 301) {
@@ -146,13 +150,22 @@ func Netflix(c *http.Client) model.Result {
 				return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 			}
 			body2 := string(b2)
-			hasVideo2 := strings.Contains(body2, `property="og:video"`)
-			hasEpisodes2 := strings.Contains(body2, `data-uia="episodes"`)
-			hasPlayableVideo2 := strings.Contains(body2, `playableVideo`)
-			if hasVideo2 || hasEpisodes2 || hasPlayableVideo2 {
-				bodyToCheck = body2
-				region = extractRegionFromPage(body2)
+			hasOhNo2 = strings.Contains(body2, "Oh no!")
+			if !hasOhNo2 {
+				hasVideo2 := strings.Contains(body2, `property="og:video"`)
+				hasEpisodes2 := strings.Contains(body2, `data-uia="episodes"`)
+				hasPlayableVideo2 := strings.Contains(body2, `playableVideo`)
+				if hasVideo2 || hasEpisodes2 || hasPlayableVideo2 {
+					bodyToCheck = body2
+					region = extractRegionFromPage(body2)
+				}
 			}
+		}
+		if hasOhNo1 && hasOhNo2 {
+			if region == "" {
+				region = extractRegionFromPage(bodyToCheck)
+			}
+			return model.Result{Name: name, Status: model.StatusRestricted, Info: "Originals Only", Region: strings.ToLower(region)}
 		}
 		if bodyToCheck == "" {
 			return model.Result{Name: name, Status: model.StatusNo}
@@ -178,6 +191,13 @@ func Netflix(c *http.Client) model.Result {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: strings.ToLower(region)}
+	}
+	if (resp1.StatusCode == 301 || resp1.StatusCode == 302) && (resp2.StatusCode == 301 || resp2.StatusCode == 302) {
+		location1 := resp1.Header.Get("Location")
+		location2 := resp2.Header.Get("Location")
+		if (location1 != "" && strings.Contains(location1, "browse")) || (location2 != "" && strings.Contains(location2, "browse")) {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.netflix.com failed with code: %d %d", resp1.StatusCode, resp2.StatusCode)}
