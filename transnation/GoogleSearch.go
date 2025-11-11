@@ -29,6 +29,9 @@ func GoogleSearch(c *http.Client) model.Result {
 	}
 	body := string(b)
 	// fmt.Println(body)
+	if resp.StatusCode == 429 {
+		return model.Result{Name: name, Status: model.StatusUnexpected, Info: "Rate Limited"}
+	}
 	if strings.Contains(body, "unusual traffic from") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 && strings.Contains(body, "二叉树的博客") {
@@ -46,9 +49,12 @@ func GoogleSearch(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 		}
 		body = string(b)
-		if strings.Contains(body, "unusual traffic from") || resp.StatusCode == 403 || resp.StatusCode == 451 {
+		if resp2.StatusCode == 429 {
+			return model.Result{Name: name, Status: model.StatusUnexpected, Info: "Rate Limited"}
+		}
+		if strings.Contains(body, "unusual traffic from") || resp2.StatusCode == 403 || resp2.StatusCode == 451 {
 			return model.Result{Name: name, Status: model.StatusNo}
-		} else if resp.StatusCode == 200 && strings.Contains(body, "curl") {
+		} else if resp2.StatusCode == 200 && strings.Contains(body, "curl") {
 			return model.Result{Name: name, Status: model.StatusYes}
 		}
 	}
