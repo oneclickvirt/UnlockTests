@@ -48,7 +48,8 @@ func MetaAI(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "GeoBlocked"}
 	}
 	if strings.Contains(body, "AbraHomeRoot.react") || strings.Contains(body, "AbraHomeRootConversationQuery") ||
-		strings.Contains(body, "HomeRootQuery") || strings.Contains(body, "AbraRateLimitedErrorRoot") {
+		strings.Contains(body, "HomeRootQuery") || strings.Contains(body, "AbraRateLimitedErrorRoot") || 
+		strings.Contains(body, "KadabraRootContainer") {
 		var region, code string
 		code = utils.ReParse(body, `"code"\s*:\s*"(.*?)"`)
 		if code != "" && strings.Contains(code, "_") {

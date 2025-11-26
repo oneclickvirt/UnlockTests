@@ -480,6 +480,7 @@ func Japan() [](func(c *http.Client) model.Result) {
 		jp.Radiko,
 		jp.RakutenMagazine,
 		jp.RakutenTV,
+		jp.SDGGGE,
 		jp.TVer,
 		jp.Telasa,
 		jp.UNext,
@@ -1032,6 +1033,29 @@ func EnableCache() {
 	cacheEnabled = true
 }
 
+func maskIP(ip string) string {
+	if net.ParseIP(ip).To4() != nil {
+		// IPv4
+		parts := strings.Split(ip, ".")
+		if len(parts) == 4 {
+			parts[3] = "xxx"
+			return strings.Join(parts, ".")
+		}
+	} else {
+		// IPv6
+		parts := strings.Split(ip, ":")
+		if len(parts) > 1 {
+			if len(parts[len(parts)-1]) > 0 {
+				parts[len(parts)-1] = "xxx"
+			} else {
+				parts[len(parts)-2] = "xxx"
+			}
+			return strings.Join(parts, ":")
+		}
+	}
+	return ip // fallback
+}
+
 func GetIpv4Info(showIP bool) {
 	client := utils.Req(utils.Ipv4HttpClient)
 	client.SetTimeout(5 * time.Second)
@@ -1058,7 +1082,9 @@ func GetIpv4Info(showIP bool) {
 		i := strings.Index(s, "ip=")
 		s = s[i+3:]
 		i = strings.Index(s, "\n")
-		fmt.Println("Your IPV4 address:", Blue(s[:i]))
+		ip := s[:i]
+		maskedIP := maskIP(ip)
+		fmt.Println("Your IPV4 address:", Blue(maskedIP))
 	}
 }
 
@@ -1088,6 +1114,8 @@ func GetIpv6Info(showIP bool) {
 		i := strings.Index(s, "ip=")
 		s = s[i+3:]
 		i = strings.Index(s, "\n")
-		fmt.Println("Your IPV6 address:", Blue(s[:i]))
+		ip := s[:i]
+		maskedIP := maskIP(ip)
+		fmt.Println("Your IPV6 address:", Blue(maskedIP))
 	}
 }
