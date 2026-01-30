@@ -414,7 +414,7 @@ func HongKong() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		hk.BilibiliHKMO,
 		hk.MyTvSuper,
-		hk.NowE,
+		// hk.NowE, // 已失效，不做检测，未登录时无法检测是否解锁
 		hk.ViuTV,
 		tw.BahamutAnime,
 		us.HBOMax,
