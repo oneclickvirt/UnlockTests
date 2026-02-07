@@ -224,6 +224,10 @@ PopcornFlix - 已关服
 WorldFlipper - 已关服
 
 KonosubaFD - 已关服
+
+Binge - 被 KayoSports 替代合并了
+
+Jio Cinema - 被 HotStar 替代合并了
 ```
 
 </details>

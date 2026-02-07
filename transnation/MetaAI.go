@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -44,9 +45,22 @@ func MetaAI(c *http.Client) model.Result {
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusNo, UnlockType: unlockType}
 	}
-	if statusCode == 400 {
+	var region string
+	legalResp, err := client.R().DisableAutoReadResponse().Get("https://www.meta.com/legal/")
+	if err == nil && legalResp != nil {
+		defer legalResp.Body.Close()
+		if legalResp.StatusCode >= 300 && legalResp.StatusCode < 400 {
+			if location := legalResp.Header.Get("Location"); location != "" {
+				region = extractRegionFromPath(location)
+			}
+		}
+	}
+	if statusCode == 400 || statusCode == 404 {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
+		if region != "" {
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
+		}
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	urlFallback := "https://www.meta.ai/"
@@ -67,23 +81,23 @@ func MetaAI(c *http.Client) model.Result {
 	if strings.Contains(body, "AbraHomeRoot.react") || strings.Contains(body, "AbraHomeRootConversationQuery") ||
 		strings.Contains(body, "HomeRootQuery") || strings.Contains(body, "AbraRateLimitedErrorRoot") ||
 		strings.Contains(body, "KadabraRootContainer") {
-		var region, code string
-		code = utils.ReParse(body, `"code"\s*:\s*"(.*?)"`)
-		if code != "" && strings.Contains(code, "_") {
-			parts := strings.Split(code, "_")
-			if len(parts) >= 2 {
-				region = parts[1]
+		if region == "" {
+			code := utils.ReParse(body, `"code"\s*:\s*"(.*?)"`)
+			if code != "" && strings.Contains(code, "_") {
+				parts := strings.Split(code, "_")
+				if len(parts) >= 2 {
+					region = parts[1]
+				}
+			} else if code != "" && len(code) < 10 {
+				region = code
 			}
-		} else if code != "" && len(code) < 10 {
-			region = code
 		}
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		if region != "" {
 			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
-		} else {
-			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	if respFallback.StatusCode == 200 {
 		result1, result2, result3 := utils.CheckDNS(hostname)
@@ -92,4 +106,17 @@ func MetaAI(c *http.Client) model.Result {
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("unexpected response: ajax status=%d, home status=%d", statusCode, respFallback.StatusCode)}
+}
+
+// extractRegionFromPath 从路径中提取地区代码
+func extractRegionFromPath(path string) string {
+	if len(path) >= 9 && path[0] == '/' && path[3] == '/' && strings.HasSuffix(path, "/legal/") {
+		return strings.ToUpper(path[1:3])
+	}
+	re := regexp.MustCompile(`^/([a-z]{2})/legal`)
+	matches := re.FindStringSubmatch(path)
+	if len(matches) > 1 {
+		return strings.ToUpper(matches[1])
+	}
+	return ""
 }

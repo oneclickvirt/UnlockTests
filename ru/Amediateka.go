@@ -32,7 +32,7 @@ func Amediateka(c *http.Client) model.Result {
 	if strings.Contains(body, "VPN") || resp.StatusCode == 451 || resp.StatusCode == 455 || resp.StatusCode == 503 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if resp.StatusCode == 301 && resp.Header.Get("Location") == "https://www.amediateka.ru/unavailable/index.html" {
+	if (resp.StatusCode == 301 || resp.StatusCode == 302) && resp.Header.Get("Location") == "https://www.amediateka.ru/unavailable/index.html" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if resp.StatusCode == 200 {

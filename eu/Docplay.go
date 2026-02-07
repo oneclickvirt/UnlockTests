@@ -34,7 +34,7 @@ func Docplay(c *http.Client) model.Result {
 		resp.Request.URL.String() == "https://www.docplay.com/geoblocked" ||
 		strings.Contains(resp.Header.Get("Set-Cookie"), "geoblocked=true") {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 200 {
+	} else if resp.StatusCode == 200 || resp.StatusCode == 303 {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}

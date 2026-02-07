@@ -436,7 +436,6 @@ func Africa() [](func(c *http.Client) model.Result) {
 func India() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
-		in.JioCinema,
 		in.MXPlayer,
 		in.Zee5,
 		us.NBATV,
@@ -563,7 +562,6 @@ func Oceania() [](func(c *http.Client) model.Result) {
 		utils.PrintAU,
 		au.ABCiView,
 		au.Au7plus,
-		au.Binge,
 		au.Channel10,
 		au.Channel9,
 		au.KayoSports,
