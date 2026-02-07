@@ -235,7 +235,7 @@ Jio Cinema - 被 HotStar 替代合并了
 ## 在Golang中使用
 
 ```
-go get github.com/oneclickvirt/UnlockTests@v0.0.34-20260130055000
+go get github.com/oneclickvirt/UnlockTests@v0.0.35-20260207051553
 ```
 
 ## Thanks
