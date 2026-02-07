@@ -19,6 +19,7 @@ func MetaAI(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
+	
 	url := "https://www.meta.ai/ajax"
 	headers := map[string]string{
 		"User-Agent":                model.UA_Browser,
@@ -40,24 +41,23 @@ func MetaAI(c *http.Client) model.Result {
 	}
 	defer resp.Body.Close()
 	statusCode := resp.StatusCode
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
 	if statusCode == 200 {
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusNo, UnlockType: unlockType}
 	}
-	var region string
-	legalResp, err := client.R().DisableAutoReadResponse().Get("https://www.meta.com/legal/")
-	if err == nil && legalResp != nil {
-		defer legalResp.Body.Close()
-		if legalResp.StatusCode >= 300 && legalResp.StatusCode < 400 {
-			if location := legalResp.Header.Get("Location"); location != "" {
-				region = extractRegionFromPath(location)
+	if statusCode == 400 || statusCode == 404 {
+		region := ""
+		legalResp, err := client.R().DisableAutoReadResponse().Get("https://www.meta.com/legal/")
+		if err == nil && legalResp != nil {
+			defer legalResp.Body.Close()
+			if legalResp.StatusCode >= 300 && legalResp.StatusCode < 400 {
+				if location := legalResp.Header.Get("Location"); location != "" {
+					region = extractRegionFromPath(location)
+				}
 			}
 		}
-	}
-	if statusCode == 400 || statusCode == 404 {
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
+		
 		if region != "" {
 			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
 		}
@@ -66,13 +66,36 @@ func MetaAI(c *http.Client) model.Result {
 	urlFallback := "https://www.meta.ai/"
 	respFallback, err := client.R().Get(urlFallback)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusUnexpected,
-			Err: fmt.Errorf("fallback request failed: %w", err)}
+		return model.Result{Name: name, Status: model.StatusNo, UnlockType: unlockType}
 	}
 	defer respFallback.Body.Close()
+	if statusCode == 403 {
+		region := ""
+		if respFallback.StatusCode == 200 {
+			b, err := io.ReadAll(respFallback.Body)
+			if err == nil {
+				body := string(b)
+				if code := utils.ReParse(body, `"code"\s*:\s*"(.*?)"`); code != "" {
+					if strings.Contains(code, "_") {
+						parts := strings.Split(code, "_")
+						if len(parts) >= 2 {
+							region = parts[1]
+						}
+					} else if len(code) < 10 {
+						region = code
+					}
+				}
+			}
+		}
+		if region != "" {
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
+		}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+	}
 	b, err := io.ReadAll(respFallback.Body)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		return model.Result{Name: name, Status: model.StatusUnexpected,
+			Err: fmt.Errorf("unexpected response: ajax status=%d, home status=%d", statusCode, respFallback.StatusCode)}
 	}
 	body := string(b)
 	if strings.Contains(body, "GeoBlockedErrorRoot") {
@@ -81,27 +104,23 @@ func MetaAI(c *http.Client) model.Result {
 	if strings.Contains(body, "AbraHomeRoot.react") || strings.Contains(body, "AbraHomeRootConversationQuery") ||
 		strings.Contains(body, "HomeRootQuery") || strings.Contains(body, "AbraRateLimitedErrorRoot") ||
 		strings.Contains(body, "KadabraRootContainer") {
-		if region == "" {
-			code := utils.ReParse(body, `"code"\s*:\s*"(.*?)"`)
-			if code != "" && strings.Contains(code, "_") {
-				parts := strings.Split(code, "_")
-				if len(parts) >= 2 {
-					region = parts[1]
-				}
-			} else if code != "" && len(code) < 10 {
-				region = code
+		region := ""
+		code := utils.ReParse(body, `"code"\s*:\s*"(.*?)"`)
+		if code != "" && strings.Contains(code, "_") {
+			parts := strings.Split(code, "_")
+			if len(parts) >= 2 {
+				region = parts[1]
 			}
+		} else if code != "" && len(code) < 10 {
+			region = code
 		}
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
+		
 		if region != "" {
 			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
 		}
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	if respFallback.StatusCode == 200 {
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
