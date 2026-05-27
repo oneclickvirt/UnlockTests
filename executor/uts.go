@@ -13,7 +13,6 @@ import (
 	"syscall"
 	"time"
 
-	rl "github.com/mattn/go-rl"
 	"github.com/oneclickvirt/UnlockTests/africa"
 	"github.com/oneclickvirt/UnlockTests/asia"
 	"github.com/oneclickvirt/UnlockTests/au"
@@ -869,7 +868,7 @@ func ReadSelect(language, flagString string) bool {
 			fmt.Println("[20]: All platforms")
 			prompt = "Please enter corresponding numbers, separated by spaces (press Enter to confirm): "
 		}
-		l, err := rl.ReadLine(prompt)
+		l, err := readLine(prompt)
 		if err != nil {
 			fmt.Println("Failed to read select option.")
 			return false
