@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"net"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/miekg/dns"
@@ -20,6 +19,29 @@ func get_nameserver_from_resolv() []string {
 		return nil
 	}
 	return clientConfig.Servers
+}
+
+var DNSIPVersion string
+
+func lookupDNSHost(ctx context.Context, hostname string) ([]string, error) {
+	var network string
+	switch DNSIPVersion {
+	case "ipv4":
+		network = "ip4"
+	case "ipv6":
+		network = "ip6"
+	default:
+		return net.DefaultResolver.LookupHost(ctx, hostname)
+	}
+	ips, err := net.DefaultResolver.LookupIP(ctx, network, hostname)
+	if err != nil {
+		return nil, err
+	}
+	addrs := make([]string, 0, len(ips))
+	for _, ip := range ips {
+		addrs = append(addrs, ip.String())
+	}
+	return addrs, nil
 }
 
 // CheckDNSIP 检测IP地址是否同子网/在内网
@@ -68,75 +90,57 @@ func isPossibleCDNIP(ip string) bool {
 	return false
 }
 
-// CheckDNS 三个检测DNS的逻辑并发检测
+// CheckDNS 三个检测DNS的逻辑
 func CheckDNS(hostname string) (string, string, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	var wg sync.WaitGroup
+	addrs, err := lookupDNSHost(ctx, hostname)
+	if err != nil || len(addrs) == 0 {
+		return "", "", ""
+	}
 	var result1, result2, result3 string
-	wg.Add(3)
+	cdnCount := 0
+	for _, addr := range addrs {
+		if isPossibleCDNIP(addr) {
+			cdnCount++
+		}
+	}
 	// 内网/同网IP检测
-	go func() {
-		defer wg.Done()
-		addrs, err := net.DefaultResolver.LookupHost(ctx, hostname)
-		if err != nil || len(addrs) == 0 {
-			result1 = ""
-			return
-		}
-		totalChecks := 0
-		sameSubnetOrPrivateCount := 0
-		for i := 0; i < len(addrs); i++ {
-			for j := i + 1; j < len(addrs); j++ {
-				totalChecks++
-				if CheckDNSIP(addrs[i], addrs[j]) == 0 {
-					sameSubnetOrPrivateCount++
-				}
+	totalChecks := 0
+	sameSubnetOrPrivateCount := 0
+	for i := 0; i < len(addrs); i++ {
+		for j := i + 1; j < len(addrs); j++ {
+			totalChecks++
+			if CheckDNSIP(addrs[i], addrs[j]) == 0 {
+				sameSubnetOrPrivateCount++
 			}
 		}
-		if totalChecks > 0 && sameSubnetOrPrivateCount > totalChecks/2 {
-			result1 = "0" // 大多数IP在同一子网或是内网IP
-		} else {
-			result1 = "1" // 大多数IP不在同一子网且不是内网IP，可能是DNS解锁
-		}
-	}()
+	}
+	if cdnCount == len(addrs) {
+		result1 = "0" // 所有IP均为CDN边缘IP，视为正常CDN解析
+	} else if totalChecks > 0 && sameSubnetOrPrivateCount > totalChecks/2 {
+		result1 = "0" // 大多数IP在同一子网或是内网IP
+	} else {
+		result1 = "1" // 大多数IP不在同一子网且不是内网IP，可能是DNS解锁
+	}
 	// 主域名DNS解析检测
-	go func() {
-		defer wg.Done()
-		addrs, err := net.DefaultResolver.LookupHost(ctx, hostname)
-		if err != nil {
-			result2 = ""
-			return
-		}
-		cdnCount := 0
-		for _, addr := range addrs {
-			if isPossibleCDNIP(addr) {
-				cdnCount++
-			}
-		}
-		// 根据解析结果进行判断
-		switch {
-		case len(addrs) <= 2:
-			result2 = "0" // 解析到2个或更少的IP，可能是原生IP - 大多数原生服务通常只有少量IP
-		case cdnCount > 0:
-			result2 = "1" // 检测到至少一个可能的CDN的IP - CDN的使用通常与DNS解锁相关，而不是原生解锁
-		default:
-			result2 = "0" // 解析到多个非CDN的IP，可能是使用负载均衡的原生解锁 - 多个非CDN的IP可能表示服务提供商使用了自己的负载均衡系统
-		}
-	}()
+	// 根据解析结果进行判断
+	switch {
+	case len(addrs) <= 2:
+		result2 = "0" // 解析到2个或更少的IP，可能是原生IP - 大多数原生服务通常只有少量IP
+	case cdnCount > 0:
+		result2 = "1" // 检测到至少一个可能的CDN的IP - CDN的使用通常与DNS解锁相关，而不是原生解锁
+	default:
+		result2 = "0" // 解析到多个非CDN的IP，可能是使用负载均衡的原生解锁 - 多个非CDN的IP可能表示服务提供商使用了自己的负载均衡系统
+	}
 	// 随机前缀DNS解析检测 - 是否存在通配符DNS记录
-	go func() {
-		defer wg.Done()
-		testDomain := fmt.Sprintf("test%d.%s", rand.Int(), hostname)
-		addrs, err := net.DefaultResolver.LookupHost(ctx, testDomain)
-		if err != nil || len(addrs) == 0 {
-			result3 = "0" // 正常情况，不通配
-			return
-		}
-		if len(addrs) > 0 {
-			result3 = "1" // 可能存在通配符DNS记录，可能是DNS解锁
-		}
-	}()
-	wg.Wait()
+	testDomain := fmt.Sprintf("test%d.%s", rand.Int(), hostname)
+	addrs, err = lookupDNSHost(ctx, testDomain)
+	if err != nil || len(addrs) == 0 {
+		result3 = "0" // 正常情况，不通配
+	} else {
+		result3 = "1" // 可能存在通配符DNS记录，可能是DNS解锁
+	}
 	return result1, result2, result3
 }
 

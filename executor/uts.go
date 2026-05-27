@@ -928,6 +928,7 @@ func RunTests(client *http.Client, ipVersion, language string, useProgressBar bo
 	total = 0
 	wg = &sync.WaitGroup{}
 	currentIPVersion = ipVersion // 设置当前 IP 版本用于缓存
+	utils.DNSIPVersion = ipVersion
 	if useProgressBar {
 		bar = NewBar(0)
 	}
@@ -1100,7 +1101,7 @@ func GetIpv6Info(showIP bool) {
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		IPV4 = false
+		IPV6 = false
 		if showIP {
 			fmt.Println("Can not detect IPv6 Address")
 		}
