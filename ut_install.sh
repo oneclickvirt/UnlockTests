@@ -43,6 +43,9 @@ case $os in
       "armv7l" | "armv8" | "armv8l" | "aarch64" | "arm64")
         wget -O ut "${cdn_success_url}https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-linux-arm64"
         ;;
+      "s390x")
+        wget -O ut "${cdn_success_url}https://github.com/oneclickvirt/UnlockTests/releases/download/output/ut-linux-s390x"
+        ;;
       *)
         echo "Unsupported architecture: $arch"
         exit 1
