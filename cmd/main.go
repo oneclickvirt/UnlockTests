@@ -18,7 +18,6 @@ func main() {
 	go func() {
 		req.C().R().Get("https://hits.spiritlhl.net/UnlockTests.svg?action=hit&title=Hits&title_bg=%23555555&count_bg=%230eecf8&edge_flat=false")
 	}()
-	client := utils.AutoHttpClient
 	mode := 0
 	var showVersion, help, showIP, useBar, cache bool
 	var Iface, DnsServers, httpProxy, socksProxy, language, flagString string
@@ -67,11 +66,9 @@ func main() {
 		executor.EnableCache()
 	}
 	if mode == 4 {
-		client = utils.Ipv4HttpClient
 		executor.IPV6 = false
 	}
 	if mode == 6 {
-		client = utils.Ipv6HttpClient
 		executor.IPV4 = false
 	}
 	if language == "zh" {
@@ -92,15 +89,11 @@ func main() {
 	}
 	if executor.IPV4 {
 		fmt.Println(Blue("IPV4:"))
-		fmt.Print(executor.RunTests(client, "ipv4", language, useBar))
+		fmt.Print(executor.RunTests(utils.Ipv4HttpClient, "ipv4", language, useBar))
 	}
 	if executor.IPV6 {
 		fmt.Println(Blue("IPV6:"))
-		if mode == 6 {
-			fmt.Print(executor.RunTests(client, "ipv6", language, useBar))
-		} else {
-			fmt.Print(executor.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
-		}
+		fmt.Print(executor.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
 	}
 	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
 		fmt.Println("Press Enter to exit...")
