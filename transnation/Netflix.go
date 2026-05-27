@@ -164,7 +164,15 @@ func Netflix(c *http.Client) model.Result {
 					return utils.HandleNetworkError(c, hostname, err3, name)
 				}
 				defer resp3.Body.Close()
-				u := resp3.Header.Get("location")
+				// req 自动跟随重定向；通过最终 URL 提取地区（如 /gb-en/signup/...）
+				// 仅在 URL 发生变化（即发生了重定向）时才提取地区，避免解析原始 URL 中的 "title" 字段
+				u := ""
+				if resp3.Response != nil && resp3.Response.Request != nil {
+					finalURL := resp3.Response.Request.URL.String()
+					if finalURL != url3 {
+						u = finalURL
+					}
+				}
 				if u != "" {
 					t := strings.SplitN(u, "/", 5)
 					if len(t) >= 5 {

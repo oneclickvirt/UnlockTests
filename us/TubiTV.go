@@ -28,6 +28,11 @@ func TubiTV(c *http.Client) model.Result {
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 {
+		// 检查是否因 GDPR 被重定向到 gdpr.tubi.tv（欧洲用户不可用）
+		if resp.Response != nil && resp.Response.Request != nil &&
+			strings.Contains(resp.Response.Request.URL.Host, "gdpr.tubi.tv") {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
@@ -40,25 +45,6 @@ func TubiTV(c *http.Client) model.Result {
 		if strings.Contains(body, "geoblock") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-	}
-	if resp.StatusCode == 302 {
-		url2 := "https://gdpr.tubi.tv"
-		resp2, err2 := client.R().Get(url2)
-		if err2 != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
-		}
-		defer resp2.Body.Close()
-		b2, err2 := io.ReadAll(resp2.Body)
-		if err2 != nil {
-			return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
-		}
-		body2 := string(b2)
-		if strings.Contains(body2, "Unfortunately") {
-			return model.Result{Name: name, Status: model.StatusNo}
-		}
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get tubitv.com failed with code: %d", resp.StatusCode)}

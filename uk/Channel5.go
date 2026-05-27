@@ -38,7 +38,7 @@ func Channel5(c *http.Client) model.Result {
 	body := string(b)
 	// fmt.Println(body)
 	var res struct {
-		code string `json:"code"`
+		Code string `json:"code"`
 	}
 	if err := json.Unmarshal(b, &res); err != nil {
 		if err.Error() == `invalid character '<' looking for beginning of value` {
@@ -46,10 +46,10 @@ func Channel5(c *http.Client) model.Result {
 		}
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
-	if res.code == "3000" || strings.Contains(body, "this service is only available in restricted regions") {
+	if res.Code == "3000" || strings.Contains(body, "this service is only available in restricted regions") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if res.code == "4003" {
+	if res.Code == "4003" {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}

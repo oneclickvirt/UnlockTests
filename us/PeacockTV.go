@@ -28,7 +28,8 @@ func PeacockTV(c *http.Client) model.Result {
 	//	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	//}
 	//body := string(b)
-	if strings.Contains(resp.Header.Get("location"), "unavailable") ||
+	// req 自动跟随重定向；非美国用户被跳转到含 "unavailable" 的页面，通过最终 URL 检测
+	if strings.Contains(resp.Request.URL.String(), "unavailable") ||
 		resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}

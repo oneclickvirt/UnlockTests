@@ -21,11 +21,7 @@ func MyVideo(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	// 设置 HTTP 客户端的重定向行为
-	c.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse // 禁止自动跟随重定向
-	}
-	// 发起 GET 请求
+	// 发起 GET 请求（req 会自动跟随重定向，通过最终 URL 判断结果）
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
@@ -36,23 +32,19 @@ func MyVideo(c *http.Client) model.Result {
 		}
 	}
 	defer resp.Body.Close()
-	// 检查重定向逻辑
-	if resp.StatusCode == 302 {
-		location := resp.Header.Get("Location")
-		switch location {
-		case "/serviceAreaBlock.do":
+	// 检查最终跳转 URL
+	if resp.Response != nil && resp.Response.Request != nil {
+		finalPath := resp.Response.Request.URL.Path
+		if strings.Contains(finalPath, "serviceAreaBlock") {
 			return model.Result{Name: name, Status: model.StatusNo}
-		case "/goLoginPage.do":
-			return model.Result{Name: name, Status: model.StatusYes}
-		default:
-			return model.Result{
-				Name:   name,
-				Status: model.StatusUnexpected,
-				Err:    fmt.Errorf("unexpected redirection to: %s", location),
-			}
+		}
+		if strings.Contains(finalPath, "goLoginPage") {
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 		}
 	}
-	// 如果未发生重定向，读取响应体并检查内容
+	// 如果最终 URL 无法判断，读取响应体并检查内容
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return model.Result{

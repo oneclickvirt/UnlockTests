@@ -1,6 +1,6 @@
 package model
 
-const UnlockTestsVersion = "v0.0.35"
+const UnlockTestsVersion = "v0.0.36"
 
 var EnableLoger = false
 

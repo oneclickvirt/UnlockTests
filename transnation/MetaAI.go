@@ -19,7 +19,7 @@ func MetaAI(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	
+
 	url := "https://www.meta.ai/ajax"
 	headers := map[string]string{
 		"User-Agent":                model.UA_Browser,
@@ -48,16 +48,12 @@ func MetaAI(c *http.Client) model.Result {
 	}
 	if statusCode == 400 || statusCode == 404 {
 		region := ""
-		legalResp, err := client.R().DisableAutoReadResponse().Get("https://www.meta.com/legal/")
-		if err == nil && legalResp != nil {
-			defer legalResp.Body.Close()
-			if legalResp.StatusCode >= 300 && legalResp.StatusCode < 400 {
-				if location := legalResp.Header.Get("Location"); location != "" {
-					region = extractRegionFromPath(location)
-				}
-			}
+		legalResp, err := client.R().Get("https://www.meta.com/legal/")
+		if err == nil && legalResp != nil && legalResp.Response != nil && legalResp.Response.Request != nil {
+			// req 会自动跟随重定向，通过最终请求 URL 提取地区
+			region = extractRegionFromPath(legalResp.Response.Request.URL.Path)
 		}
-		
+
 		if region != "" {
 			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
 		}
@@ -114,7 +110,7 @@ func MetaAI(c *http.Client) model.Result {
 		} else if code != "" && len(code) < 10 {
 			region = code
 		}
-		
+
 		if region != "" {
 			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
 		}

@@ -40,19 +40,19 @@ func HotStar(c *http.Client) model.Result {
 	//}
 	//body := string(b)
 	//fmt.Println(body)
-	if resp1.StatusCode == 472 || resp.StatusCode == 473 || resp.StatusCode == 474 {
+	if resp1.StatusCode == 472 || resp1.StatusCode == 473 || resp1.StatusCode == 474 {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
-	if resp1.StatusCode == 301 || resp.StatusCode == 403 || resp.StatusCode == 475 {
-		return model.Result{Name: name, Status: model.StatusNo}
+	// req 自动跟随重定向，通过最终请求 URL 提取地区（hotstar.com 会重定向到 /in、/id 等国家子路径）
+	u := ""
+	if resp1.Response != nil && resp1.Response.Request != nil {
+		u = resp1.Response.Request.URL.String()
 	}
-	u := resp1.Header.Get("Location")
 	if u == "" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	// fmt.Println(u)
 	t := strings.SplitN(u, "/", 4)
-	if len(t) < 4 {
+	if len(t) < 4 || t[3] == "" {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if strings.ToLower(t[3]) == "us" {
@@ -61,6 +61,4 @@ func HotStar(c *http.Client) model.Result {
 	result1, result2, result3 := utils.CheckDNS(hostname)
 	unlockType := utils.GetUnlockType(result1, result2, result3)
 	return model.Result{Name: name, Status: model.StatusYes, Region: t[3], UnlockType: unlockType}
-	// return model.Result{Name: name, Status: model.StatusUnexpected,
-	// 	Err: fmt.Errorf("get api.hotstar.com failed with code: %d", resp.StatusCode)}
 }

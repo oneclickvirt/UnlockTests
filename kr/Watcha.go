@@ -3,6 +3,7 @@ package kr
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
@@ -54,17 +55,15 @@ func Watcha(c *http.Client) model.Result {
 	} else if resp2.StatusCode == 200 {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "kr"}
-	} else if resp2.StatusCode == 302 {
-		location := resp2.Header.Get("Location")
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
-		switch location {
-		case "/ja-JP/browse/theater":
-			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "jp"}
-		case "/ko-KR/browse/theater":
-			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "kr"}
+		// req 自动跟随重定向，通过最终 URL 路径判断地区（/ja-JP/ 表示日本）
+		finalPath := ""
+		if resp2.Response != nil && resp2.Response.Request != nil {
+			finalPath = resp2.Response.Request.URL.Path
 		}
+		if strings.Contains(finalPath, "/ja-") {
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "jp"}
+		}
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: "kr"}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get watcha.com failed with code: %d", resp2.StatusCode)}

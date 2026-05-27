@@ -2,11 +2,12 @@ package ru
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // Amediateka
@@ -29,10 +30,9 @@ func Amediateka(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
-	if strings.Contains(body, "VPN") || resp.StatusCode == 451 || resp.StatusCode == 455 || resp.StatusCode == 503 {
-		return model.Result{Name: name, Status: model.StatusNo}
-	}
-	if (resp.StatusCode == 301 || resp.StatusCode == 302) && resp.Header.Get("Location") == "https://www.amediateka.ru/unavailable/index.html" {
+	// req 自动跟随重定向；非俄用户被跳转到 /unavailable/，通过最终 URL 检测
+	if strings.Contains(body, "VPN") || resp.StatusCode == 451 || resp.StatusCode == 455 || resp.StatusCode == 503 ||
+		strings.Contains(resp.Request.URL.String(), "/unavailable/") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if resp.StatusCode == 200 {

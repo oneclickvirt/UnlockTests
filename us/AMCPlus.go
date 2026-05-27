@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	req "github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
@@ -20,6 +21,7 @@ func AMCPlus(c *http.Client) model.Result {
 	}
 	url := "https://www.amcplus.com/"
 	client := utils.Req(c)
+	client.SetRedirectPolicy(req.NoRedirectPolicy())
 	resp1, err1 := client.R().Get(url)
 	if err1 != nil {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err1}

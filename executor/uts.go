@@ -969,11 +969,9 @@ func SetupDnsServers(DnsServers string) {
 func SetupHttpProxy(httpProxy string) {
 	if u, err := url.Parse(httpProxy); err == nil {
 		utils.ClientProxy = http.ProxyURL(u)
+		// 仅在各 Transport 上设置代理，各 Client 保持使用自己对应的 Transport（保留 IPv4/IPv6 强制模式）
 		for _, transport := range []*http.Transport{utils.Ipv4Transport, utils.Ipv6Transport, utils.AutoTransport} {
 			transport.Proxy = utils.ClientProxy
-		}
-		for _, httpClient := range []*http.Client{utils.Ipv4HttpClient, utils.Ipv6HttpClient, utils.AutoHttpClient} {
-			httpClient.Transport = utils.AutoTransport
 		}
 	}
 }

@@ -38,7 +38,9 @@ func StarPlus(c *http.Client) model.Result {
 	//fmt.Println(resp.StatusCode)
 	//fmt.Println(resp.Request.URL.String())
 	if resp.StatusCode == 200 {
-		if resp.StatusCode == 302 || resp.Header.Get("Location") == "https://www.preview.starplus.com/unavailable" {
+		// 检查是否被跳转到 unavailable 页面
+		if resp.Response != nil && resp.Response.Request != nil &&
+			strings.Contains(resp.Response.Request.URL.String(), "unavailable") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
 		region := utils.ReParse(body, `Region:\s+([A-Za-z]{2})`)

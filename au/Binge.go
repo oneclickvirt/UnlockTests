@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	req "github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
@@ -18,6 +19,7 @@ func Binge(c *http.Client) model.Result {
 	}
 	url := "https://auth.streamotion.com.au"
 	client := utils.Req(c)
+	client.SetRedirectPolicy(req.NoRedirectPolicy())
 	resp, err := client.R().Get(url)
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)

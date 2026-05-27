@@ -3,11 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"runtime"
 	"time"
 
+	req "github.com/imroc/req/v3"
 	"github.com/oneclickvirt/UnlockTests/executor"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
@@ -16,7 +16,7 @@ import (
 
 func main() {
 	go func() {
-		http.Get("https://hits.spiritlhl.net/UnlockTests.svg?action=hit&title=Hits&title_bg=%23555555&count_bg=%230eecf8&edge_flat=false")
+		req.C().R().Get("https://hits.spiritlhl.net/UnlockTests.svg?action=hit&title=Hits&title_bg=%23555555&count_bg=%230eecf8&edge_flat=false")
 	}()
 	client := utils.AutoHttpClient
 	mode := 0

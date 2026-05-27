@@ -2,11 +2,12 @@ package nz
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // SkyGO
@@ -44,12 +45,17 @@ func SkyGO(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	body := string(b)
+	// NZ 用户被跳转到 sky.co.nz 登录页（非 authorize 端点）
+	if resp.Response != nil && resp.Response.Request != nil {
+		finalURL := resp.Response.Request.URL.String()
+		if !strings.Contains(finalURL, "/authorize") && strings.Contains(finalURL, "sky.co.nz") {
+			result1, result2, result3 := utils.CheckDNS(hostname)
+			unlockType := utils.GetUnlockType(result1, result2, result3)
+			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+		}
+	}
 	if strings.Contains(body, "Access Denied") || resp.StatusCode == 403 || resp.StatusCode == 451 || resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 302 {
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get login.sky.co.nz failed with code: %d", resp.StatusCode)}

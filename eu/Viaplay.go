@@ -3,6 +3,7 @@ package eu
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
@@ -32,11 +33,13 @@ func Viaplay(c *http.Client) model.Result {
 	if resp.StatusCode == 403 || resp.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
-	if resp.StatusCode == 302 && resp.Header.Get("Location") == "/region-blocked" {
-		return model.Result{Name: name, Status: model.StatusNo}
-	}
 	// 进一步检查 Viaplay 主站
 	if resp.StatusCode == 200 {
+		// req 自动跟随重定向；若最终落在 region-blocked 路径则不可用
+		if resp.Response != nil && resp.Response.Request != nil &&
+			strings.Contains(resp.Response.Request.URL.Path, "region-blocked") {
+			return model.Result{Name: name, Status: model.StatusNo}
+		}
 		url2 := "https://viaplay.com/"
 		resp2, err2 := client.R().Get(url2)
 		if err2 != nil {
@@ -51,16 +54,18 @@ func Viaplay(c *http.Client) model.Result {
 		if resp2.StatusCode == 404 {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
-		if resp2.StatusCode == 302 {
-			region := utils.ReParse(resp2.Header.Get("Location"), `/([a-z]{2})/`)
-			if region == "" {
-				region = utils.ReParse(resp2.Header.Get("Location"), `viaplay.([a-z]{2})`)
-			}
-			result1, result2, result3 := utils.CheckDNS(hostname)
-			unlockType := utils.GetUnlockType(result1, result2, result3)
-			return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
+		// req 自动跟随重定向，从最终 URL 提取地区（如 viaplay.se/viaplay.no 等）
+		finalURL2 := ""
+		if resp2.Response != nil && resp2.Response.Request != nil {
+			finalURL2 = resp2.Response.Request.URL.String()
 		}
-		return model.Result{Name: name, Status: model.StatusYes}
+		region := utils.ReParse(finalURL2, `/([a-z]{2})/`)
+		if region == "" {
+			region = utils.ReParse(finalURL2, `viaplay\.([a-z]{2})`)
+		}
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType, Region: region}
 	}
 	// 未知状态码，返回错误
 	return model.Result{Name: name, Status: model.StatusUnexpected,

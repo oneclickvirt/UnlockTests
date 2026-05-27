@@ -43,7 +43,7 @@ var Ipv4HttpClient = &http.Client{
 var Ipv6Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-		// 强制使用IPv4
+		// 强制使用IPv6
 		return Dialer.DialContext(ctx, "tcp6", addr)
 	},
 	// ForceAttemptHTTP2:     true,

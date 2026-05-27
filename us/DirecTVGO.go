@@ -30,20 +30,21 @@ func DirecTVGO(c *http.Client) model.Result {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	body := string(b)
-	if strings.Contains(body, "proximamente") || resp.StatusCode == 403 || resp.StatusCode == 404 || resp.StatusCode == 200 {
+	if strings.Contains(body, "proximamente") || resp.StatusCode == 403 || resp.StatusCode == 404 {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 301 {
-		parts := strings.Split(body, "/")
+	}
+	if resp.StatusCode == 200 {
+		// req 自动跟随重定向，从最终 URL 提取地区（如 directvgo.com/mx/）
+		region := ""
+		if resp.Response != nil && resp.Response.Request != nil {
+			finalURL := resp.Response.Request.URL.String()
+			region = utils.ReParse(finalURL, `directvgo\.com/([a-z]{2})/`)
+			region = strings.ToUpper(region)
+		}
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
-		if len(parts) >= 4 {
-			region := parts[3]
-			region = strings.ToUpper(region)
-			if !strings.Contains(region, "HTTPS") && !strings.Contains(region, "FALSE") {
-				return model.Result{Name: name, Status: model.StatusYes, Region: region, UnlockType: unlockType}
-			} else {
-				return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
-			}
+		if region != "" {
+			return model.Result{Name: name, Status: model.StatusYes, Region: region, UnlockType: unlockType}
 		}
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}

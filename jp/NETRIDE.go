@@ -2,11 +2,12 @@ package jp
 
 import (
 	"fmt"
-	"github.com/oneclickvirt/UnlockTests/model"
-	"github.com/oneclickvirt/UnlockTests/utils"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/oneclickvirt/UnlockTests/model"
+	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
 // NETRIDE
@@ -31,7 +32,11 @@ func NETRIDE(c *http.Client) model.Result {
 	body := string(b)
 	if resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
-	} else if resp.StatusCode == 302 || strings.Contains(body, "302 Found") {
+	}
+	// req 自动跟随重定向；日本 IP 被跳转到内容页（最终 URL 与原始 URL 不同）
+	if strings.Contains(body, "302 Found") ||
+		(resp.StatusCode == 200 && resp.Response != nil && resp.Response.Request != nil &&
+			resp.Response.Request.URL.String() != url) {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
