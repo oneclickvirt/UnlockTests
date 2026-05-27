@@ -16,17 +16,22 @@ func DAZN(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	resp, body, err := utils.PostJson(c, "https://startup.core.indazn.com/misl/v5/Startup",
-		`{"LandingPageKey":"generic","Languages":"zh-CN,zh,en","Platform":"web","PlatformAttributes":{},"Manufacturer":"","PromoCode":"","Version":"2"}`,
-		map[string]string{"User-Agent": model.UA_Browser},
-	)
+	url1 := "https://www.dazn.com/" // check if 403 first
+	client := utils.Req(c)
+	resp, err := client.R().Get(url1)
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 {
-	    return model.Result{Name: name, Status: model.StatusBanned}
+		return model.Result{Name: name, Status: model.StatusBanned}
 	}
+	url2 := "https://startup.core.indazn.com/v1/main/web?Platform=web&LandingPageKey=generic&Brand=dazn" // check region
+	resp2, err := client.R().Get(url2)
+	if err != nil {
+		return utils.HandleNetworkError(c, hostname, err, name)
+	}
+	defer resp2.Body.Close()
 	var daznRes struct {
 		Region struct {
 			IsAllowed             bool   `json:"isAllowed"`
@@ -35,7 +40,7 @@ func DAZN(c *http.Client) model.Result {
 			GeolocatedCountryName string `json:"GeolocatedCountryName"`
 		} `json:"Region"`
 	}
-	if err := json.Unmarshal([]byte(body), &daznRes); err != nil {
+	if err := json.NewDecoder(resp2.Body).Decode(&daznRes); err != nil {
 		return model.Result{Name: name, Status: model.StatusErr, Err: err}
 	}
 	if daznRes.Region.IsAllowed {
