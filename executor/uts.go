@@ -1,20 +1,19 @@
 package executor
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"syscall"
 	"time"
 
+	rl "github.com/mattn/go-rl"
 	"github.com/oneclickvirt/UnlockTests/africa"
 	"github.com/oneclickvirt/UnlockTests/asia"
 	"github.com/oneclickvirt/UnlockTests/au"
@@ -65,7 +64,7 @@ func NewBar(count int64) *pb.ProgressBar {
 	return pb.NewOptions64(
 		count,
 		pb.OptionSetDescription("testing"),
-		pb.OptionSetWriter(os.Stderr),
+		pb.OptionSetWriter(utils.ColorStderr),
 		pb.OptionSetWidth(20),
 		pb.OptionThrottle(100*time.Millisecond),
 		pb.OptionShowCount(),
@@ -717,14 +716,17 @@ func finallyPrintResult(language, netType string) string {
 
 	platformName := getPlatformName(M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT)
 
-	if language == "zh" {
-		if netType == "ipv4" || netType == "" {
+	switch language {
+	case "zh":
+		switch netType {
+		case "ipv4", "":
 			result += FormarPrint(platformName)
-		} else if netType == "ipv6" {
+		case "ipv6":
 			result += FormarPrint("跨国平台")
 		}
-	} else if language == "en" {
-		if netType == "ipv4" || netType == "" {
+	case "en":
+		switch netType {
+		case "ipv4", "":
 			enPlatformName := map[string]string{
 				"跨国平台":         "Global",
 				"跨国平台 + 台湾平台":  "Global + Taiwan",
@@ -750,7 +752,7 @@ func finallyPrintResult(language, netType string) string {
 				"所有平台":         "All Platform",
 			}
 			result += FormarPrint(enPlatformName[platformName])
-		} else if netType == "ipv6" {
+		case "ipv6":
 			result += FormarPrint("Global")
 		}
 	}
@@ -817,6 +819,7 @@ func SwitchOptions(c string) {
 
 func ReadSelect(language, flagString string) bool {
 	if flagString == "" {
+		prompt := ""
 		if language == "zh" {
 			fmt.Println("请选择检测项目: ")
 			fmt.Println("[0]: 跨国平台")
@@ -840,7 +843,7 @@ func ReadSelect(language, flagString string) bool {
 			fmt.Println("[18]: 仅大洋洲平台")
 			fmt.Println("[19]: 仅体育平台")
 			fmt.Println("[20]: 全部平台")
-			fmt.Print("请输入对应数字,空格分隔(回车确认): ")
+			prompt = "请输入对应数字,空格分隔(回车确认): "
 		} else {
 			fmt.Println("Please select detection items:")
 			fmt.Println("[0]: International platform")
@@ -864,15 +867,14 @@ func ReadSelect(language, flagString string) bool {
 			fmt.Println("[18]: Oceania platform only")
 			fmt.Println("[19]: Sports platform only")
 			fmt.Println("[20]: All platforms")
-			fmt.Print("Please enter corresponding numbers, separated by spaces (press Enter to confirm): ")
+			prompt = "Please enter corresponding numbers, separated by spaces (press Enter to confirm): "
 		}
-		r := bufio.NewReader(os.Stdin)
-		l, _, err := r.ReadLine()
+		l, err := rl.ReadLine(prompt)
 		if err != nil {
 			fmt.Println("Failed to read select option.")
 			return false
 		}
-		for _, c := range strings.Split(string(l), " ") {
+		for _, c := range strings.Split(l, " ") {
 			SwitchOptions(c)
 		}
 	} else {
@@ -942,7 +944,7 @@ func RunTests(client *http.Client, ipVersion, language string, useProgressBar bo
 		bar.Finish()
 		// 确保进度条完全清除后再输出结果，避免显示重叠
 		// 先清除当前行，然后给一个短暂延时确保终端状态更新
-		fmt.Fprint(os.Stderr, "\r\033[K")
+		fmt.Fprint(utils.ColorStderr, "\r\033[K")
 		time.Sleep(50 * time.Millisecond)
 	}
 	return finallyPrintResult(language, ipVersion)
@@ -1081,7 +1083,7 @@ func GetIpv4Info(showIP bool) {
 		i = strings.Index(s, "\n")
 		ip := s[:i]
 		maskedIP := maskIP(ip)
-		fmt.Println("Your IPV4 address:", Blue(maskedIP))
+		fmt.Fprintln(utils.ColorStdout, "Your IPV4 address:", Blue(maskedIP))
 	}
 }
 
@@ -1113,6 +1115,6 @@ func GetIpv6Info(showIP bool) {
 		i = strings.Index(s, "\n")
 		ip := s[:i]
 		maskedIP := maskIP(ip)
-		fmt.Println("Your IPV6 address:", Blue(maskedIP))
+		fmt.Fprintln(utils.ColorStdout, "Your IPV6 address:", Blue(maskedIP))
 	}
 }

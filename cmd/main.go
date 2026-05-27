@@ -72,9 +72,9 @@ func main() {
 		executor.IPV4 = false
 	}
 	if language == "zh" {
-		fmt.Println("项目地址: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
+		fmt.Fprintln(utils.ColorStdout, "项目地址: "+Blue("https://github.com/oneclickvirt/UnlockTests"))
 	} else {
-		fmt.Println("Github Repo: " + Blue("https://github.com/oneclickvirt/UnlockTests"))
+		fmt.Fprintln(utils.ColorStdout, "Github Repo: "+Blue("https://github.com/oneclickvirt/UnlockTests"))
 	}
 	executor.GetIpv4Info(showIP)
 	executor.GetIpv6Info(showIP)
@@ -83,17 +83,17 @@ func main() {
 		return
 	}
 	if language == "zh" {
-		fmt.Println("测试时间: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
+		fmt.Fprintln(utils.ColorStdout, "测试时间: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
 	} else {
-		fmt.Println("Test time: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
+		fmt.Fprintln(utils.ColorStdout, "Test time: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
 	}
 	if executor.IPV4 {
-		fmt.Println(Blue("IPV4:"))
-		fmt.Print(executor.RunTests(utils.Ipv4HttpClient, "ipv4", language, useBar))
+		fmt.Fprintln(utils.ColorStdout, Blue("IPV4:"))
+		fmt.Fprint(utils.ColorStdout, executor.RunTests(utils.Ipv4HttpClient, "ipv4", language, useBar))
 	}
 	if executor.IPV6 {
-		fmt.Println(Blue("IPV6:"))
-		fmt.Print(executor.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
+		fmt.Fprintln(utils.ColorStdout, Blue("IPV6:"))
+		fmt.Fprint(utils.ColorStdout, executor.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
 	}
 	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
 		fmt.Println("Press Enter to exit...")
