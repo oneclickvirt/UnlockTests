@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/miekg/dns"
@@ -22,10 +23,23 @@ func get_nameserver_from_resolv() []string {
 }
 
 var DNSIPVersion string
+var dnsIPVersionMutex sync.RWMutex
+
+func SetDNSIPVersion(ipVersion string) {
+	dnsIPVersionMutex.Lock()
+	DNSIPVersion = ipVersion
+	dnsIPVersionMutex.Unlock()
+}
+
+func getDNSIPVersion() string {
+	dnsIPVersionMutex.RLock()
+	defer dnsIPVersionMutex.RUnlock()
+	return DNSIPVersion
+}
 
 func lookupDNSHost(ctx context.Context, hostname string) ([]string, error) {
 	var network string
-	switch DNSIPVersion {
+	switch getDNSIPVersion() {
 	case "ipv4":
 		network = "ip4"
 	case "ipv6":

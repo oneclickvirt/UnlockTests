@@ -55,8 +55,8 @@ var (
 	sem                                             chan struct{}
 	cacheEnabled                                    = false
 	resultCache                                     = make(map[string]model.Result)
-	currentIPVersion                                string // 用于区分 IPv4/IPv6 的缓存
 	cacheMutex                                      sync.RWMutex
+	runTestsMutex                                   sync.Mutex
 )
 
 func NewBar(count int64) *pb.ProgressBar {
@@ -74,6 +74,13 @@ func NewBar(count int64) *pb.ProgressBar {
 }
 
 func ShowResult(r *model.Result) (s string) {
+	logErr := func() {
+		if model.EnableLoger && r.Err != nil {
+			InitLogger()
+			defer Logger.Sync()
+			Logger.Info(r.Name + " " + r.Err.Error())
+		}
+	}
 	formatResult := func(colorFunc func(string) string, status string, r model.Result) string {
 		s := colorFunc(status)
 		if r.Info != "" {
@@ -91,28 +98,18 @@ func ShowResult(r *model.Result) (s string) {
 	case model.StatusYes:
 		return formatResult(Green, "YES", *r)
 	case model.StatusNetworkErr:
-		if model.EnableLoger {
-			InitLogger()
-			defer Logger.Sync()
-			Logger.Info(r.Name + " " + r.Err.Error())
-		}
-		if r.Info != "" {
-			return Red("Failed") + Yellow(" ("+r.Info+")")
-		}
-		return Red("Failed") + Yellow(" (Network Connection Failed)")
+		logErr()
+		return Red("Failed") + Yellow(" (Network Error)")
 	case model.StatusNoIPv6:
 		return Yellow("N/A") + White(" (No IPv6 Support)")
 	case model.StatusDNSFailed:
-		return Yellow("N/A") + White(" (DNS Failed)")
+		logErr()
+		return Yellow("N/A") + White(" (DNS Resolve Failed)")
 	case model.StatusRestricted:
 		return formatResult(Yellow, "Restricted", *r)
 	case model.StatusErr:
 		s = Yellow("Error")
-		if model.EnableLoger {
-			InitLogger()
-			defer Logger.Sync()
-			Logger.Info(r.Name + " " + r.Err.Error())
-		}
+		logErr()
 		return s
 	case model.StatusNo:
 		return formatResult(Red, "NO", *r)
@@ -126,11 +123,7 @@ func ShowResult(r *model.Result) (s string) {
 		s = Purple("Unknown")
 		if r.Err != nil {
 			s += ": " + r.Err.Error()
-			if model.EnableLoger {
-				InitLogger()
-				defer Logger.Sync()
-				Logger.Info(r.Name + " " + r.Err.Error())
-			}
+			logErr()
 		}
 		return s
 	default:
@@ -219,17 +212,18 @@ func FormarPrint(message string) string {
 	return res.String()
 }
 
-func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar bool) {
+func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar bool, ipVersion string) {
+	testInfo := F(nil)
+	testName := testInfo.Name
 	wg.Add(1)
 	total++
 	go func() {
+		defer wg.Done()
 		// panic 恢复机制
 		defer func() {
 			if r := recover(); r != nil {
-				// 获取测试名称用于错误报告
-				testInfo := F(nil)
 				panicResult := model.Result{
-					Name:   testInfo.Name,
+					Name:   testName,
 					Status: model.StatusErr,
 					Err:    fmt.Errorf("panic recovered: %v", r),
 				}
@@ -250,15 +244,9 @@ func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar 
 				<-sem // 释放一个通道资源
 			}()
 		}
-		defer wg.Done()
-
-		// 获取测试名称用于缓存
-		testInfo := F(nil)
-		testName := testInfo.Name
-
 		// 检查缓存（区分 IPv4/IPv6）
 		if cacheEnabled {
-			cacheKey := testName + "_" + currentIPVersion
+			cacheKey := testName + "_" + ipVersion
 			cacheMutex.RLock()
 			if cachedResult, exists := resultCache[cacheKey]; exists {
 				cacheMutex.RUnlock()
@@ -276,10 +264,11 @@ func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar 
 
 		// 执行测试
 		res := F(c)
+		res = utils.NormalizeResult(c, res, testName)
 
 		// 保存到缓存（区分 IPv4/IPv6）
 		if cacheEnabled {
-			cacheKey := testName + "_" + currentIPVersion
+			cacheKey := testName + "_" + ipVersion
 			cacheMutex.Lock()
 			resultCache[cacheKey] = res
 			cacheMutex.Unlock()
@@ -305,10 +294,10 @@ func PreProcess(FuncList [](func(c *http.Client) model.Result)) {
 	}
 }
 
-func ProcessFunction(FuncList [](func(c *http.Client) model.Result), c *http.Client, useProgressBar bool) {
+func ProcessFunction(FuncList [](func(c *http.Client) model.Result), c *http.Client, useProgressBar bool, ipVersion string) {
 	// 实际开始任务
 	for _, f := range FuncList {
-		Excute(f, c, useProgressBar)
+		Excute(f, c, useProgressBar, ipVersion)
 	}
 }
 
@@ -925,16 +914,20 @@ func getFuncList() [](func(c *http.Client) model.Result) {
 }
 
 func RunTests(client *http.Client, ipVersion, language string, useProgressBar bool) string {
+	runTestsMutex.Lock()
+	defer runTestsMutex.Unlock()
 	Names = []string{}
+	resultMutex.Lock()
+	R = nil
+	resultMutex.Unlock()
 	total = 0
 	wg = &sync.WaitGroup{}
-	currentIPVersion = ipVersion // 设置当前 IP 版本用于缓存
-	utils.DNSIPVersion = ipVersion
+	utils.SetDNSIPVersion(ipVersion)
 	if useProgressBar {
 		bar = NewBar(0)
 	}
 	funcList := getFuncList()
-	ProcessFunction(funcList, client, useProgressBar)
+	ProcessFunction(funcList, client, useProgressBar, ipVersion)
 	if useProgressBar {
 		bar.ChangeMax64(total)
 	}
