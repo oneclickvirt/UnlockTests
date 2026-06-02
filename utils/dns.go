@@ -15,6 +15,13 @@ import (
 )
 
 func get_nameserver_from_resolv() []string {
+	dnsServerMutex.RLock()
+	if len(customDNSServers) > 0 {
+		nameservers := append([]string(nil), customDNSServers...)
+		dnsServerMutex.RUnlock()
+		return nameservers
+	}
+	dnsServerMutex.RUnlock()
 	clientConfig, err := dns.ClientConfigFromFile("/etc/resolv.conf")
 	if err != nil {
 		return nil
@@ -24,6 +31,34 @@ func get_nameserver_from_resolv() []string {
 
 var DNSIPVersion string
 var dnsIPVersionMutex sync.RWMutex
+var customDNSServers []string
+var dnsServerMutex sync.RWMutex
+
+func normalizeDNSServer(server string) string {
+	server = strings.TrimSpace(server)
+	if server == "" {
+		return ""
+	}
+	if host, _, err := net.SplitHostPort(server); err == nil {
+		return strings.Trim(host, "[]")
+	}
+	return strings.Trim(server, "[]")
+}
+
+func SetCustomDNSServers(servers string) {
+	fields := strings.FieldsFunc(servers, func(r rune) bool {
+		return r == ',' || r == ';' || r == ' '
+	})
+	normalized := make([]string, 0, len(fields))
+	for _, server := range fields {
+		if server = normalizeDNSServer(server); server != "" {
+			normalized = append(normalized, server)
+		}
+	}
+	dnsServerMutex.Lock()
+	customDNSServers = normalized
+	dnsServerMutex.Unlock()
+}
 
 func SetDNSIPVersion(ipVersion string) {
 	dnsIPVersionMutex.Lock()
@@ -38,6 +73,10 @@ func getDNSIPVersion() string {
 }
 
 func lookupDNSHost(ctx context.Context, hostname string) ([]string, error) {
+	resolver := net.DefaultResolver
+	if Dialer.Resolver != nil {
+		resolver = Dialer.Resolver
+	}
 	var network string
 	switch getDNSIPVersion() {
 	case "ipv4":
@@ -45,9 +84,9 @@ func lookupDNSHost(ctx context.Context, hostname string) ([]string, error) {
 	case "ipv6":
 		network = "ip6"
 	default:
-		return net.DefaultResolver.LookupHost(ctx, hostname)
+		return resolver.LookupHost(ctx, hostname)
 	}
-	ips, err := net.DefaultResolver.LookupIP(ctx, network, hostname)
+	ips, err := resolver.LookupIP(ctx, network, hostname)
 	if err != nil {
 		return nil, err
 	}

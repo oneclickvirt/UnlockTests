@@ -35,7 +35,7 @@ func main() {
 	utFlag.StringVar(&httpProxy, "http-proxy", "", "specify HTTP proxy; example: -http-proxy \"http://username:password@127.0.0.1:1080\"")
 	utFlag.StringVar(&socksProxy, "socks-proxy", "", "specify SOCKS5 proxy; example: -socks-proxy \"socks5://username:password@127.0.0.1:1080\"")
 	utFlag.Uint64Var(&conc, "conc", 0, "max concurrent tests (0=unlimited); example: -conc 50")
-	utFlag.BoolVar(&cache, "cache", false, "enable caching and sequential region execution; example: -cache")
+	utFlag.BoolVar(&cache, "cache", false, "enable duplicate test result caching; example: -cache")
 	utFlag.StringVar(&language, "L", "zh", "language; specify 'en' for English or 'zh' for Chinese")
 	utFlag.Parse(os.Args[1:])
 	if help {
@@ -76,11 +76,15 @@ func main() {
 	} else {
 		fmt.Fprintln(utils.ColorStdout, "Github Repo: "+Blue("https://github.com/oneclickvirt/UnlockTests"))
 	}
-	executor.GetIpv4Info(showIP)
-	executor.GetIpv6Info(showIP)
 	readStatus := executor.ReadSelect(language, flagString)
 	if !readStatus {
 		return
+	}
+	if executor.IPV4 {
+		executor.GetIpv4Info(showIP)
+	}
+	if executor.IPV6 {
+		executor.GetIpv6Info(showIP)
 	}
 	if language == "zh" {
 		fmt.Fprintln(utils.ColorStdout, "测试时间: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))

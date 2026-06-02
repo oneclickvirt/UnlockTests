@@ -42,3 +42,15 @@ func TestNormalizeResultKeepsNilNetworkErrorUnified(t *testing.T) {
 		t.Fatalf("expected nil error to stay nil")
 	}
 }
+
+func TestSetCustomDNSServersNormalizesHostPort(t *testing.T) {
+	SetCustomDNSServers("1.1.1.1:53 [2606:4700:4700::1111]:53")
+	defer SetCustomDNSServers("")
+	got := get_nameserver_from_resolv()
+	if len(got) != 2 {
+		t.Fatalf("expected 2 custom DNS servers, got %d", len(got))
+	}
+	if got[0] != "1.1.1.1" || got[1] != "2606:4700:4700::1111" {
+		t.Fatalf("unexpected normalized DNS servers: %#v", got)
+	}
+}

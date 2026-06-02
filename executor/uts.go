@@ -216,7 +216,6 @@ func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar 
 	testInfo := F(nil)
 	testName := testInfo.Name
 	wg.Add(1)
-	total++
 	go func() {
 		defer wg.Done()
 		// panic 恢复机制
@@ -292,6 +291,24 @@ func PreProcess(FuncList [](func(c *http.Client) model.Result)) {
 			Names = append(Names, tp.Name)
 		}
 	}
+}
+
+func uniqueFuncList(FuncList [](func(c *http.Client) model.Result)) [](func(c *http.Client) model.Result) {
+	seen := make(map[string]bool, len(FuncList))
+	unique := make([](func(c *http.Client) model.Result), 0, len(FuncList))
+	for _, f := range FuncList {
+		tp := f(nil)
+		key := tp.Name
+		if key == "" {
+			key = fmt.Sprintf("%p", f)
+		}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		unique = append(unique, f)
+	}
+	return unique
 }
 
 func ProcessFunction(FuncList [](func(c *http.Client) model.Result), c *http.Client, useProgressBar bool, ipVersion string) {
@@ -706,48 +723,42 @@ func finallyPrintResult(language, netType string) string {
 
 	switch language {
 	case "zh":
-		switch netType {
-		case "ipv4", "":
-			result += FormarPrint(platformName)
-		case "ipv6":
-			result += FormarPrint("跨国平台")
-		}
+		result += FormarPrint(platformName)
 	case "en":
-		switch netType {
-		case "ipv4", "":
-			enPlatformName := map[string]string{
-				"跨国平台":         "Global",
-				"跨国平台 + 台湾平台":  "Global + Taiwan",
-				"跨国平台 + 香港平台":  "Global + Hong Kong",
-				"跨国平台 + 日本平台":  "Global + Japan",
-				"跨国平台 + 韩国平台":  "Global + Korea",
-				"跨国平台 + 北美平台":  "Global + North America",
-				"跨国平台 + 南美平台":  "Global + South America",
-				"跨国平台 + 欧洲平台":  "Global + Europe",
-				"跨国平台 + 非洲平台":  "Global + Africa",
-				"跨国平台 + 大洋洲平台": "Global + Oceania",
-				"跨国平台 + 体育平台":  "Global + Sports",
-				"台湾平台":         "Taiwan",
-				"香港平台":         "Hong Kong",
-				"日本平台":         "Japan",
-				"韩国平台":         "Korea",
-				"北美平台":         "North America",
-				"南美平台":         "South America",
-				"欧洲平台":         "Europe",
-				"非洲平台":         "Africa",
-				"大洋洲平台":        "Oceania",
-				"体育平台":         "Sports",
-				"所有平台":         "All Platform",
-			}
-			result += FormarPrint(enPlatformName[platformName])
-		case "ipv6":
-			result += FormarPrint("Global")
+		enPlatformName := map[string]string{
+			"跨国平台":         "Global",
+			"跨国平台 + 台湾平台":  "Global + Taiwan",
+			"跨国平台 + 香港平台":  "Global + Hong Kong",
+			"跨国平台 + 日本平台":  "Global + Japan",
+			"跨国平台 + 韩国平台":  "Global + Korea",
+			"跨国平台 + 北美平台":  "Global + North America",
+			"跨国平台 + 南美平台":  "Global + South America",
+			"跨国平台 + 欧洲平台":  "Global + Europe",
+			"跨国平台 + 非洲平台":  "Global + Africa",
+			"跨国平台 + 大洋洲平台": "Global + Oceania",
+			"跨国平台 + 体育平台":  "Global + Sports",
+			"台湾平台":         "Taiwan",
+			"香港平台":         "Hong Kong",
+			"日本平台":         "Japan",
+			"韩国平台":         "Korea",
+			"北美平台":         "North America",
+			"南美平台":         "South America",
+			"欧洲平台":         "Europe",
+			"非洲平台":         "Africa",
+			"大洋洲平台":        "Oceania",
+			"体育平台":         "Sports",
+			"所有平台":         "All Platform",
 		}
+		result += FormarPrint(enPlatformName[platformName])
 	}
 	return result
 }
 
-func SwitchOptions(c string) {
+func resetOptions() {
+	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
+}
+
+func SwitchOptions(c string) bool {
 	switch c {
 	case "0":
 		M = true
@@ -801,8 +812,24 @@ func SwitchOptions(c string) {
 	case "20":
 		M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = true, true, true, true, true, true, true, true, true, true, true
 	default:
-		M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
+		return false
 	}
+	return true
+}
+
+func parseSelection(flagString string) bool {
+	resetOptions()
+	fields := strings.Fields(flagString)
+	if len(fields) == 0 {
+		return false
+	}
+	for _, c := range fields {
+		if !SwitchOptions(c) {
+			resetOptions()
+			return false
+		}
+	}
+	return true
 }
 
 func ReadSelect(language, flagString string) bool {
@@ -862,11 +889,15 @@ func ReadSelect(language, flagString string) bool {
 			fmt.Println("Failed to read select option.")
 			return false
 		}
-		for _, c := range strings.Split(l, " ") {
-			SwitchOptions(c)
+		if !parseSelection(l) {
+			fmt.Println("Invalid select option.")
+			return false
 		}
 	} else {
-		SwitchOptions(flagString)
+		if !parseSelection(flagString) {
+			fmt.Println("Invalid select option.")
+			return false
+		}
 	}
 	return true
 }
@@ -923,14 +954,14 @@ func RunTests(client *http.Client, ipVersion, language string, useProgressBar bo
 	total = 0
 	wg = &sync.WaitGroup{}
 	utils.SetDNSIPVersion(ipVersion)
-	if useProgressBar {
-		bar = NewBar(0)
-	}
 	funcList := getFuncList()
-	ProcessFunction(funcList, client, useProgressBar, ipVersion)
+	Names = RemoveDuplicates(Names)
+	funcList = uniqueFuncList(funcList)
+	total = int64(len(funcList))
 	if useProgressBar {
-		bar.ChangeMax64(total)
+		bar = NewBar(total)
 	}
+	ProcessFunction(funcList, client, useProgressBar, ipVersion)
 	wg.Wait()
 	if useProgressBar {
 		bar.Finish()
@@ -953,6 +984,7 @@ func SetupInterface(Iface string) {
 }
 
 func SetupDnsServers(DnsServers string) {
+	utils.SetCustomDNSServers(DnsServers)
 	utils.Dialer.Resolver = &net.Resolver{
 		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 			return (&net.Dialer{}).DialContext(ctx, "udp", DnsServers)
@@ -990,8 +1022,11 @@ func SetupSocksProxy(socksProxy string) {
 		fmt.Printf("Warning: Failed to create SOCKS5 connection: %v\n", err)
 		return
 	}
-	// 将 SOCKS5 dialer 包装为 ContextDialer
-	contextDialer := dialer.(proxy.ContextDialer)
+	contextDialer, ok := dialer.(proxy.ContextDialer)
+	if !ok {
+		fmt.Println("Warning: SOCKS5 dialer does not support context")
+		return
+	}
 
 	// 为了保持 IPv4/IPv6 强制模式，我们需要包装 DialContext
 	// AutoTransport 使用 SOCKS5
