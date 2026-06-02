@@ -173,7 +173,7 @@ rm -f ./ut
 ## 在 Go 中使用
 
 ```shell
-go get github.com/oneclickvirt/UnlockTests@latest
+go get github.com/oneclickvirt/UnlockTests@v0.0.36-20260602072908
 ```
 
 ## Thanks
