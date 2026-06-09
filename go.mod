@@ -1,17 +1,17 @@
 module github.com/oneclickvirt/UnlockTests
 
-go 1.24.5
+go 1.25.6
 
 require (
 	github.com/gofrs/uuid/v5 v5.2.0
 	github.com/imroc/req/v3 v3.54.0
 	github.com/mattn/go-colorable v0.1.14
-	github.com/mattn/go-rl v0.0.0-20260413075423-3ae726920de8
+	github.com/mattn/go-rl v0.0.0-20260609133723-efd9b7e94a9b
 	github.com/miekg/dns v1.1.61
 	github.com/oneclickvirt/defaultset v0.0.2-20240624082446
 	github.com/schollz/progressbar/v3 v3.14.4
 	golang.org/x/net v0.41.0
-	golang.org/x/sys v0.33.0
+	golang.org/x/sys v0.46.0
 )
 
 require (

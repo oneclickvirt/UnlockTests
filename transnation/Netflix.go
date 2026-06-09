@@ -133,10 +133,7 @@ func Netflix(c *http.Client) model.Result {
 			}
 			body1 := string(b1)
 			hasOhNo1 = strings.Contains(body1, "Oh no!")
-			hasVideo1 := strings.Contains(body1, `property="og:video"`)
-			hasEpisodes1 := strings.Contains(body1, `data-uia="episodes"`)
-			hasPlayableVideo1 := strings.Contains(body1, `playableVideo`)
-			if hasVideo1 || hasEpisodes1 || hasPlayableVideo1 {
+			if !hasOhNo1 {
 				bodyToCheck = body1
 				region = extractRegionFromPage(body1)
 			}
@@ -148,10 +145,7 @@ func Netflix(c *http.Client) model.Result {
 			}
 			body2 := string(b2)
 			hasOhNo2 = strings.Contains(body2, "Oh no!")
-			hasVideo2 := strings.Contains(body2, `property="og:video"`)
-			hasEpisodes2 := strings.Contains(body2, `data-uia="episodes"`)
-			hasPlayableVideo2 := strings.Contains(body2, `playableVideo`)
-			if hasVideo2 || hasEpisodes2 || hasPlayableVideo2 {
+			if !hasOhNo2 {
 				bodyToCheck = body2
 				region = extractRegionFromPage(body2)
 			}
