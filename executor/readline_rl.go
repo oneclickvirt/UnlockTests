@@ -3,7 +3,7 @@
 package executor
 
 import (
-	rl "github.com/mattn/go-rl"
+	rl "github.com/xqdoo00o/go-rl"
 )
 
 // readLine reads a line of input from the terminal with the given prompt.
