@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"context"
+	"errors"
 	"net"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -42,6 +45,76 @@ func TestNormalizeResultKeepsNilNetworkErrorUnified(t *testing.T) {
 		t.Fatalf("expected nil error to stay nil")
 	}
 }
+
+func TestNormalizeResultDetectsIPv6NoAddressWithCustomClient(t *testing.T) {
+	originalLookupIP := lookupIP
+	lookupIP = func(ctx context.Context, network, hostname string) ([]net.IP, error) {
+		switch network {
+		case "ip4":
+			return []net.IP{net.IPv4(203, 0, 113, 10)}, nil
+		case "ip6":
+			return nil, &net.DNSError{Err: "no such host", Name: hostname, IsNotFound: true}
+		default:
+			return nil, errors.New("unexpected network")
+		}
+	}
+	defer func() { lookupIP = originalLookupIP }()
+	SetDNSIPVersion("ipv6")
+	defer SetDNSIPVersion("")
+
+	err := &url.Error{
+		Op:  "Get",
+		URL: "https://ipv6.example.test/path",
+		Err: errors.New("no suitable address found"),
+	}
+	result := NormalizeResult(
+		&http.Client{Transport: &http.Transport{}},
+		model.Result{Status: model.StatusNetworkErr, Err: err},
+		"IPv6 Service",
+	)
+	if result.Status != model.StatusNoIPv6 {
+		t.Fatalf("expected %s, got %s", model.StatusNoIPv6, result.Status)
+	}
+	if result.Name != "IPv6 Service" {
+		t.Fatalf("expected fallback name, got %q", result.Name)
+	}
+}
+
+func TestNormalizeResultFillsUnexpectedForEmptyStatus(t *testing.T) {
+	result := NormalizeResult(nil, model.Result{}, "Fallback")
+	if result.Name != "Fallback" {
+		t.Fatalf("expected fallback name, got %q", result.Name)
+	}
+	if result.Status != model.StatusUnexpected {
+		t.Fatalf("expected %s, got %s", model.StatusUnexpected, result.Status)
+	}
+}
+
+func TestNormalizeResultMarksTimeout(t *testing.T) {
+	result := NormalizeResult(
+		&http.Client{Transport: Ipv4Transport},
+		model.Result{Name: "Slow", Status: model.StatusNetworkErr, Err: context.DeadlineExceeded},
+		"Fallback",
+	)
+	if result.Status != model.StatusTimeout {
+		t.Fatalf("expected %s, got %s", model.StatusTimeout, result.Status)
+	}
+
+	result = NormalizeResult(
+		&http.Client{Transport: Ipv4Transport},
+		model.Result{Name: "Slow", Status: model.StatusNetworkErr, Err: &timeoutErr{}},
+		"Fallback",
+	)
+	if result.Status != model.StatusTimeout {
+		t.Fatalf("expected net.Error timeout to become %s, got %s", model.StatusTimeout, result.Status)
+	}
+}
+
+type timeoutErr struct{}
+
+func (e *timeoutErr) Error() string   { return "request timed out" }
+func (e *timeoutErr) Timeout() bool   { return true }
+func (e *timeoutErr) Temporary() bool { return true }
 
 func TestSetCustomDNSServersNormalizesHostPort(t *testing.T) {
 	SetCustomDNSServers("1.1.1.1:53 [2606:4700:4700::1111]:53")

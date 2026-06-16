@@ -4,17 +4,26 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
 
+const defaultSDGGGEToken = "e5df59f1-8588-4477-a887-5fe854895493Mj0jmtfbgIhQOUmHQE1W7sLq7G5eSBqcFWqldSPjy6s="
+
 // SD Gundam G Generation Eternal
 // 仅 ipv4 且 post 请求
 func SDGGGE(c *http.Client) model.Result {
 	name := "SD Gundam G"
+	hostname := "api.gl.eternal.channel.or.jp"
 	if c == nil {
 		return model.Result{Name: name}
+	}
+	token := strings.TrimSpace(os.Getenv("UNLOCKTESTS_SDGGGE_TOKEN"))
+	if token == "" {
+		token = defaultSDGGGEToken
 	}
 	rawPayload := "1CR6PntuLeI3yaCYAZdOPxn18bOFYJxUiYtcavqqAHDCjc3C/wozplHYwfhykUStp7Bb/LAhV8aWQkS9sLliHCIgXBvDsWe4pwXvV3cSXkoaBfL23/zytEHlAatOi/32UVYLJhyUsegCRMMGREr2fXqyx970imQ35hqWVj/MRTHS9Bi8iqo9nIqSDTcQqVn3BbuyhJcz52nhfSda2may3QVHkH9QDdFjW9S/2re2cxE3iaE/DUbjB9H8KUpihQB1Emf88I0241ea7CAI1jHel6aZ5Ul4XjTf8ug3Rl/T80A="
 	body, err := base64.StdEncoding.DecodeString(rawPayload)
@@ -31,7 +40,7 @@ func SDGGGE(c *http.Client) model.Result {
 		"X-Master-Url":           "https://clientdata.gl.eternal.channel.or.jp/prd-gl/catalogs/hr0phpfWDVahMJGQIk2OSd6hy35YpQZVKYAo6lKeld-9scMGJw2KTnBDGbS04Gw-i25avFTH55K-yU9TCX2OkQ.json",
 		"X-Language-Master-Url":  "https://clientdata.gl.eternal.channel.or.jp/prd-gl/language_catalogs/hk/F-HORjFKHLai8nLXUdPyQRqzexZNPKIn2O36Hgd2Bxm2RysBNS0-PQHQwfHXEOONog0w5yULtewBaVk-Ndf6nQ.json",
 		"x-app-version-hash":     "20928",
-		"x-token":                "e5df59f1-8588-4477-a887-5fe854895493Mj0jmtfbgIhQOUmHQE1W7sLq7G5eSBqcFWqldSPjy6s=",
+		"x-token":                token,
 		"Accept-Language":        "zh-CN,zh-Hans;q=0.9",
 		"User-Agent":             "GETERNAL/25041500 CFNetwork/3826.400.120 Darwin/24.3.0",
 		"Connection":             "keep-alive",
@@ -41,7 +50,7 @@ func SDGGGE(c *http.Client) model.Result {
 	client = utils.SetReqHeaders(client, headers)
 	resp, err := client.R().SetBody(body).Post(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	switch resp.StatusCode {

@@ -9,10 +9,22 @@ on:
   #   types: [published]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: build-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  GOTOOLCHAIN: auto
+
 jobs:
   build:
     name: Build and Test
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
@@ -20,16 +32,22 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
-        go-version: 'stable'
+        go-version: '1.24.5'
       
     - name: Build and Test on Default Platform
       run: |
+        set -euo pipefail
         go build -v ./...
         go test -v ./...
     
     - name: Delete Existing Release Assets
       run: |
+        set -euo pipefail
         release_id=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/oneclickvirt/UnlockTests/releases/tags/output" | jq -r '.id')
+        if [ -z "$release_id" ] || [ "$release_id" = "null" ]; then
+          echo "Release tag output not found"
+          exit 1
+        fi
         echo "Deleting existing release assets..."
         assets=$(curl -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/oneclickvirt/UnlockTests/releases/$release_id/assets" | jq -r '.[] | .id')
         for asset in $assets; do
@@ -42,6 +60,7 @@ jobs:
     name: Release Go Binary
     runs-on: ubuntu-latest
     needs: build
+    timeout-minutes: 60
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
@@ -49,12 +68,18 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
-        go-version: 'stable'
+        go-version: '1.24.5'
 
     - name: Build and Release
+      env:
+        GOARM_VALUE: ${{ matrix.goarm }}
       run: |
+        set -euo pipefail
         mkdir -p bin
         cd cmd
+        if [ -n "${GOARM_VALUE}" ]; then
+          export GOARM="${GOARM_VALUE}"
+        fi
         CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build \
           -o ../bin/ut-${{ matrix.goos }}-${{ matrix.goarch }} \
           -v \
@@ -64,7 +89,12 @@ jobs:
         
     - name: Upload New Assets
       run: |
+        set -euo pipefail
         release_id=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/oneclickvirt/UnlockTests/releases/tags/output" | jq -r '.id')
+        if [ -z "$release_id" ] || [ "$release_id" = "null" ]; then
+          echo "Release tag output not found"
+          exit 1
+        fi
         echo "Uploading new assets to release..."
         for file in ./bin/*; do
           echo "Uploading $file to release..."
@@ -72,7 +102,7 @@ jobs:
             -H "Content-Type: application/octet-stream" \
             --data-binary @"$file" \
             "https://uploads.github.com/repos/oneclickvirt/UnlockTests/releases/$release_id/assets?name=$(basename "$file")"
-          rm -rf $file
+          rm -f "$file"
         done
 
     strategy:

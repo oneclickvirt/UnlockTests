@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+const defaultStarPlusAuthorization = "c3RhciZicm93c2VyJjEuMC4w.COknIGCR7I6N0M5PGnlcdbESHGkNv7POwhFNL-_vIdg"
 
 // StarPlus
 // www.starplus.com 双栈 且 get 请求
@@ -23,7 +26,7 @@ func StarPlus(c *http.Client) model.Result {
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
@@ -69,8 +72,12 @@ func StarPlus(c *http.Client) model.Result {
 // StarPlus 的 另一个检测逻辑
 func AnotherStarPlus(c *http.Client) model.Result {
 	name := "Star+"
+	authorization := strings.TrimSpace(os.Getenv("UNLOCKTESTS_STARPLUS_AUTHORIZATION"))
+	if authorization == "" {
+		authorization = defaultStarPlusAuthorization
+	}
 	headers := map[string]string{
-		"authorization": "c3RhciZicm93c2VyJjEuMC4w.COknIGCR7I6N0M5PGnlcdbESHGkNv7POwhFNL-_vIdg",
+		"authorization": authorization,
 	}
 	starcontent := "{\"query\":\"mutation registerDevice($input: RegisterDeviceInput!) " +
 		"{\\n            registerDevice(registerDevice: $input) {\\n                grant " +
@@ -82,14 +89,14 @@ func AnotherStarPlus(c *http.Client) model.Result {
 		"\"chrome\",\"browserVersion\":\"96.0.4664\"}}}}"
 	resp, body, err := utils.PostJson(c, "https://star.api.edge.bamgrid.com/graph/v1/device/graphql", starcontent, headers)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, "starplus.com", err, name)
 	}
 	if resp.StatusCode >= 400 {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("resp status code >= 400")}
+		return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("resp status code >= 400")}
 	}
 	var data map[string]interface{}
 	if err := json.Unmarshal([]byte(body), &data); err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
+		return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("can not parse body")}
 	}
 	region := ""
 	inSupportedLocation := false
@@ -107,7 +114,7 @@ func AnotherStarPlus(c *http.Client) model.Result {
 		isUnavailable = true
 	}
 	if region != "" && !isUnavailable && !inSupportedLocation {
-		return model.Result{Name: name, Status: "CDN Relay Available"}
+		return model.Result{Name: name, Status: model.StatusCDNRelay}
 	} else if region != "" && isUnavailable {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if region != "" && inSupportedLocation {

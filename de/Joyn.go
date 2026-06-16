@@ -3,11 +3,15 @@ package de
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"os"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
-	"strings"
 )
+
+const defaultJoynAPIKey = "36lp1t4wto5uu2i2nk57ywy9on1ns5yg"
 
 // Joyn
 // auth.joyn.de 仅 ipv4 且 post 请求
@@ -34,16 +38,20 @@ func Joyn(c *http.Client) model.Result {
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: err}
 	}
+	apiKey := strings.TrimSpace(os.Getenv("UNLOCKTESTS_JOYN_API_KEY"))
+	if apiKey == "" {
+		apiKey = defaultJoynAPIKey
+	}
 
 	url2 := "https://api.joyn.de/content/entitlement-token"
 	headers := map[string]string{
 		"authorization": "Bearer " + res.AccessToken,
-		"x-api-key":     "36lp1t4wto5uu2i2nk57ywy9on1ns5yg",
+		"x-api-key":     apiKey,
 	}
 	payload2 := `{"content_id":"daserste-de-hd","content_type":"LIVE"}`
 	resp2, body2, err2 := utils.PostJson(c, url2, payload2, headers)
 	if err2 != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err2}
+		return utils.HandleNetworkError(c, hostname, err2, name)
 	}
 	defer resp2.Body.Close()
 	var res2a []struct {

@@ -13,7 +13,7 @@ import (
 	"github.com/oneclickvirt/UnlockTests/model"
 )
 
-func lookupIP(ctx context.Context, network, hostname string) ([]net.IP, error) {
+var lookupIP = func(ctx context.Context, network, hostname string) ([]net.IP, error) {
 	resolver := net.DefaultResolver
 	if Dialer.Resolver != nil {
 		resolver = Dialer.Resolver
@@ -49,7 +49,16 @@ func CheckIPv4Support(hostname string) bool {
 
 func IsIPv6Client(client interface{}) bool {
 	httpClient, ok := client.(*http.Client)
-	return ok && httpClient.Transport == Ipv6Transport
+	if !ok {
+		return getDNSIPVersion() == "ipv6"
+	}
+	if httpClient.Transport == Ipv6Transport {
+		return true
+	}
+	if httpClient.Transport == Ipv4Transport {
+		return false
+	}
+	return getDNSIPVersion() == "ipv6"
 }
 
 func extractHostnameFromError(err error) string {
@@ -109,6 +118,23 @@ func isNoAddressError(err error) bool {
 		strings.Contains(errMsg, "nodename nor servname provided")
 }
 
+func isTimeoutError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return true
+	}
+	errMsg := strings.ToLower(err.Error())
+	return strings.Contains(errMsg, "timeout") ||
+		strings.Contains(errMsg, "timed out") ||
+		strings.Contains(errMsg, "deadline exceeded")
+}
+
 // HandleNetworkError 智能处理网络错误，在 IPv6 模式下检测是否是因为不支持 IPv6
 // client: 当前使用的 HTTP 客户端
 // hostname: 要检测的域名
@@ -117,6 +143,10 @@ func isNoAddressError(err error) bool {
 func HandleNetworkError(client interface{}, hostname string, err error, name string) model.Result {
 	if hostname == "" {
 		hostname = extractHostnameFromError(err)
+	}
+
+	if isTimeoutError(err) {
+		return model.Result{Name: name, Status: model.StatusTimeout, Err: err}
 	}
 
 	if IsIPv6Client(client) {
@@ -138,12 +168,18 @@ func NormalizeResult(client interface{}, result model.Result, fallbackName strin
 	if result.Name == "" {
 		result.Name = fallbackName
 	}
+	if result.Name == "" {
+		result.Name = "Unknown"
+	}
 	if result.Status == model.StatusNetworkErr {
 		normalized := HandleNetworkError(client, "", result.Err, result.Name)
 		if result.Err == nil {
 			normalized.Err = nil
 		}
 		return normalized
+	}
+	if result.Status == "" {
+		result.Status = model.StatusUnexpected
 	}
 	return result
 }

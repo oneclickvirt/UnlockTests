@@ -2,10 +2,15 @@ package vn
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"strings"
+
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
-	"net/http"
 )
+
+const defaultTV360Authorization = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxODI1NTEzNDMiLCJ1c2VySWQiOjE4MjU1MTM0MywicHJvZmlsZUlkIjoxODI3MzM0NTUsImR2aSI6MjY5NDY3MTUzLCJjb250ZW50RmlsdGVyIjoiMTAwIiwiZ25hbWUiOiIiLCJpYXQiOjE2ODY1NzIyMDEsImV4cCI6MTY4NzE3NzAwMX0.oi0BKvATgBzPEkqR_liBrvMKXBUiWzp2BQme-biDnwiVhuta0qn_aZo6z3azLdjW5kH6PfEwEkc4K9jCfAK5rw"
 
 // TV360
 // api-v2.tv360.vn 仅 ipv4 且 get 请求 有问题
@@ -19,7 +24,13 @@ func TV360(c *http.Client) model.Result {
 	}
 	url := "http://api-v2.tv360.vn/public/v1/composite/get-link?childId=998335&device_type=WEB_IPHONE&id=19474&network_device_id=prIUMaumjI7dNWKSUxFkEViFygs%3D&t=1686572228&type=film"
 	userAgent := "TV360/31 CFNetwork/1402.0.8 Darwin/22.2.0"
-	authorization := "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxODI1NTEzNDMiLCJ1c2VySWQiOjE4MjU1MTM0MywicHJvZmlsZUlkIjoxODI3MzM0NTUsImR2aSI6MjY5NDY3MTUzLCJjb250ZW50RmlsdGVyIjoiMTAwIiwiZ25hbWUiOiIiLCJpYXQiOjE2ODY1NzIyMDEsImV4cCI6MTY4NzE3NzAwMX0.oi0BKvATgBzPEkqR_liBrvMKXBUiWzp2BQme-biDnwiVhuta0qn_aZo6z3azLdjW5kH6PfEwEkc4K9jCfAK5rw"
+	authorization := strings.TrimSpace(os.Getenv("UNLOCKTESTS_TV360_AUTHORIZATION"))
+	if authorization == "" {
+		authorization = defaultTV360Authorization
+	}
+	if !strings.HasPrefix(strings.ToLower(authorization), "bearer ") {
+		authorization = "Bearer " + authorization
+	}
 	headers := map[string]string{
 		"User-Agent":    userAgent,
 		"userid":        "182551343",

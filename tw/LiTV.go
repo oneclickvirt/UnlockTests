@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -14,6 +15,8 @@ import (
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+const defaultLiTVSignatureKey = "7f4a9c2e8b6d1f3a5e9c7b4d2f8a6e1c"
 
 // LiTV
 // www.litv.tv 仅 ipv4 且 post 请求
@@ -26,19 +29,22 @@ func LiTV(c *http.Client) model.Result {
 	// 获取 device-id
 	deviceID, err := getLiTVDeviceID(c)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	// 获取 PUID
 	puid, err := getLiTVPUID(c)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	assetId := "vod70810-000001M001_1500K"
 	mediaType := "vod"
 	t := time.Now()
 	timestamp := t.UnixMilli()
 	nonce := genLiTVNonce(t)
-	signature := genLiTVSignature(assetId, mediaType, nonce, timestamp)
+	signature, err := genLiTVSignature(assetId, mediaType, nonce, timestamp)
+	if err != nil {
+		return model.Result{Name: name, Status: model.StatusErr, Err: err}
+	}
 	payload := map[string]interface{}{
 		"AssetId":   assetId,
 		"MediaType": mediaType,
@@ -61,7 +67,7 @@ func LiTV(c *http.Client) model.Result {
 		headers,
 	)
 	if err != nil {
-		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
 	bodyString := string(body)
@@ -127,12 +133,15 @@ func genLiTVNonce(t time.Time) string {
 }
 
 // genLiTVSignature 生成签名
-func genLiTVSignature(assetId, mediaType, nonce string, timestamp int64) string {
-	key := "7f4a9c2e8b6d1f3a5e9c7b4d2f8a6e1c"
+func genLiTVSignature(assetId, mediaType, nonce string, timestamp int64) (string, error) {
+	key := strings.TrimSpace(os.Getenv("UNLOCKTESTS_LITV_SIGNATURE_KEY"))
+	if key == "" {
+		key = defaultLiTVSignatureKey
+	}
 	// e + t + r + n + i
 	data := assetId + mediaType + strconv.FormatInt(timestamp, 10) + nonce + key
 	hash := sha256.Sum256([]byte(data))
-	return hex.EncodeToString(hash[:])
+	return hex.EncodeToString(hash[:]), nil
 }
 
 // genBase36 生成指定长度的base36随机字符串

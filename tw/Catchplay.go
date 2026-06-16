@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+const defaultCatchplayAuthorization = "Basic NTQ3MzM0NDgtYTU3Yi00MjU2LWE4MTEtMzdlYzNkNjJmM2E0Ok90QzR3elJRR2hLQ01sSDc2VEoy"
 
 // Catchplay
 // sunapi.catchplay.com 仅 ipv4 且 get 请求
@@ -19,9 +22,13 @@ func Catchplay(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
+	authorization := strings.TrimSpace(os.Getenv("UNLOCKTESTS_CATCHPLAY_AUTHORIZATION"))
+	if authorization == "" {
+		authorization = defaultCatchplayAuthorization
+	}
 	url := "https://sunapi.catchplay.com/geo"
 	headers := map[string]string{
-		"authorization": "Basic NTQ3MzM0NDgtYTU3Yi00MjU2LWE4MTEtMzdlYzNkNjJmM2E0Ok90QzR3elJRR2hLQ01sSDc2VEoy",
+		"authorization": authorization,
 	}
 	client := utils.Req(c)
 	client = utils.SetReqHeaders(client, headers)

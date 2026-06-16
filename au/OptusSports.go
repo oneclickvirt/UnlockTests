@@ -15,7 +15,7 @@ func OptusSports(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	url := "https://sport.optus.com.au/api/userauth/validate/web/username/restriction.check@gmail.com"
+	url := "https://sport.optus.com.au/api/userauth/validate/web/username/unlocktest@example.com"
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {

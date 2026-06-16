@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+const defaultChannel5Auth = "0_rZDiY0hp_TNcDyk2uD-Kl40HqDbXs7hOawxyqPnbI"
 
 // Channel5
 // cassie.channel5.com 仅 ipv4 且 get 请求
@@ -21,7 +25,11 @@ func Channel5(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
-	url := fmt.Sprintf("https://cassie.channel5.com/api/v2/live_media/my5desktopng/C5.json?timestamp=%d&auth=0_rZDiY0hp_TNcDyk2uD-Kl40HqDbXs7hOawxyqPnbI", timestamp)
+	auth := strings.TrimSpace(os.Getenv("UNLOCKTESTS_CHANNEL5_AUTH"))
+	if auth == "" {
+		auth = defaultChannel5Auth
+	}
+	url := fmt.Sprintf("https://cassie.channel5.com/api/v2/live_media/my5desktopng/C5.json?timestamp=%d&auth=%s", timestamp, url.QueryEscape(auth))
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)
 	if err != nil {

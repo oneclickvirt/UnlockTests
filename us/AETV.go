@@ -5,12 +5,15 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+const defaultAETVVideoMetaToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Njk2NzU2NDAsImV4cCI6MTc2OTY3OTI0MCwicHBsSWQiOiIzMDU0ODkiLCJpc0JlaGluZFdhbGwiOmZhbHNlLCJpc0xvbmdGb3JtIjp0cnVlLCJlbmNvZGVyIjoiYml0bW92aW5fdjEiLCJyZW5kaXRpb25zTGlzdCI6bnVsbCwicmVuZGl0aW9uc1BhdGhQcmVmaXgiOiJiaXRtb3Zpbi9BRVROLUFFVFZfVk1TL0FFTl9PWlJLXzMwNTQ4OV9HTEJfNDkzNjY5XzIzOThfNjBfMjAyNTAxMDRfMDFfQUVUTi1BRVRWX1ZNUyIsInJlZ2lvbnNBdmFpbGFibGUiOlsiVVMiLCJDQSIsIkFTIiwiR1UiLCJNUCIsIlBSIiwiVkkiLCJVTSJdfQ._IBIJ-Yh8X9hGOGglCNQWcW6WZKrUbjTNQ8Rdon8u_A"
 
 // extractAETVCountryCode extracts country code from AETN meta tag
 func extractAETVCountryCode(html string) string {
@@ -64,6 +67,10 @@ func AETV(c *http.Client) model.Result {
 							q2.Set("client", "tve-web-theo")
 							q2.Set("sig", "00697b29892c60831e3de250beaec91bd6ab73901a0ffb723b533130425058484d6c62")
 							u2.RawQuery = q2.Encode()
+							videoMetaToken := strings.TrimSpace(os.Getenv("UNLOCKTESTS_AETV_VIDEO_META_TOKEN"))
+							if videoMetaToken == "" {
+								videoMetaToken = defaultAETVVideoMetaToken
+							}
 							client2 := utils.Req(c)
 							resp2, err2 := client2.R().
 								SetHeader("accept", "*/*").
@@ -77,7 +84,7 @@ func AETV(c *http.Client) model.Result {
 								SetHeader("sec-fetch-mode", "cors").
 								SetHeader("sec-fetch-site", "cross-site").
 								SetHeader("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0").
-								SetHeader("x-video-meta-token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Njk2NzU2NDAsImV4cCI6MTc2OTY3OTI0MCwicHBsSWQiOiIzMDU0ODkiLCJpc0JlaGluZFdhbGwiOmZhbHNlLCJpc0xvbmdGb3JtIjp0cnVlLCJlbmNvZGVyIjoiYml0bW92aW5fdjEiLCJyZW5kaXRpb25zTGlzdCI6bnVsbCwicmVuZGl0aW9uc1BhdGhQcmVmaXgiOiJiaXRtb3Zpbi9BRVROLUFFVFZfVk1TL0FFTl9PWlJLXzMwNTQ4OV9HTEJfNDkzNjY5XzIzOThfNjBfMjAyNTAxMDRfMDFfQUVUTi1BRVRWX1ZNUyIsInJlZ2lvbnNBdmFpbGFibGUiOlsiVVMiLCJDQSIsIkFTIiwiR1UiLCJNUCIsIlBSIiwiVkkiLCJVTSJdfQ._IBIJ-Yh8X9hGOGglCNQWcW6WZKrUbjTNQ8Rdon8u_A").
+								SetHeader("x-video-meta-token", videoMetaToken).
 								Get(u2.String())
 							if err2 == nil && resp2 != nil {
 								defer resp2.Body.Close()

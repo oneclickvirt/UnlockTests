@@ -1,0 +1,47 @@
+# Local environment and secrets
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.p12
+*.pfx
+*password*
+*passwd*
+*secret*
+
+# Local databases and state
+*.db
+*.sqlite
+*.sqlite3
+*.bolt
+*.badger/
+
+# Build outputs
+ut
+bin/
+dist/
+build/
+coverage.txt
+*.coverprofile
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+
+# Screenshots and browser artifacts
+screenshots/
+playwright-report/
+test-results/
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/

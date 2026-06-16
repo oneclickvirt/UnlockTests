@@ -3,15 +3,25 @@ name: CI
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  GOTOOLCHAIN: auto
+
 jobs:
   test:
+    timeout-minutes: 30
     strategy:
       matrix:
         go: [ '1.24.5' ]
         os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
-    env:
-      GOTOOLCHAIN: auto
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -24,6 +34,7 @@ jobs:
       - name: Create Tag
         if: success() # 仅在测试成功时运行
         run: |
+          set -euo pipefail
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
           TAG="v0.0.36-$(date +'%Y%m%d%H%M%S')"
@@ -35,12 +46,14 @@ jobs:
       - name: Update README.md
         if: success() # 仅在测试成功后运行
         run: |
+          set -euo pipefail
           sed -i "s|go get github.com/oneclickvirt/UnlockTests@.*|go get github.com/oneclickvirt/UnlockTests@${TAG}|" README.md
         env:
           TAG: ${{ env.TAG }}
       - name: Commit and Push README.md
         if: success() # 仅在测试成功后运行
         run: |
+          set -euo pipefail
           git add README.md
           git commit -m "Update README.md with new tag ${TAG}"
           git push origin main

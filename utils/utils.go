@@ -15,15 +15,15 @@ import (
 )
 
 var ClientProxy = http.ProxyFromEnvironment
+var Dialer = &net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}
 var AutoTransport = &http.Transport{
 	Proxy:       ClientProxy,
-	DialContext: (&net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
+	DialContext: Dialer.DialContext,
 }
 var AutoHttpClient = &http.Client{
 	Timeout:   30 * time.Second,
 	Transport: AutoTransport,
 }
-var Dialer = &net.Dialer{}
 var Ipv4Transport = &http.Transport{
 	Proxy: ClientProxy,
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -114,11 +114,7 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*http.Client, error) {
 func Req(c *http.Client) *req.Client {
 	client := req.C().Clone()
 	client.ImpersonateChrome()
-	// 复制 Transport 以避免修改原始的 Transport
-	if transport, ok := c.Transport.(*http.Transport); ok {
-		client.Transport.DialContext = transport.DialContext
-		client.SetProxy(transport.Proxy)
-	}
+	configureReqTransport(client, c)
 	client.R().
 		SetRetryCount(2).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
@@ -134,17 +130,43 @@ func ReqDefault(c *http.Client) *req.Client {
 	if client.Headers == nil {
 		client.Headers = make(http.Header)
 	}
-	// 复制 Transport 以避免修改原始的 Transport
-	if transport, ok := c.Transport.(*http.Transport); ok {
-		client.Transport.DialContext = transport.DialContext
-		client.SetProxy(transport.Proxy)
-	}
+	configureReqTransport(client, c)
 	client.R().
 		SetRetryCount(2).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
 		SetRetryFixedInterval(2 * time.Second)
 	client.SetTimeout(10 * time.Second)
 	return client
+}
+
+func configureReqTransport(client *req.Client, c *http.Client) {
+	if client == nil || c == nil {
+		return
+	}
+	transport, ok := c.Transport.(*http.Transport)
+	if !ok || transport == nil {
+		return
+	}
+	cloned := transport.Clone()
+	client.Transport.Proxy = cloned.Proxy
+	client.Transport.OnProxyConnectResponse = cloned.OnProxyConnectResponse
+	client.Transport.DialContext = cloned.DialContext
+	client.Transport.DialTLSContext = cloned.DialTLSContext
+	client.Transport.TLSClientConfig = cloned.TLSClientConfig
+	client.Transport.TLSHandshakeTimeout = cloned.TLSHandshakeTimeout
+	client.Transport.DisableKeepAlives = cloned.DisableKeepAlives
+	client.Transport.DisableCompression = cloned.DisableCompression
+	client.Transport.MaxIdleConns = cloned.MaxIdleConns
+	client.Transport.MaxIdleConnsPerHost = cloned.MaxIdleConnsPerHost
+	client.Transport.MaxConnsPerHost = cloned.MaxConnsPerHost
+	client.Transport.IdleConnTimeout = cloned.IdleConnTimeout
+	client.Transport.ResponseHeaderTimeout = cloned.ResponseHeaderTimeout
+	client.Transport.ExpectContinueTimeout = cloned.ExpectContinueTimeout
+	client.Transport.ProxyConnectHeader = cloned.ProxyConnectHeader
+	client.Transport.GetProxyConnectHeader = cloned.GetProxyConnectHeader
+	client.Transport.MaxResponseHeaderBytes = cloned.MaxResponseHeaderBytes
+	client.Transport.WriteBufferSize = cloned.WriteBufferSize
+	client.Transport.ReadBufferSize = cloned.ReadBufferSize
 }
 
 // SetReqHeaders

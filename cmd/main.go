@@ -15,9 +15,6 @@ import (
 )
 
 func main() {
-	go func() {
-		req.C().R().Get("https://hits.spiritlhl.net/UnlockTests.svg?action=hit&title=Hits&title_bg=%23555555&count_bg=%230eecf8&edge_flat=false")
-	}()
 	mode := 0
 	var showVersion, help, showIP, useBar, cache bool
 	var Iface, DnsServers, httpProxy, socksProxy, language, flagString string
@@ -37,7 +34,9 @@ func main() {
 	utFlag.Uint64Var(&conc, "conc", 0, "max concurrent tests (0=unlimited); example: -conc 50")
 	utFlag.BoolVar(&cache, "cache", false, "enable duplicate test result caching; example: -cache")
 	utFlag.StringVar(&language, "L", "zh", "language; specify 'en' for English or 'zh' for Chinese")
-	utFlag.Parse(os.Args[1:])
+	if err := utFlag.Parse(os.Args[1:]); err != nil {
+		return
+	}
 	if help {
 		fmt.Printf("Usage: %s [options]\n", os.Args[0])
 		utFlag.PrintDefaults()
@@ -45,6 +44,14 @@ func main() {
 	}
 	if showVersion {
 		fmt.Println(model.UnlockTestsVersion)
+		return
+	}
+	if mode != 0 && mode != 4 && mode != 6 {
+		fmt.Fprintf(os.Stderr, "invalid mode: %d; expected 0, 4, or 6\n", mode)
+		return
+	}
+	if language != "zh" && language != "en" {
+		fmt.Fprintf(os.Stderr, "invalid language: %s; expected zh or en\n", language)
 		return
 	}
 	if Iface != "" {
@@ -80,6 +87,7 @@ func main() {
 	if !readStatus {
 		return
 	}
+	trackHit()
 	if executor.IPV4 {
 		executor.GetIpv4Info(showIP)
 	}
@@ -103,4 +111,12 @@ func main() {
 		fmt.Println("Press Enter to exit...")
 		fmt.Scanln()
 	}
+}
+
+func trackHit() {
+	go func() {
+		client := req.C()
+		client.SetTimeout(2 * time.Second)
+		_, _ = client.R().Get("https://hits.spiritlhl.net/UnlockTests.svg?action=hit&title=Hits&title_bg=%23555555&count_bg=%230eecf8&edge_flat=false")
+	}()
 }

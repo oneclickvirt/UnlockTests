@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+const defaultSetantaAPIKey = "857a1e5d-e35e-4fdf-805b-a87b6f8364bf"
 
 // SetantaSports
 // dce-frontoffice.imggaming.com 仅 ipv4 且 get 请求
@@ -18,11 +22,15 @@ func SetantaSports(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
+	apiKey := strings.TrimSpace(os.Getenv("UNLOCKTESTS_SETANTA_API_KEY"))
+	if apiKey == "" {
+		apiKey = defaultSetantaAPIKey
+	}
 	url := "https://dce-frontoffice.imggaming.com/api/v2/consent-prompt"
 	headers := map[string]string{
 		"User-Agent":      model.UA_Browser,
 		"Realm":           "dce.adjara",
-		"x-api-key":       "857a1e5d-e35e-4fdf-805b-a87b6f8364bf",
+		"x-api-key":       apiKey,
 		"Accept-Language": "en-US",
 	}
 	client := utils.Req(c)
@@ -40,7 +48,7 @@ func SetantaSports(c *http.Client) model.Result {
 		OutsideAllowedTerritories bool `json:"outsideAllowedTerritories"`
 	}
 	if err := json.Unmarshal(b, &consentResponse); err != nil {
-		return utils.HandleNetworkError(c, hostname, err, name)
+		return model.Result{Name: name, Status: model.StatusUnexpected, Err: err}
 	}
 	if consentResponse.OutsideAllowedTerritories {
 		return model.Result{Name: name, Status: model.StatusNo}

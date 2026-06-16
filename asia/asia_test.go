@@ -1,3 +1,6 @@
+//go:build live
+// +build live
+
 package asia
 
 import (

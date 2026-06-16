@@ -48,16 +48,21 @@ func extractHeaderValue(resp *req.Response, headerName string) string {
 // AISPlay
 func AISPlay(c *http.Client) model.Result {
 	name := "AIS Play"
-	hostname := "ais-vidnt.com"
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	userId := "09e8b25510"
-	userPasswd := "e49e9f9e7f"
+	return AnotherAISPlay(c)
+}
+
+func legacyAISPlay(c *http.Client) model.Result {
+	name := "AIS Play"
+	hostname := "ais-vidnt.com"
+	userId := generateMD5(genUUID())[:10]
+	loginPass := generateMD5(genUUID())[:10]
 	fakeApiKey := generateMD5(genUUID())
 	fakeUdid := generateMD5(genUUID())
 	timestamp := fmt.Sprint(time.Now().Unix())
-	url := fmt.Sprintf("https://web-tls.ais-vidnt.com/device/login/?d=gstweb&gst=1&user=%s&pass=%s", userId, userPasswd)
+	url := fmt.Sprintf("https://web-tls.ais-vidnt.com/device/login/?d=gstweb&gst=1&user=%s&pass=%s", userId, loginPass)
 	headers := map[string]string{
 		"accept-language":    "th",
 		"api-version":        "2.8.2",

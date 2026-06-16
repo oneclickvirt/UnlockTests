@@ -23,7 +23,7 @@ func PrettyDerby(c *http.Client) model.Result {
 		"Cache-Control":             "no-cache",
 		"DNT":                       "1",
 		"Pragma":                    "no-cache",
-		"Sec-CH-UA":                 `"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"` ,
+		"Sec-CH-UA":                 `"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"`,
 		"Sec-CH-UA-Mobile":          "?0",
 		"Sec-CH-UA-Platform":        "macOS",
 		"Sec-Fetch-Dest":            "document",

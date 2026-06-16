@@ -6,11 +6,14 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+const defaultDisneyAuthorization = "ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84"
 
 // DisneyPlus
 // www.disneyplus.com 双栈 且 post 请求
@@ -20,11 +23,16 @@ func DisneyPlus(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
+	disneyAuth := strings.TrimSpace(os.Getenv("UNLOCKTESTS_DISNEY_AUTHORIZATION"))
+	if disneyAuth == "" {
+		disneyAuth = defaultDisneyAuthorization
+	}
+	deviceAuth, tokenAuth := disneyAuthorizations(disneyAuth)
 	// 首次请求，获取assertion
 	url1 := "https://disney.api.edge.bamgrid.com/devices"
 	playload := `{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","attributes":{}}`
 	headers := map[string]string{
-		"authorization": "Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84",
+		"authorization": deviceAuth,
 		"Content-Type":  "application/json",
 	}
 	client := utils.Req(c)
@@ -60,7 +68,7 @@ func DisneyPlus(c *http.Client) model.Result {
 	}
 	url2 := "https://disney.api.edge.bamgrid.com/token"
 	headers2 := map[string]string{
-		"authorization": "ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84",
+		"authorization": tokenAuth,
 	}
 	client = utils.SetReqHeaders(client, headers2)
 	resp2, err := client.R().SetFormDataFromValues(data).Post(url2)
@@ -97,7 +105,7 @@ func DisneyPlus(c *http.Client) model.Result {
 	url4 := "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql"
 	playload4 := fmt.Sprintf(`{"query":"mutation refreshToken($input: RefreshTokenInput!) {\n refreshToken(refreshToken: $input) {\n activeSession {\n sessionId\n }\n }\n}","variables":{"input":{"refreshToken":"%s"}}}`, res2.RefreshToken)
 	headers4 := map[string]string{
-		"authorization": "ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84",
+		"authorization": tokenAuth,
 	}
 	resp4, body4, err := utils.PostJson(c, url4, playload4, headers4)
 	if err != nil {
@@ -114,4 +122,13 @@ func DisneyPlus(c *http.Client) model.Result {
 	result1, result2, result3 := utils.CheckDNS(hostname)
 	unlockType := utils.GetUnlockType(result1, result2, result3)
 	return model.Result{Name: name, Status: model.StatusYes, Region: strings.ToLower(region), UnlockType: unlockType}
+}
+
+func disneyAuthorizations(authorization string) (deviceAuth, tokenAuth string) {
+	authorization = strings.TrimSpace(authorization)
+	if strings.HasPrefix(strings.ToLower(authorization), "bearer ") {
+		raw := strings.TrimSpace(authorization[len("Bearer "):])
+		return "Bearer " + raw, raw
+	}
+	return "Bearer " + authorization, authorization
 }

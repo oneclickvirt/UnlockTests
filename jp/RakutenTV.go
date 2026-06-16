@@ -21,7 +21,6 @@ func RakutenTV(c *http.Client) model.Result {
 	url := "https://api.tv.rakuten.co.jp/content/playinfo.json?content_id=476611&device_id=14&trailer=1&auth=0&log=0&serial_code=&tmp_eng_flag=1&multi_audio_support=1&_=1716694365356"
 	headers := map[string]string{
 		"connection": "keep-alive",
-		"Cookie":     "alt_id=kdPG3ErDszsWchi~f3P7Y3Mk; _ra=1716693934724|fbf06bf6-0e63-49bc-b5ae-ea8e785126ba; sec_token=6d518581124ba17c1b9968dca83aba7d441dcf88s%3A40%3A%220f817994db4925695da3375e3248a7552d981647%22%3B",
 		"origin":     "https://tv.rakuten.co.jp",
 		"referer":    "https://tv.rakuten.co.jp/",
 	}

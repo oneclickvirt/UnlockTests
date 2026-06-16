@@ -3,10 +3,14 @@ package jp
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+const defaultLeminoServiceToken = "f365771afd91452fa279863f240c233d"
 
 // Lemino
 // if.lemino.docomo.ne.jp 双栈 且 get 请求
@@ -15,6 +19,10 @@ func Lemino(c *http.Client) model.Result {
 	hostname := "docomo.ne.jp"
 	if c == nil {
 		return model.Result{Name: name}
+	}
+	serviceToken := strings.TrimSpace(os.Getenv("UNLOCKTESTS_LEMINO_SERVICE_TOKEN"))
+	if serviceToken == "" {
+		serviceToken = defaultLeminoServiceToken
 	}
 	url := "https://if.lemino.docomo.ne.jp/v1/user/delivery/watch/ready"
 	headers := map[string]string{
@@ -28,7 +36,7 @@ func Lemino(c *http.Client) model.Result {
 		"Sec-Fetch-Dest":     "empty",
 		"Sec-Fetch-Mode":     "cors",
 		"Sec-Fetch-Site":     "same-site",
-		"X-Service-Token":    "f365771afd91452fa279863f240c233d",
+		"X-Service-Token":    serviceToken,
 		"X-Trace-ID":         "556db33f-d739-4a82-84df-dd509a8aa179",
 		"sec-ch-ua":          model.UA_SecCHUA,
 	}

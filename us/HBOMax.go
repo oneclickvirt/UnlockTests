@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
+
+const defaultHBOMaxVPNCheckST = "eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiJ0b2tlbi0wOWQxOTg4Yy1mZmUzLTQxMDEtOWI5My0yNDU1ZTkyNGQ1YjYiLCJpc3MiOiJmcGEtaXNzdWVyIiwic3ViIjoiVVNFUklEOmJvbHQ6YjYzOTgxZWQtNzA2MC00ZGYwLThkZGItZjA2YjFkNWRjZWVkIiwiaWF0IjoxNzQzODQwMzgwLCJleHAiOjIwNTkyMDAzODAsInR5cGUiOiJBQ0NFU1NfVE9LRU4iLCJzdWJkaXZpc2lvbiI6ImJlYW1fYW1lciIsInNjb3BlIjoiZGVmYXVsdCIsImlpZCI6IjQwYTgzZjNlLTY4OTktNDE3Mi1hMWY2LWJjZDVjN2ZkNjA4NSIsInZlcnNpb24iOiJ2MyIsImFub255bW91cyI6ZmFsc2UsImRldmljZUlkIjoiNWY3YzViZjQtYjc4Ny00NDRjLWJhYTYtMzU5MzgwYWFiM2RmIn0.f5HTgIV2v0nQQDp5LQG0xqLrxyACdvnMDiWO_viX_CUGqtc5ncSjp_LgM30QFkkMnINFhzKEGRpsZvb-o3Pj_Z39uRBr5LCeiCPR7ssV-_SXyRFVRRDEB2lpxyz7jmdD1SxvA06HnEwTbZQzlbZ7g9GXq02yNdEfHlqYEh_4WF88UbXfeieYTd4TH7kwN1RE50NfQUS6f0WmzpAbpiULyd87mpTeynchFNMMz-YHVzZ_-nDW6geihXc3tS0FKVSR8fdOSPQFzEYOLCfhInufiPahiXI-OKF89aShAqM-y4Hx_eukGnsq3mO5wa3unnqVr9Kzc61BIhHh1Hs2bqYiYg"
 
 type hboTokenResponse struct {
 	Data struct {
@@ -53,9 +57,10 @@ func HBOMax(c *http.Client) model.Result {
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
+	defer tokenResp.Body.Close()
 	tokenBody, err := io.ReadAll(tokenResp.Body)
 	if err != nil {
-		return model.Result{Status: model.StatusNetworkErr, Err: err}
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	var tokenData hboTokenResponse
 	if err := json.Unmarshal(tokenBody, &tokenData); err != nil {
@@ -74,9 +79,10 @@ func HBOMax(c *http.Client) model.Result {
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
+	defer sessionResp.Body.Close()
 	sessionBody, err := io.ReadAll(sessionResp.Body)
 	if err != nil {
-		return model.Result{Status: model.StatusNetworkErr, Err: err}
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	var sessionData hboSessionResponse
 	if err := json.Unmarshal(sessionBody, &sessionData); err != nil {
@@ -96,9 +102,10 @@ func HBOMax(c *http.Client) model.Result {
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
+	defer userResp.Body.Close()
 	userBody, err := io.ReadAll(userResp.Body)
 	if err != nil {
-		return model.Result{Status: model.StatusNetworkErr, Err: err}
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	var userData hboUserResponse
 	if err := json.Unmarshal(userBody, &userData); err != nil {
@@ -110,9 +117,10 @@ func HBOMax(c *http.Client) model.Result {
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
+	defer checkResp.Body.Close()
 	checkBody, err := io.ReadAll(checkResp.Body)
 	if err != nil {
-		return model.Result{Status: model.StatusNetworkErr, Err: err}
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 	}
 	body := string(checkBody)
 	availableRegion := strings.ToUpper(strings.Join(
@@ -121,20 +129,26 @@ func HBOMax(c *http.Client) model.Result {
 				strings.Split(body, "\"url\":\"/")[1:], " ")),
 		" "))
 	if region != "" && strings.Contains(availableRegion, region) {
-		// VPN检测
-		vpnCheckResp, err := client.R().
-			SetHeader("Content-Type", "application/x-www-form-urlencoded").
-			SetBody("st=eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiJ0b2tlbi0wOWQxOTg4Yy1mZmUzLTQxMDEtOWI5My0yNDU1ZTkyNGQ1YjYiLCJpc3MiOiJmcGEtaXNzdWVyIiwic3ViIjoiVVNFUklEOmJvbHQ6YjYzOTgxZWQtNzA2MC00ZGYwLThkZGItZjA2YjFkNWRjZWVkIiwiaWF0IjoxNzQzODQwMzgwLCJleHAiOjIwNTkyMDAzODAsInR5cGUiOiJBQ0NFU1NfVE9LRU4iLCJzdWJkaXZpc2lvbiI6ImJlYW1fYW1lciIsInNjb3BlIjoiZGVmYXVsdCIsImlpZCI6IjQwYTgzZjNlLTY4OTktNDE3Mi1hMWY2LWJjZDVjN2ZkNjA4NSIsInZlcnNpb24iOiJ2MyIsImFub255bW91cyI6ZmFsc2UsImRldmljZUlkIjoiNWY3YzViZjQtYjc4Ny00NDRjLWJhYTYtMzU5MzgwYWFiM2RmIn0.f5HTgIV2v0nQQDp5LQG0xqLrxyACdvnMDiWO_viX_CUGqtc5ncSjp_LgM30QFkkMnINFhzKEGRpsZvb-o3Pj_Z39uRBr5LCeiCPR7ssV-_SXyRFVRRDEB2lpxyz7jmdD1SxvA06HnEwTbZQzlbZ7g9GXq02yNdEfHlqYEh_4WF88UbXfeieYTd4TH7kwN1RE50NfQUS6f0WmzpAbpiULyd87mpTeynchFNMMz-YHVzZ_-nDW6geihXc3tS0FKVSR8fdOSPQFzEYOLCfhInufiPahiXI-OKF89aShAqM-y4Hx_eukGnsq3mO5wa3unnqVr9Kzc61BIhHh1Hs2bqYiYg").
-			Post("https://default.any-any.prd.api.max.com/any/playback/v1/playbackInfo")
-		if err != nil {
-			return utils.HandleNetworkError(c, hostname, err, name)
+		vpnCheckToken := strings.TrimSpace(os.Getenv("UNLOCKTESTS_HBOMAX_VPN_CHECK_ST"))
+		if vpnCheckToken == "" {
+			vpnCheckToken = defaultHBOMaxVPNCheckST
 		}
-		vpnCheckBody, err := io.ReadAll(vpnCheckResp.Body)
-		if err != nil {
-			return model.Result{Status: model.StatusNetworkErr, Err: err}
-		}
-		if strings.Contains(string(vpnCheckBody), "VPN") {
-			return model.Result{Name: name, Status: model.StatusNo}
+		if vpnCheckToken != "" {
+			vpnCheckResp, err := client.R().
+				SetHeader("Content-Type", "application/x-www-form-urlencoded").
+				SetBody("st=" + url.QueryEscape(vpnCheckToken)).
+				Post("https://default.any-any.prd.api.max.com/any/playback/v1/playbackInfo")
+			if err != nil {
+				return utils.HandleNetworkError(c, hostname, err, name)
+			}
+			defer vpnCheckResp.Body.Close()
+			vpnCheckBody, err := io.ReadAll(vpnCheckResp.Body)
+			if err != nil {
+				return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
+			}
+			if strings.Contains(string(vpnCheckBody), "VPN") {
+				return model.Result{Name: name, Status: model.StatusNo}
+			}
 		}
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)

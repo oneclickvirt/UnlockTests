@@ -10,8 +10,6 @@
 
 ## 安装
 
-安装脚本需要 `curl` 和 `wget`。脚本会根据当前系统和架构下载 release 中的 `ut` 二进制文件，并安装到 `/usr/bin/ut`。
-
 ```shell
 curl https://raw.githubusercontent.com/oneclickvirt/UnlockTests/main/ut_install.sh -sSf | bash
 ```
@@ -118,6 +116,35 @@ Usage: ut [options]
 | `-conc` | 限制最大并发检测数量，`0` 表示不额外限制 | `ut -conc 50` |
 | `-cache` | 启用同名检测结果缓存。同一进程内重复执行时可复用结果；组合或全平台检测默认会在发起请求前按名称去重 | `ut -cache` |
 
+## 环境变量
+
+以下变量用于覆盖源码内置的历史默认参数；未设置时仍沿用默认值以保持旧版行为。部分默认值属于临时授权或签名参数，服务方变更或过期后可通过环境变量替换。
+
+| 变量 | 说明 |
+|------|------|
+| `UNLOCKTESTS_KPLUS_SSO_TOKEN` | 覆盖 K+ 检测所需的 SSO token；未设置时沿用内置默认值。 |
+| `UNLOCKTESTS_TV360_AUTHORIZATION` | 覆盖 TV360 检测所需的 Bearer token；可填写完整 `Bearer ...` 或仅填写 token。 |
+| `UNLOCKTESTS_VIDEOMARKET_AUTHORIZATION` | 覆盖 VideoMarket 检测所需的 Bearer token；可填写完整 `Bearer ...` 或仅填写 token。 |
+| `UNLOCKTESTS_NLZIET_AUTHORIZATION` | 覆盖 NLZIET 认证检测所需的 Bearer token；认证检测失败时仍会回退到 CDN 地区检测。 |
+| `UNLOCKTESTS_KPLUS_PROVISION_DATA` | 覆盖 K+ 检测所需的 provisionData。 |
+| `UNLOCKTESTS_NAVERTV_KEY` | 覆盖 Naver TV 请求签名密钥。 |
+| `UNLOCKTESTS_LEMINO_SERVICE_TOKEN` | 覆盖 Lemino 服务 token。 |
+| `UNLOCKTESTS_SKYGO_NZ_AUTH_URL` | 覆盖 SkyGo NZ fallback 授权 URL。 |
+| `UNLOCKTESTS_NEONTV_AUTHORIZATION` | 覆盖 Neon TV 检测所需的 Bearer token；可填写完整 `Bearer ...` 或仅填写 token。 |
+| `UNLOCKTESTS_CHANNEL5_AUTH` | 覆盖 Channel 5 live media auth 参数。 |
+| `UNLOCKTESTS_MGMPLUS_API_KEY` | 覆盖 MGM+ 会话 API key。 |
+| `UNLOCKTESTS_ESPN_SUBJECT_TOKEN` | 覆盖 ESPN+ token exchange 的 subject token。 |
+| `UNLOCKTESTS_ESPN_AUTHORIZATION` | 覆盖 ESPN+ API authorization；可填写完整 `Bearer ...` 或仅填写 token。 |
+| `UNLOCKTESTS_LITV_SIGNATURE_KEY` | 覆盖 LiTV 签名密钥。 |
+| `UNLOCKTESTS_HBOMAX_VPN_CHECK_ST` | 覆盖 HBO Max VPN 二次校验 token。 |
+| `UNLOCKTESTS_AETV_VIDEO_META_TOKEN` | 覆盖 A&E TV video meta token。 |
+| `UNLOCKTESTS_DISNEY_AUTHORIZATION` | 覆盖 Disney+ 设备和 token exchange authorization；可填写完整 `Bearer ...` 或仅填写 token。 |
+| `UNLOCKTESTS_STARPLUS_AUTHORIZATION` | 覆盖 Star+ CDN Relay 二次检测 authorization。 |
+| `UNLOCKTESTS_JOYN_API_KEY` | 覆盖 Joyn entitlement token API key。 |
+| `UNLOCKTESTS_SETANTA_API_KEY` | 覆盖 Setanta Sports consent API key。 |
+| `UNLOCKTESTS_SDGGGE_TOKEN` | 覆盖 SD Gundam G 检测所需 `x-token`。 |
+| `UNLOCKTESTS_CATCHPLAY_AUTHORIZATION` | 覆盖 CatchPlay+ geo API authorization。 |
+
 ## 示例
 
 ```bash
@@ -156,9 +183,11 @@ ut -I eth0 -f 0
 | `NO` | 不可解锁 |
 | `Restricted` | 仅部分内容可用 |
 | `Banned` | 当前出口被服务方封禁或限制 |
+| `TIMEOUT` | 单个平台检测超时 |
 | `Failed (Network Error)` | 网络连接错误 |
 | `N/A (DNS Resolve Failed)` | DNS 解析失败 |
 | `N/A (No IPv6 Support)` | 当前 IPv6 检测中，目标域名无 IPv6 支持 |
+| `CDN Relay Available` | 检测到 CDN Relay 可用 |
 | `Unknown` | 响应不符合已知判断逻辑 |
 
 部分支持区域判断的项目会显示 `Region`，部分项目会根据 DNS 检测结果标注 `Native`、`Via DNS` 或 `In Proxy`。
@@ -174,6 +203,54 @@ rm -f ./ut
 
 ```shell
 go get github.com/oneclickvirt/UnlockTests@v0.0.36-20260602072908
+```
+
+结构化接口适合在 goecs 等项目中直接调用，支持 `context.Context`、菜单编号选择、IPv4/IPv6 独立检测和并发上限：
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/oneclickvirt/UnlockTests/executor"
+)
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	results, err := executor.RunStructured(ctx, executor.RunOptions{
+		Selection:   "0 10",
+		IPVersion:   "ipv6",
+		Concurrency: 20,
+		UseCache:    true,
+	})
+	if err != nil {
+		fmt.Println("partial result:", err)
+	}
+	for _, result := range results {
+		fmt.Printf("%s %s %s %s\n", result.Name, result.Status, result.Region, result.Info)
+	}
+}
+```
+
+也可以用 `executor.ListPlatforms("0")` 先获取指定菜单编号会执行的平台名列表。结构化结果包含 `Name`、`Status`、`Region`、`Info`、`UnlockType` 和 `Error` 字段；旧的 `executor.RunTests` 字符串输出接口保持兼容。
+
+## 开发与测试
+
+默认单元测试不访问真实流媒体站点：
+
+```shell
+go test ./...
+```
+
+各地区目录中的真实解锁探测测试使用 `live` build tag 隔离，运行时会访问外部服务：
+
+```shell
+go test -tags live ./...
 ```
 
 ## Thanks

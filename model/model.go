@@ -21,8 +21,10 @@ const (
 	StatusYes        = "Yes"
 	StatusNo         = "No"
 	StatusBanned     = "Banned"
+	StatusTimeout    = "Timeout"
 	StatusNoIPv6     = "NoIPv6Support"    // 站点不支持IPv6
 	StatusDNSFailed  = "DNSResolveFailed" // DNS解析失败
+	StatusCDNRelay   = "CDN Relay Available"
 	PrintHead        = "PrintHead"
 	UA_Browser       = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 	UA_SecCHUA       = "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\""

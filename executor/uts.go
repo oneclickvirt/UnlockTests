@@ -1,16 +1,11 @@
 package executor
 
 import (
-	"context"
 	"fmt"
-	"io"
-	"net"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/oneclickvirt/UnlockTests/africa"
@@ -40,7 +35,6 @@ import (
 	"github.com/oneclickvirt/UnlockTests/utils"
 	. "github.com/oneclickvirt/defaultset"
 	pb "github.com/schollz/progressbar/v3"
-	"golang.org/x/net/proxy"
 )
 
 var (
@@ -119,6 +113,11 @@ func ShowResult(r *model.Result) (s string) {
 			s += Yellow(" (" + r.Info + ")")
 		}
 		return s
+	case model.StatusTimeout:
+		logErr()
+		return Yellow("TIMEOUT")
+	case model.StatusCDNRelay:
+		return Blue(model.StatusCDNRelay)
 	case model.StatusUnexpected:
 		s = Purple("Unknown")
 		if r.Err != nil {
@@ -127,7 +126,15 @@ func ShowResult(r *model.Result) (s string) {
 		}
 		return s
 	default:
-		return ""
+		s = Purple("Unknown")
+		if r.Status != "" {
+			s += White(" (" + r.Status + ")")
+		}
+		if r.Err != nil {
+			s += ": " + r.Err.Error()
+			logErr()
+		}
+		return s
 	}
 }
 
@@ -245,7 +252,7 @@ func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar 
 		}
 		// 检查缓存（区分 IPv4/IPv6）
 		if cacheEnabled {
-			cacheKey := testName + "_" + ipVersion
+			cacheKey := resultCacheKey(testName, ipVersion, c)
 			cacheMutex.RLock()
 			if cachedResult, exists := resultCache[cacheKey]; exists {
 				cacheMutex.RUnlock()
@@ -267,7 +274,7 @@ func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar 
 
 		// 保存到缓存（区分 IPv4/IPv6）
 		if cacheEnabled {
-			cacheKey := testName + "_" + ipVersion
+			cacheKey := resultCacheKey(testName, ipVersion, c)
 			cacheMutex.Lock()
 			resultCache[cacheKey] = res
 			cacheMutex.Unlock()
@@ -291,6 +298,14 @@ func PreProcess(FuncList [](func(c *http.Client) model.Result)) {
 			Names = append(Names, tp.Name)
 		}
 	}
+}
+
+func resultCacheKey(testName, ipVersion string, c *http.Client) string {
+	transportID := "<nil>"
+	if c != nil && c.Transport != nil {
+		transportID = fmt.Sprintf("%p", c.Transport)
+	}
+	return testName + "_" + ipVersion + "_" + transportID
 }
 
 func uniqueFuncList(FuncList [](func(c *http.Client) model.Result)) [](func(c *http.Client) model.Result) {
@@ -902,10 +917,6 @@ func ReadSelect(language, flagString string) bool {
 	return true
 }
 
-var setSocketOptions = func(network, address string, c syscall.RawConn, interfaceName string) (err error) {
-	return
-}
-
 func getFuncList() [](func(c *http.Client) model.Result) {
 	var funcList [](func(c *http.Client) model.Result)
 	if M {
@@ -954,6 +965,7 @@ func RunTests(client *http.Client, ipVersion, language string, useProgressBar bo
 	total = 0
 	wg = &sync.WaitGroup{}
 	utils.SetDNSIPVersion(ipVersion)
+	defer utils.SetDNSIPVersion("")
 	funcList := getFuncList()
 	Names = RemoveDuplicates(Names)
 	funcList = uniqueFuncList(funcList)
@@ -971,177 +983,4 @@ func RunTests(client *http.Client, ipVersion, language string, useProgressBar bo
 		time.Sleep(50 * time.Millisecond)
 	}
 	return finallyPrintResult(language, ipVersion)
-}
-
-func SetupInterface(Iface string) {
-	if IP := net.ParseIP(Iface); IP != nil {
-		utils.Dialer.LocalAddr = &net.TCPAddr{IP: IP}
-	} else {
-		utils.Dialer.Control = func(network, address string, c syscall.RawConn) error {
-			return setSocketOptions(network, address, c, Iface)
-		}
-	}
-}
-
-func SetupDnsServers(DnsServers string) {
-	utils.SetCustomDNSServers(DnsServers)
-	utils.Dialer.Resolver = &net.Resolver{
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			return (&net.Dialer{}).DialContext(ctx, "udp", DnsServers)
-		},
-	}
-}
-
-func SetupHttpProxy(httpProxy string) {
-	if u, err := url.Parse(httpProxy); err == nil {
-		utils.ClientProxy = http.ProxyURL(u)
-		// 仅在各 Transport 上设置代理，各 Client 保持使用自己对应的 Transport（保留 IPv4/IPv6 强制模式）
-		for _, transport := range []*http.Transport{utils.Ipv4Transport, utils.Ipv6Transport, utils.AutoTransport} {
-			transport.Proxy = utils.ClientProxy
-		}
-	}
-}
-
-func SetupSocksProxy(socksProxy string) {
-	proxyURL, err := url.Parse(socksProxy)
-	if err != nil {
-		fmt.Printf("Warning: SOCKS5 proxy address is invalid: %v\n", err)
-		return
-	}
-	var auth *proxy.Auth
-	if proxyURL.User != nil {
-		username := proxyURL.User.Username()
-		password, _ := proxyURL.User.Password()
-		auth = &proxy.Auth{
-			User:     username,
-			Password: password,
-		}
-	}
-	dialer, err := proxy.SOCKS5("tcp", proxyURL.Host, auth, utils.Dialer)
-	if err != nil {
-		fmt.Printf("Warning: Failed to create SOCKS5 connection: %v\n", err)
-		return
-	}
-	contextDialer, ok := dialer.(proxy.ContextDialer)
-	if !ok {
-		fmt.Println("Warning: SOCKS5 dialer does not support context")
-		return
-	}
-
-	// 为了保持 IPv4/IPv6 强制模式，我们需要包装 DialContext
-	// AutoTransport 使用 SOCKS5
-	utils.AutoTransport.DialContext = contextDialer.DialContext
-
-	// Ipv4Transport 使用 SOCKS5 但强制 tcp4
-	originalDialContext := contextDialer.DialContext
-	utils.Ipv4Transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-		return originalDialContext(ctx, "tcp4", addr)
-	}
-
-	// Ipv6Transport 使用 SOCKS5 但强制 tcp6
-	utils.Ipv6Transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-		return originalDialContext(ctx, "tcp6", addr)
-	}
-
-	// 清除 Proxy 设置，因为 SOCKS5 是通过 DialContext 实现的
-	for _, transport := range []*http.Transport{utils.Ipv4Transport, utils.Ipv6Transport, utils.AutoTransport} {
-		transport.Proxy = nil
-	}
-}
-
-func SetupConcurrency(conc uint64) {
-	if conc > 0 {
-		sem = make(chan struct{}, conc)
-	}
-}
-
-func EnableCache() {
-	cacheEnabled = true
-}
-
-func maskIP(ip string) string {
-	if net.ParseIP(ip).To4() != nil {
-		// IPv4
-		parts := strings.Split(ip, ".")
-		if len(parts) == 4 {
-			parts[3] = "xxx"
-			return strings.Join(parts, ".")
-		}
-	} else {
-		// IPv6
-		parts := strings.Split(ip, ":")
-		if len(parts) > 1 {
-			if len(parts[len(parts)-1]) > 0 {
-				parts[len(parts)-1] = "xxx"
-			} else {
-				parts[len(parts)-2] = "xxx"
-			}
-			return strings.Join(parts, ":")
-		}
-	}
-	return ip // fallback
-}
-
-func GetIpv4Info(showIP bool) {
-	client := utils.Req(utils.Ipv4HttpClient)
-	client.SetTimeout(5 * time.Second)
-	resp, err := client.R().Get("https://www.cloudflare.com/cdn-cgi/trace")
-	if err != nil {
-		IPV4 = false
-		if showIP {
-			fmt.Println("Can not detect IPv4 Address")
-		}
-		return
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		IPV4 = false
-		if showIP {
-			fmt.Println("Can not detect IPv4 Address")
-		}
-		return
-	}
-	body := string(b)
-	if showIP && body != "" && strings.Contains(body, "ip=") {
-		s := body
-		i := strings.Index(s, "ip=")
-		s = s[i+3:]
-		i = strings.Index(s, "\n")
-		ip := s[:i]
-		maskedIP := maskIP(ip)
-		fmt.Fprintln(utils.ColorStdout, "Your IPV4 address:", Blue(maskedIP))
-	}
-}
-
-func GetIpv6Info(showIP bool) {
-	client := utils.Req(utils.Ipv6HttpClient)
-	client.SetTimeout(5 * time.Second)
-	resp, err := client.R().Get("https://www.cloudflare.com/cdn-cgi/trace")
-	if err != nil {
-		IPV6 = false
-		if showIP {
-			fmt.Println("Can not detect IPv6 Address")
-		}
-		return
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		IPV6 = false
-		if showIP {
-			fmt.Println("Can not detect IPv6 Address")
-		}
-		return
-	}
-	body := string(b)
-	if showIP && body != "" && strings.Contains(body, "ip=") {
-		s := body
-		i := strings.Index(s, "ip=")
-		s = s[i+3:]
-		i = strings.Index(s, "\n")
-		ip := s[:i]
-		maskedIP := maskIP(ip)
-		fmt.Fprintln(utils.ColorStdout, "Your IPV6 address:", Blue(maskedIP))
-	}
 }
