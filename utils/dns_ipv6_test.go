@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"testing"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -118,6 +119,19 @@ func TestNormalizeResultMarksWAFStatusErrorAsBanned(t *testing.T) {
 	)
 	if result.Status != model.StatusBanned {
 		t.Fatalf("expected %s, got %s", model.StatusBanned, result.Status)
+	}
+}
+
+func TestNormalizeResultMarksUnavailableStatusErrorAsNo(t *testing.T) {
+	for _, code := range []int{400, 404, 451, 452} {
+		result := NormalizeResult(
+			&http.Client{Transport: Ipv4Transport},
+			model.Result{Name: "Unavailable", Status: model.StatusUnexpected, Err: errors.New("get service failed with code: " + strconv.Itoa(code))},
+			"Fallback",
+		)
+		if result.Status != model.StatusNo {
+			t.Fatalf("expected status code %d to become %s, got %s", code, model.StatusNo, result.Status)
+		}
 	}
 }
 

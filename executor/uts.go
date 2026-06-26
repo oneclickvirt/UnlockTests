@@ -190,9 +190,6 @@ func FormarPrint(message string) string {
 	for _, name := range Names {
 		if r, found := resultMap[name]; found {
 			result := ShowResult(r)
-			if r.Status == "Yes" && strings.HasSuffix(r.Name, "CDN") {
-				result = Blue(r.Region)
-			}
 			tempList = append(tempList, fmt.Sprintf("%-"+strconv.Itoa(Length)+"s %s\n", r.Name, result))
 		}
 	}

@@ -148,7 +148,15 @@ func IsWAFStatusCode(statusCode int) bool {
 	return statusCode >= 520 && statusCode <= 527
 }
 
-func WAFStatusCodeFromError(err error) (int, bool) {
+func IsUnavailableStatusCode(statusCode int) bool {
+	switch statusCode {
+	case http.StatusBadRequest, http.StatusNotFound, http.StatusUnavailableForLegalReasons, 452:
+		return true
+	}
+	return false
+}
+
+func StatusCodeFromError(err error) (int, bool) {
 	if err == nil {
 		return 0, false
 	}
@@ -161,7 +169,15 @@ func WAFStatusCodeFromError(err error) (int, bool) {
 	if convErr != nil {
 		return 0, false
 	}
-	return statusCode, IsWAFStatusCode(statusCode)
+	return statusCode, true
+}
+
+func WAFStatusCodeFromError(err error) (int, bool) {
+	if err == nil {
+		return 0, false
+	}
+	statusCode, ok := StatusCodeFromError(err)
+	return statusCode, ok && IsWAFStatusCode(statusCode)
 }
 
 func IsWAFBlockError(err error) bool {
@@ -273,6 +289,16 @@ func NormalizeResult(client interface{}, result model.Result, fallbackName strin
 			Region:     result.Region,
 			Info:       result.Info,
 			UnlockType: result.UnlockType,
+		}
+	}
+	if result.Status == model.StatusUnexpected && result.Err != nil {
+		if statusCode, ok := StatusCodeFromError(result.Err); ok && IsUnavailableStatusCode(statusCode) {
+			result.Status = model.StatusNo
+			return result
+		}
+		if strings.Contains(strings.ToLower(result.Err.Error()), "token get null") {
+			result.Status = model.StatusNo
+			return result
 		}
 	}
 	if result.Status == "" {

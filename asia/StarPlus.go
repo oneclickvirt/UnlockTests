@@ -63,6 +63,7 @@ func StarPlus(c *http.Client) model.Result {
 			}
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
+		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get www.starplus.com failed with code: %d", resp.StatusCode)}

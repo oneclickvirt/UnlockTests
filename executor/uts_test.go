@@ -34,6 +34,25 @@ func TestShowResultUnknownStatusIsNotBlank(t *testing.T) {
 	}
 }
 
+func TestFormarPrintKeepsCDNStatusVisible(t *testing.T) {
+	oldNames := Names
+	oldResults := R
+	defer func() {
+		Names = oldNames
+		R = oldResults
+	}()
+
+	Names = []string{"Netflix CDN"}
+	R = []*model.Result{{Name: "Netflix CDN", Status: model.StatusYes, Region: "gb"}}
+
+	got := FormarPrint("All")
+	if !strings.Contains(got, "Netflix CDN") ||
+		!strings.Contains(got, "YES") ||
+		!strings.Contains(got, "Region: GB") {
+		t.Fatalf("expected CDN output to include explicit status and region, got %q", got)
+	}
+}
+
 func TestParseSelectionHandlesRepeatedSpaces(t *testing.T) {
 	if !parseSelection("0   10") {
 		t.Fatalf("expected selection to parse")

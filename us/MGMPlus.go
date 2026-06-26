@@ -79,6 +79,9 @@ func MGMPlus(c *http.Client) model.Result {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	body2 := string(b)
+	if strings.TrimSpace(body2) == "" {
+		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("empty response body")}
+	}
 	var res2 struct {
 		Movie struct {
 			Entitlements struct {

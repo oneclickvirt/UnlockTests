@@ -83,5 +83,5 @@ func NPOStartPlus(c *http.Client) model.Result {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
 	}
-	return model.Result{Name: name, Status: model.StatusUnexpected, Err: fmt.Errorf("Token get null")}
+	return model.Result{Name: name, Status: model.StatusNo, Err: fmt.Errorf("Token get null")}
 }
