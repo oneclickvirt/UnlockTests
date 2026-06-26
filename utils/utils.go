@@ -14,14 +14,20 @@ import (
 	. "github.com/oneclickvirt/defaultset"
 )
 
+const (
+	DefaultRequestTimeout = 14 * time.Second
+	DefaultClientTimeout  = 30 * time.Second
+	DefaultRetryCount     = 1
+)
+
 var ClientProxy = http.ProxyFromEnvironment
-var Dialer = &net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}
+var Dialer = &net.Dialer{Timeout: DefaultRequestTimeout, KeepAlive: 30 * time.Second}
 var AutoTransport = &http.Transport{
 	Proxy:       ClientProxy,
 	DialContext: Dialer.DialContext,
 }
 var AutoHttpClient = &http.Client{
-	Timeout:   30 * time.Second,
+	Timeout:   DefaultClientTimeout,
 	Transport: AutoTransport,
 }
 var Ipv4Transport = &http.Transport{
@@ -33,11 +39,12 @@ var Ipv4Transport = &http.Transport{
 	// ForceAttemptHTTP2:     true,
 	MaxIdleConns:          100,
 	IdleConnTimeout:       90 * time.Second,
-	TLSHandshakeTimeout:   30 * time.Second,
+	TLSHandshakeTimeout:   DefaultRequestTimeout,
+	ResponseHeaderTimeout: DefaultRequestTimeout,
 	ExpectContinueTimeout: 1 * time.Second,
 }
 var Ipv4HttpClient = &http.Client{
-	Timeout:   30 * time.Second,
+	Timeout:   DefaultClientTimeout,
 	Transport: Ipv4Transport,
 }
 var Ipv6Transport = &http.Transport{
@@ -49,12 +56,13 @@ var Ipv6Transport = &http.Transport{
 	// ForceAttemptHTTP2:     true,
 	MaxIdleConns:           100,
 	IdleConnTimeout:        90 * time.Second,
-	TLSHandshakeTimeout:    30 * time.Second,
+	TLSHandshakeTimeout:    DefaultRequestTimeout,
+	ResponseHeaderTimeout:  DefaultRequestTimeout,
 	ExpectContinueTimeout:  1 * time.Second,
 	MaxResponseHeaderBytes: 262144,
 }
 var Ipv6HttpClient = &http.Client{
-	Timeout:   30 * time.Second,
+	Timeout:   DefaultClientTimeout,
 	Transport: Ipv6Transport,
 }
 
@@ -89,7 +97,7 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*http.Client, error) {
 	if localIP != nil {
 		dialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			return (&net.Dialer{
-				Timeout:   12 * time.Second,
+				Timeout:   DefaultRequestTimeout,
 				KeepAlive: 12 * time.Second,
 				LocalAddr: &net.TCPAddr{
 					IP: localIP,
@@ -102,9 +110,11 @@ func ParseInterface(ifaceName, ipAddr, netType string) (*http.Client, error) {
 		}
 	}
 	c := &http.Client{
-		Timeout: 12 * time.Second,
+		Timeout: DefaultClientTimeout,
 		Transport: &http.Transport{
-			DialContext: dialContext,
+			DialContext:           dialContext,
+			TLSHandshakeTimeout:   DefaultRequestTimeout,
+			ResponseHeaderTimeout: DefaultRequestTimeout,
 		}}
 	return c, nil
 }
@@ -116,10 +126,10 @@ func Req(c *http.Client) *req.Client {
 	client.ImpersonateChrome()
 	configureReqTransport(client, c)
 	client.R().
-		SetRetryCount(2).
+		SetRetryCount(DefaultRetryCount).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
 		SetRetryFixedInterval(2 * time.Second)
-	client.SetTimeout(10 * time.Second)
+	client.SetTimeout(DefaultRequestTimeout)
 	return client
 }
 
@@ -132,10 +142,10 @@ func ReqDefault(c *http.Client) *req.Client {
 	}
 	configureReqTransport(client, c)
 	client.R().
-		SetRetryCount(2).
+		SetRetryCount(DefaultRetryCount).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
 		SetRetryFixedInterval(2 * time.Second)
-	client.SetTimeout(10 * time.Second)
+	client.SetTimeout(DefaultRequestTimeout)
 	return client
 }
 

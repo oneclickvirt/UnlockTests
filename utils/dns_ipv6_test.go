@@ -90,14 +90,14 @@ func TestNormalizeResultFillsUnexpectedForEmptyStatus(t *testing.T) {
 	}
 }
 
-func TestNormalizeResultMarksTimeout(t *testing.T) {
+func TestNormalizeResultMarksWAFTimeoutAsBanned(t *testing.T) {
 	result := NormalizeResult(
 		&http.Client{Transport: Ipv4Transport},
 		model.Result{Name: "Slow", Status: model.StatusNetworkErr, Err: context.DeadlineExceeded},
 		"Fallback",
 	)
-	if result.Status != model.StatusTimeout {
-		t.Fatalf("expected %s, got %s", model.StatusTimeout, result.Status)
+	if result.Status != model.StatusBanned {
+		t.Fatalf("expected %s, got %s", model.StatusBanned, result.Status)
 	}
 
 	result = NormalizeResult(
@@ -105,8 +105,39 @@ func TestNormalizeResultMarksTimeout(t *testing.T) {
 		model.Result{Name: "Slow", Status: model.StatusNetworkErr, Err: &timeoutErr{}},
 		"Fallback",
 	)
-	if result.Status != model.StatusTimeout {
-		t.Fatalf("expected net.Error timeout to become %s, got %s", model.StatusTimeout, result.Status)
+	if result.Status != model.StatusBanned {
+		t.Fatalf("expected net.Error timeout to become %s, got %s", model.StatusBanned, result.Status)
+	}
+}
+
+func TestNormalizeResultMarksWAFStatusErrorAsBanned(t *testing.T) {
+	result := NormalizeResult(
+		&http.Client{Transport: Ipv4Transport},
+		model.Result{Name: "Blocked", Status: model.StatusUnexpected, Err: errors.New("get blocked failed with code: 503")},
+		"Fallback",
+	)
+	if result.Status != model.StatusBanned {
+		t.Fatalf("expected %s, got %s", model.StatusBanned, result.Status)
+	}
+}
+
+func TestNormalizeResultUnifiesManualUnavailableStatuses(t *testing.T) {
+	result := NormalizeResult(
+		&http.Client{Transport: Ipv4Transport},
+		model.Result{Name: "Cloudflare", Status: model.StatusNo, Info: "Banned by cloudflare"},
+		"Fallback",
+	)
+	if result.Status != model.StatusBanned {
+		t.Fatalf("expected %s, got %s", model.StatusBanned, result.Status)
+	}
+
+	result = NormalizeResult(
+		&http.Client{Transport: Ipv4Transport},
+		model.Result{Name: "RateLimit", Status: model.StatusNo, Info: "429 Rate limit"},
+		"Fallback",
+	)
+	if result.Status != model.StatusRestricted {
+		t.Fatalf("expected %s, got %s", model.StatusRestricted, result.Status)
 	}
 }
 

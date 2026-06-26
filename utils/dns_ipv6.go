@@ -3,11 +3,15 @@ package utils
 import (
 	"context"
 	"errors"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -135,6 +139,77 @@ func isTimeoutError(err error) bool {
 		strings.Contains(errMsg, "deadline exceeded")
 }
 
+func IsWAFStatusCode(statusCode int) bool {
+	switch statusCode {
+	case http.StatusForbidden, http.StatusNotAcceptable, http.StatusRequestTimeout,
+		http.StatusMisdirectedRequest, http.StatusTooManyRequests, http.StatusServiceUnavailable:
+		return true
+	}
+	return statusCode >= 520 && statusCode <= 527
+}
+
+func WAFStatusCodeFromError(err error) (int, bool) {
+	if err == nil {
+		return 0, false
+	}
+	re := regexp.MustCompile(`(?i)(?:code|status)\D{0,12}(\d{3})`)
+	matches := re.FindStringSubmatch(err.Error())
+	if len(matches) < 2 {
+		return 0, false
+	}
+	statusCode, convErr := strconv.Atoi(matches[1])
+	if convErr != nil {
+		return 0, false
+	}
+	return statusCode, IsWAFStatusCode(statusCode)
+}
+
+func IsWAFBlockError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var dnsErr *net.DNSError
+	if errors.As(err, &dnsErr) {
+		return false
+	}
+	if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) ||
+		errors.Is(err, context.DeadlineExceeded) || os.IsTimeout(err) ||
+		errors.Is(err, syscall.ECONNRESET) || errors.Is(err, syscall.ECONNABORTED) {
+		return true
+	}
+	if _, ok := WAFStatusCodeFromError(err); ok {
+		return true
+	}
+	errMsg := strings.ToLower(err.Error())
+	return strings.Contains(errMsg, "stream error") ||
+		strings.Contains(errMsg, "handshake failure") ||
+		strings.Contains(errMsg, "connection reset") ||
+		strings.Contains(errMsg, "connection was forcibly closed") ||
+		strings.Contains(errMsg, "forcibly closed by the remote host") ||
+		strings.Contains(errMsg, "unexpected eof") ||
+		(strings.Contains(errMsg, "tls:") && strings.Contains(errMsg, "handshake")) ||
+		strings.Contains(errMsg, "client.timeout exceeded")
+}
+
+func isBannedInfo(info string) bool {
+	info = strings.ToLower(strings.TrimSpace(info))
+	if info == "" {
+		return false
+	}
+	if strings.Contains(info, "banned") {
+		return true
+	}
+	if strings.Contains(info, "cloudflare") && (strings.Contains(info, "blocked") || strings.Contains(info, "forbidden")) {
+		return true
+	}
+	return strings.Contains(info, "request blocked")
+}
+
+func isRateLimitInfo(info string) bool {
+	info = strings.ToLower(strings.TrimSpace(info))
+	return strings.Contains(info, "429") && strings.Contains(info, "rate limit")
+}
+
 // HandleNetworkError 智能处理网络错误，在 IPv6 模式下检测是否是因为不支持 IPv6
 // client: 当前使用的 HTTP 客户端
 // hostname: 要检测的域名
@@ -143,6 +218,10 @@ func isTimeoutError(err error) bool {
 func HandleNetworkError(client interface{}, hostname string, err error, name string) model.Result {
 	if hostname == "" {
 		hostname = extractHostnameFromError(err)
+	}
+
+	if IsWAFBlockError(err) {
+		return model.Result{Name: name, Status: model.StatusBanned, Err: err}
 	}
 
 	if isTimeoutError(err) {
@@ -177,6 +256,24 @@ func NormalizeResult(client interface{}, result model.Result, fallbackName strin
 			normalized.Err = nil
 		}
 		return normalized
+	}
+	if result.Status == model.StatusNo && isRateLimitInfo(result.Info) {
+		result.Status = model.StatusRestricted
+		return result
+	}
+	if (result.Status == model.StatusNo || result.Status == model.StatusUnexpected) && isBannedInfo(result.Info) {
+		result.Status = model.StatusBanned
+		return result
+	}
+	if result.Status == model.StatusUnexpected && result.Err != nil && IsWAFBlockError(result.Err) {
+		return model.Result{
+			Name:       result.Name,
+			Status:     model.StatusBanned,
+			Err:        result.Err,
+			Region:     result.Region,
+			Info:       result.Info,
+			UnlockType: result.UnlockType,
+		}
 	}
 	if result.Status == "" {
 		result.Status = model.StatusUnexpected

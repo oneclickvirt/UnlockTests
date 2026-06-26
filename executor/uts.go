@@ -53,6 +53,8 @@ var (
 	runTestsMutex                                   sync.Mutex
 )
 
+const testExecutionTimeout = 30 * time.Second
+
 func NewBar(count int64) *pb.ProgressBar {
 	return pb.NewOptions64(
 		count,
@@ -269,7 +271,7 @@ func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar 
 		}
 
 		// 执行测试
-		res := F(c)
+		res := runTestWithTimeout(F, c, testName)
 		res = utils.NormalizeResult(c, res, testName)
 
 		// 保存到缓存（区分 IPv4/IPv6）
@@ -306,6 +308,32 @@ func resultCacheKey(testName, ipVersion string, c *http.Client) string {
 		transportID = fmt.Sprintf("%p", c.Transport)
 	}
 	return testName + "_" + ipVersion + "_" + transportID
+}
+
+func runTestWithTimeout(F func(c *http.Client) model.Result, c *http.Client, testName string) model.Result {
+	resultCh := make(chan model.Result, 1)
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				resultCh <- model.Result{
+					Name:   testName,
+					Status: model.StatusErr,
+					Err:    fmt.Errorf("panic recovered: %v", r),
+				}
+			}
+		}()
+		resultCh <- F(c)
+	}()
+	select {
+	case res := <-resultCh:
+		return res
+	case <-time.After(testExecutionTimeout):
+		return model.Result{
+			Name:   testName,
+			Status: model.StatusTimeout,
+			Err:    fmt.Errorf("test timeout (%v)", testExecutionTimeout),
+		}
+	}
 }
 
 func uniqueFuncList(FuncList [](func(c *http.Client) model.Result)) [](func(c *http.Client) model.Result) {
@@ -359,7 +387,6 @@ func NorthAmerica() [](func(c *http.Client) model.Result) {
 		us.Philo,
 		us.PlutoTV,
 		us.Pornhub,
-		us.SHOWTIME,
 		us.SlingTV,
 		us.Starz,
 		us.Shudder,
@@ -601,7 +628,7 @@ func Oceania() [](func(c *http.Client) model.Result) {
 
 func Korea() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		kr.Afreeca,
+		kr.SOOP,
 		kr.CoupangPlay,
 		kr.KBSDomestic,
 		kr.NaverTV,

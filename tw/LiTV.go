@@ -18,35 +18,89 @@ import (
 
 const defaultLiTVSignatureKey = "7f4a9c2e8b6d1f3a5e9c7b4d2f8a6e1c"
 
-// LiTV
-// www.litv.tv 仅 ipv4 且 post 请求
 func LiTV(c *http.Client) model.Result {
 	name := "LiTV"
 	hostname := "litv.tv"
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	// 获取 device-id
+
 	deviceID, err := getLiTVDeviceID(c)
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
-	// 获取 PUID
+
+	if strings.TrimSpace(os.Getenv("UNLOCKTESTS_LITV_SIGNATURE_KEY")) != "" {
+		if legacyResult := liTVLegacy(c, hostname, name, deviceID); legacyResult.Status != model.StatusUnexpected {
+			return legacyResult
+		}
+	}
+
+	rpcResult := liTVRPC(c, hostname, name, deviceID)
+	if rpcResult.Status != model.StatusUnexpected {
+		return rpcResult
+	}
+
+	if legacyResult := liTVLegacy(c, hostname, name, deviceID); legacyResult.Status != model.StatusUnexpected {
+		return legacyResult
+	}
+	return rpcResult
+}
+
+func liTVRPC(c *http.Client, hostname, name, deviceID string) model.Result {
+	payload := fmt.Sprintf(
+		`{"jsonrpc":"2.0","id":0,"method":"CCCService.GetProgramInformation","params":{"version":"2.0","project_num":"LTWEB02","device_id":"%s","swver":"LTWEB0210000WEB20190612185813","content_id":"VOD00328856","content_type":"drama"}}`,
+		deviceID,
+	)
+	headers := map[string]string{
+		"Origin":  "https://www.litv.tv",
+		"Referer": "https://www.litv.tv/drama/watch/VOD00328856",
+	}
+	resp, body, err := utils.PostJson(c, "https://proxy.svc.litv.tv/cdi/v2/rpc", payload, headers)
+	if err != nil {
+		return utils.HandleNetworkError(c, hostname, err, name)
+	}
+	defer resp.Body.Close()
+
+	var res struct {
+		Result *struct {
+			Data *struct {
+				ContentID string `json:"content_id"`
+			} `json:"data"`
+		} `json:"result"`
+		Error *struct {
+			Code    int    `json:"code"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	if err := json.Unmarshal([]byte(body), &res); err != nil {
+		return model.Result{Name: name, Status: model.StatusUnexpected, Err: err}
+	}
+	if res.Error != nil {
+		return model.Result{Name: name, Status: model.StatusNo}
+	}
+	if res.Result != nil && res.Result.Data != nil && res.Result.Data.ContentID != "" {
+		result1, result2, result3 := utils.CheckDNS(hostname)
+		unlockType := utils.GetUnlockType(result1, result2, result3)
+		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+	}
+	return model.Result{Name: name, Status: model.StatusNo}
+}
+
+func liTVLegacy(c *http.Client, hostname, name, deviceID string) model.Result {
 	puid, err := getLiTVPUID(c)
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
-	assetId := "vod70810-000001M001_1500K"
+
+	assetID := "vod70810-000001M001_1500K"
 	mediaType := "vod"
 	t := time.Now()
 	timestamp := t.UnixMilli()
 	nonce := genLiTVNonce(t)
-	signature, err := genLiTVSignature(assetId, mediaType, nonce, timestamp)
-	if err != nil {
-		return model.Result{Name: name, Status: model.StatusErr, Err: err}
-	}
+	signature := genLiTVSignature(assetID, mediaType, nonce, timestamp)
 	payload := map[string]interface{}{
-		"AssetId":   assetId,
+		"AssetId":   assetID,
 		"MediaType": mediaType,
 		"puid":      puid,
 		"timestamp": timestamp,
@@ -62,46 +116,62 @@ func LiTV(c *http.Client) model.Result {
 		"Origin":  "https://www.litv.tv",
 		"Referer": "https://www.litv.tv/drama/watch/VOD00328856",
 	}
-	resp, body, err := utils.PostJson(c, "https://www.litv.tv/api/get-urls-no-auth",
-		string(jsonBytes),
-		headers,
-	)
+	resp, body, err := utils.PostJson(c, "https://www.litv.tv/api/get-urls-no-auth", string(jsonBytes), headers)
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
-	bodyString := string(body)
-	if resp.StatusCode == 200 {
-		if strings.Contains(bodyString, "OutsideRegionError") {
+
+	if resp.StatusCode == http.StatusOK {
+		if strings.Contains(body, "OutsideRegionError") {
 			return model.Result{Name: name, Status: model.StatusNo}
 		}
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	}
-	return model.Result{Name: name, Status: model.StatusUnexpected}
+	return model.Result{Name: name, Status: model.StatusUnexpected,
+		Err: fmt.Errorf("legacy LiTV check failed with code: %d", resp.StatusCode)}
 }
 
-// getLiTVDeviceID 获取设备ID
 func getLiTVDeviceID(c *http.Client) (string, error) {
 	headers := map[string]string{
 		"Origin":  "https://www.litv.tv",
 		"Referer": "https://www.litv.tv/",
 	}
-	resp, _, err := utils.PostJson(c, "https://www.litv.tv/api/generate-device-id", "", headers)
+	resp, body, err := utils.PostJson(c, "https://www.litv.tv/api/generate-device-id", "", headers)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
+
+	var res struct {
+		DeviceID       string `json:"deviceId"`
+		DeviceIDLegacy string `json:"device-id"`
+	}
+	var parseErr error
+	if body != "" {
+		parseErr = json.Unmarshal([]byte(body), &res)
+		if parseErr == nil {
+			if res.DeviceID != "" {
+				return res.DeviceID, nil
+			}
+			if res.DeviceIDLegacy != "" {
+				return res.DeviceIDLegacy, nil
+			}
+		}
+	}
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "device-id" {
 			return cookie.Value, nil
 		}
 	}
-	return "", fmt.Errorf("device-id cookie not found")
+	if parseErr != nil {
+		return "", parseErr
+	}
+	return "", fmt.Errorf("deviceId not found in response")
 }
 
-// getLiTVPUID 获取PUID
 func getLiTVPUID(c *http.Client) (string, error) {
 	payload := `{"jsonrpc":"2.0","id":100,"method":"PustiService.PUID","params":{"version":"2.0","device_id":"","device_category":"LTWEB00","puid":"","aaid":"","idfa":""}}`
 	headers := map[string]string{
@@ -127,68 +197,25 @@ func getLiTVPUID(c *http.Client) (string, error) {
 	return res.Result.Puid, nil
 }
 
-// genLiTVNonce 生成nonce
 func genLiTVNonce(t time.Time) string {
-	return genBase36(13) + genBase36(13) + strconv.FormatInt(t.UnixMilli(), 36)
+	return genLiTVBase36(13) + genLiTVBase36(13) + strconv.FormatInt(t.UnixMilli(), 36)
 }
 
-// genLiTVSignature 生成签名
-func genLiTVSignature(assetId, mediaType, nonce string, timestamp int64) (string, error) {
+func genLiTVSignature(assetID, mediaType, nonce string, timestamp int64) string {
 	key := strings.TrimSpace(os.Getenv("UNLOCKTESTS_LITV_SIGNATURE_KEY"))
 	if key == "" {
 		key = defaultLiTVSignatureKey
 	}
-	// e + t + r + n + i
-	data := assetId + mediaType + strconv.FormatInt(timestamp, 10) + nonce + key
+	data := assetID + mediaType + strconv.FormatInt(timestamp, 10) + nonce + key
 	hash := sha256.Sum256([]byte(data))
-	return hex.EncodeToString(hash[:]), nil
+	return hex.EncodeToString(hash[:])
 }
 
-// genBase36 生成指定长度的base36随机字符串
-func genBase36(length int) string {
+func genLiTVBase36(length int) string {
 	const base36Chars = "0123456789abcdefghijklmnopqrstuvwxyz"
 	result := make([]byte, length)
-	for i := 0; i < length; i++ {
+	for i := range result {
 		result[i] = base36Chars[rand.Intn(len(base36Chars))]
 	}
 	return string(result)
 }
-
-// AnotherLiTV
-// www.litv.tv 的另一个检测逻辑
-// func AnotherLiTV(c *http.Client) model.Result {
-// 	name := "LiTV"
-// 	hostname := "litv.tv"
-// 	if c == nil {
-// 		return model.Result{Name: name}
-// 	}
-// 	url := "https://www.litv.tv/vod/ajax/getUrl"
-// 	payload := `{"type":"noauth","assetId":"vod44868-010001M001_800K","puid":"6bc49a81-aad2-425c-8124-5b16e9e01337"}`
-// 	headers := map[string]string{
-// 		"Content-Type": "application/json",
-// 	}
-// 	resp, body, err := utils.PostJson(c, url, payload, headers)
-// 	if err != nil {
-// 		return utils.HandleNetworkError(c, hostname, err, name)
-// 	}
-// 	defer resp.Body.Close()
-// 	var jsonResponse map[string]interface{}
-// 	err = json.Unmarshal([]byte(body), &jsonResponse)
-// 	if err != nil {
-// 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: err}
-// 	}
-// 	errorMessage, ok := jsonResponse["errorMessage"].(string)
-// 	if !ok {
-// 		return model.Result{Name: name, Status: model.StatusUnexpected}
-// 	}
-// 	switch errorMessage {
-// 	case "null":
-// 		result1, result2, result3 := utils.CheckDNS(hostname)
-// 		unlockType := utils.GetUnlockType(result1, result2, result3)
-// 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
-// 	case "vod.error.outsideregionerror":
-// 		return model.Result{Name: name, Status: model.StatusNo}
-// 	default:
-// 		return model.Result{Name: name, Status: model.StatusUnexpected}
-// 	}
-// }

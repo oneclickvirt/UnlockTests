@@ -42,7 +42,7 @@ func Test(t *testing.T) {
 	}
 	fmt.Println(res.Name, ": ", res.Status, res.Region, res.UnlockType)
 
-	res = Afreeca(req)
+	res = SOOP(req)
 	if res.Err != nil {
 		fmt.Println(res.Err)
 	}

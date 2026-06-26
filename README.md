@@ -135,7 +135,7 @@ Usage: ut [options]
 | `UNLOCKTESTS_MGMPLUS_API_KEY` | 覆盖 MGM+ 会话 API key。 |
 | `UNLOCKTESTS_ESPN_SUBJECT_TOKEN` | 覆盖 ESPN+ token exchange 的 subject token。 |
 | `UNLOCKTESTS_ESPN_AUTHORIZATION` | 覆盖 ESPN+ API authorization；可填写完整 `Bearer ...` 或仅填写 token。 |
-| `UNLOCKTESTS_LITV_SIGNATURE_KEY` | 覆盖 LiTV 签名密钥。 |
+| `UNLOCKTESTS_LITV_SIGNATURE_KEY` | 覆盖 LiTV 旧签名检测 fallback 的签名密钥；默认优先使用新版 RPC 检测。 |
 | `UNLOCKTESTS_HBOMAX_VPN_CHECK_ST` | 覆盖 HBO Max VPN 二次校验 token。 |
 | `UNLOCKTESTS_AETV_VIDEO_META_TOKEN` | 覆盖 A&E TV video meta token。 |
 | `UNLOCKTESTS_DISNEY_AUTHORIZATION` | 覆盖 Disney+ 设备和 token exchange authorization；可填写完整 `Bearer ...` 或仅填写 token。 |
@@ -202,7 +202,7 @@ rm -f ./ut
 ## 在 Go 中使用
 
 ```shell
-go get github.com/oneclickvirt/UnlockTests@v0.0.36-20260618133019
+go get github.com/oneclickvirt/UnlockTests@v0.0.37-20260626200727
 ```
 
 结构化接口适合在 goecs 等项目中直接调用，支持 `context.Context`、菜单编号选择、IPv4/IPv6 独立检测和并发上限：
