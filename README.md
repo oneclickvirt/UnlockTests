@@ -202,7 +202,7 @@ rm -f ./ut
 ## 在 Go 中使用
 
 ```shell
-go get github.com/oneclickvirt/UnlockTests@v0.0.37-20260626121329
+go get github.com/oneclickvirt/UnlockTests@v0.0.37-20260626123612
 ```
 
 结构化接口适合在 goecs 等项目中直接调用，支持 `context.Context`、菜单编号选择、IPv4/IPv6 独立检测和并发上限：
