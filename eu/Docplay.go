@@ -32,7 +32,8 @@ func Docplay(c *http.Client) model.Result {
 	body := string(b)
 	if strings.Contains(body, "DocPlay hasn't launched in your part of the world yet.") ||
 		resp.Request.URL.String() == "https://www.docplay.com/geoblocked" ||
-		strings.Contains(resp.Header.Get("Set-Cookie"), "geoblocked=true") {
+		strings.Contains(resp.Header.Get("Set-Cookie"), "geoblocked=true") ||
+		(resp.StatusCode == http.StatusTemporaryRedirect && strings.Contains(resp.Header.Get("Location"), "geoblocked")) {
 		return model.Result{Name: name, Status: model.StatusNo}
 	} else if resp.StatusCode == 200 || resp.StatusCode == 303 {
 		result1, result2, result3 := utils.CheckDNS(hostname)

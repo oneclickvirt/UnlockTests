@@ -296,6 +296,18 @@ func PrintTH(c *http.Client) model.Result {
 	return model.Result{Name: "Thailand", Status: model.PrintHead, Info: "AIS Play"}
 }
 
+func PrintVN(c *http.Client) model.Result {
+	return model.Result{Name: "Vietnam", Status: model.PrintHead, Info: "Clip TV"}
+}
+
+func PrintMY(c *http.Client) model.Result {
+	return model.Result{Name: "Malaysia", Status: model.PrintHead, Info: "Sooka"}
+}
+
+func PrintIN(c *http.Client) model.Result {
+	return model.Result{Name: "India", Status: model.PrintHead, Info: "Tata Play"}
+}
+
 func PrintTW(c *http.Client) model.Result {
 	return model.Result{Name: "Taiwan", Status: model.PrintHead, Info: "CatchPlay+"}
 }

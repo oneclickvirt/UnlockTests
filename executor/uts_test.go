@@ -84,6 +84,83 @@ func TestUniqueFuncListDeduplicatesByResultName(t *testing.T) {
 	}
 }
 
+func TestReferenceProvidersArePresentInExpectedSections(t *testing.T) {
+	oldNames := Names
+	defer func() { Names = oldNames }()
+
+	tests := map[string]struct {
+		funcs []func(c *http.Client) model.Result
+		names []string
+	}{
+		"global": {
+			funcs: Multination(),
+			names: []string{"Bilibili Anime", "Microsoft Copilot", "WeTV"},
+		},
+		"europe": {
+			funcs: Europe(),
+			names: []string{"TNTSports"},
+		},
+		"hong kong": {
+			funcs: HongKong(),
+			names: []string{"Hoy TV"},
+		},
+		"india": {
+			funcs: India(),
+			names: []string{"Tata Play"},
+		},
+		"southeast asia": {
+			funcs: SouthEastAsia(),
+			names: []string{"Clip TV", "Galaxy Play", "K+", "TV360", "Sooka", "Tata Play"},
+		},
+	}
+	for section, tt := range tests {
+		got := namesFromFuncList(tt.funcs)
+		for _, name := range tt.names {
+			if !got[name] {
+				t.Fatalf("expected %s section to include %q", section, name)
+			}
+		}
+	}
+}
+
+func TestReferenceProviderSectionsHaveNoDuplicateNames(t *testing.T) {
+	oldNames := Names
+	defer func() { Names = oldNames }()
+
+	sections := map[string][]func(c *http.Client) model.Result{
+		"global":         Multination(),
+		"europe":         Europe(),
+		"hong kong":      HongKong(),
+		"india":          India(),
+		"southeast asia": SouthEastAsia(),
+		"ipv6 global":    IPV6Multination(),
+	}
+	for section, funcs := range sections {
+		seen := map[string]bool{}
+		for _, f := range funcs {
+			result := f(nil)
+			if result.Status == model.PrintHead || result.Name == "" {
+				continue
+			}
+			if seen[result.Name] {
+				t.Fatalf("duplicate provider %q in %s section", result.Name, section)
+			}
+			seen[result.Name] = true
+		}
+	}
+}
+
+func namesFromFuncList(funcs []func(c *http.Client) model.Result) map[string]bool {
+	names := map[string]bool{}
+	for _, f := range funcs {
+		result := f(nil)
+		if result.Name != "" && result.Status != model.PrintHead {
+			names[result.Name] = true
+		}
+	}
+	return names
+}
+
 func TestResultCacheKeyIncludesTransportIdentity(t *testing.T) {
 	a := &http.Client{Transport: &http.Transport{}}
 	b := &http.Client{Transport: &http.Transport{}}

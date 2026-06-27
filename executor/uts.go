@@ -33,6 +33,7 @@ import (
 	"github.com/oneclickvirt/UnlockTests/uk"
 	"github.com/oneclickvirt/UnlockTests/us"
 	"github.com/oneclickvirt/UnlockTests/utils"
+	"github.com/oneclickvirt/UnlockTests/vn"
 	. "github.com/oneclickvirt/defaultset"
 	pb "github.com/schollz/progressbar/v3"
 )
@@ -407,6 +408,7 @@ func Europe() [](func(c *http.Client) model.Result) {
 		eu.SkyShowTime,
 		us.HBOMax,
 		eu.MegogoTV,
+		eu.TNTSports,
 		eu.SetantaSports,
 		eu.MathsSpot,
 		// SE
@@ -456,6 +458,7 @@ func Europe() [](func(c *http.Client) model.Result) {
 func HongKong() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		hk.BilibiliHKMO,
+		hk.HoyTV,
 		hk.MyTvSuper,
 		hk.NowTV,
 		hk.ViuTV,
@@ -479,6 +482,7 @@ func Africa() [](func(c *http.Client) model.Result) {
 func India() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
+		in.TataPlay,
 		in.MXPlayer,
 		in.Zee5,
 		us.NBATV,
@@ -552,8 +556,10 @@ func Japan() [](func(c *http.Client) model.Result) {
 func Multination() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		transnation.Apple,
+		asia.BilibiliAnime,
 		transnation.Bing,
 		transnation.Claude,
+		transnation.Copilot,
 		transnation.DAZN,
 		transnation.DisneyPlus,
 		transnation.Gemini,
@@ -577,6 +583,7 @@ func Multination() [](func(c *http.Client) model.Result) {
 		transnation.TVBAnywhere,
 		transnation.TikTok,
 		transnation.ViuCom,
+		transnation.WeTV,
 		transnation.WikipediaEditable,
 		transnation.Youtube,
 		transnation.YoutubeCDN,
@@ -656,7 +663,18 @@ func SouthEastAsia() [](func(c *http.Client) model.Result) {
 		th.TrueID,
 		// th.BilibiliTH, 失效 - 不做检测
 		// ID 全失效 - 不做检测
-		// VN 全失效 - 不做检测
+		utils.PrintVN,
+		vn.ClipTV,
+		vn.GalaxyPlay,
+		vn.KPLUS,
+		vn.TV360,
+		utils.PrintMY,
+		asia.Sooka,
+		utils.PrintIN,
+		in.TataPlay,
+		transnation.SonyLiv,
+		in.MXPlayer,
+		in.Zee5,
 	}
 	PreProcess(FuncList)
 	return FuncList
@@ -683,10 +701,12 @@ func Sport() [](func(c *http.Client) model.Result) {
 func IPV6Multination() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		asia.HotStar,
+		asia.BilibiliAnime,
 		transnation.Apple,
 		transnation.Bing,
 		transnation.OpenAI,
 		transnation.Claude,
+		transnation.Copilot,
 		transnation.DisneyPlus,
 		transnation.Gemini,
 		transnation.GooglePlayStore,
@@ -694,6 +714,7 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 		transnation.NetflixCDN,
 		transnation.Sora,
 		transnation.Spotify,
+		transnation.WeTV,
 		transnation.WikipediaEditable,
 		transnation.Youtube,
 		transnation.YoutubeCDN,
