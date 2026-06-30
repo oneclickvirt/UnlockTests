@@ -3,6 +3,7 @@ package executor
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -300,6 +301,48 @@ func PreProcess(FuncList [](func(c *http.Client) model.Result)) {
 	}
 }
 
+func prepareFuncList(FuncList [](func(c *http.Client) model.Result)) [](func(c *http.Client) model.Result) {
+	FuncList = sortedFuncList(FuncList)
+	PreProcess(FuncList)
+	return FuncList
+}
+
+func sortedFuncList(FuncList [](func(c *http.Client) model.Result)) [](func(c *http.Client) model.Result) {
+	sorted := append([](func(c *http.Client) model.Result)(nil), FuncList...)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		left := functionSortKey(sorted[i])
+		right := functionSortKey(sorted[j])
+		if left == right {
+			return functionDisplayName(sorted[i]) < functionDisplayName(sorted[j])
+		}
+		return left < right
+	})
+	return sorted
+}
+
+func functionDisplayName(f func(c *http.Client) model.Result) string {
+	tp := f(nil)
+	if tp.Name != "" {
+		return tp.Name
+	}
+	return fmt.Sprintf("%p", f)
+}
+
+func functionSortKey(f func(c *http.Client) model.Result) string {
+	return strings.ToLower(functionDisplayName(f))
+}
+
+func namesFromFunctions(FuncList [](func(c *http.Client) model.Result)) []string {
+	names := make([]string, 0, len(FuncList))
+	for _, f := range FuncList {
+		tp := f(nil)
+		if tp.Status != model.PrintHead && tp.Name != "" {
+			names = append(names, tp.Name)
+		}
+	}
+	return names
+}
+
 func resultCacheKey(testName, ipVersion string, c *http.Client) string {
 	transportID := "<nil>"
 	if c != nil && c.Transport != nil {
@@ -361,25 +404,17 @@ func ProcessFunction(FuncList [](func(c *http.Client) model.Result), c *http.Cli
 
 func NorthAmerica() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		us.AcornTV,
 		us.AETV,
-		us.AMCPlus,
-		uk.BritBox,
 		us.CWTV,
 		us.Crackle,
 		us.Crunchyroll,
 		us.DirectvStream,
 		us.DiscoveryPlus,
 		us.EncoreTVB,
-		us.ESPNPlus,
-		us.FuboTV,
 		us.FXNOW,
 		us.Fox,
-		us.HBOMax,
 		us.Hulu,
 		us.MGMPlus,
-		us.NBATV,
-		us.NBCTV,
 		us.NFLPlus,
 		us.PeacockTV,
 		us.Philo,
@@ -390,34 +425,23 @@ func NorthAmerica() [](func(c *http.Client) model.Result) {
 		us.Shudder,
 		us.TLCGO,
 		us.TubiTV,
-		eu.MathsSpot,
-		eu.Viaplay,
 		// CA
 		utils.PrintCA,
-		asia.HotStar,
 		ca.CBCGem,
 		ca.Crave,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func Europe() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		eu.RakutenTV,
 		eu.SkyShowTime,
-		us.HBOMax,
 		eu.MegogoTV,
 		eu.TNTSports,
-		eu.SetantaSports,
-		eu.MathsSpot,
-		// SE
-		eu.Viaplay,
 		// GB
 		utils.PrintGB,
-		asia.HotStar,
 		uk.SkyGo,
-		uk.BritBox,
 		uk.ITVX,
 		uk.Channel4,
 		uk.Channel5,
@@ -451,54 +475,42 @@ func Europe() [](func(c *http.Client) model.Result) {
 		utils.PrintRU,
 		ru.Amediateka,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func HongKong() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		hk.BilibiliHKMO,
 		hk.HoyTV,
 		hk.MyTvSuper,
 		hk.NowTV,
 		hk.ViuTV,
-		tw.BahamutAnime,
-		us.HBOMax,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func Africa() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		africa.BeinConnect,
 		africa.DSTV,
 		africa.Showmax,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func India() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		asia.HotStar,
 		in.TataPlay,
 		in.MXPlayer,
 		in.Zee5,
-		us.NBATV,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func Taiwan() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		tw.BahamutAnime,
-		tw.BilibiliTW,
 		tw.Catchplay,
 		tw.FridayVideo,
 		tw.HamiVideo,
-		us.HBOMax,
 		tw.KKTV,
 		tw.LiTV,
 		tw.LineTV,
@@ -506,8 +518,7 @@ func Taiwan() [](func(c *http.Client) model.Result) {
 		tw.Ofiii,
 		tw.Tw4gtv,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func Japan() [](func(c *http.Client) model.Result) {
@@ -549,25 +560,29 @@ func Japan() [](func(c *http.Client) model.Result) {
 		utils.PrintForum,
 		jp.EroGameSpace,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func Multination() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		us.AcornTV,
+		us.AMCPlus,
 		transnation.Apple,
 		asia.BilibiliAnime,
 		transnation.Bing,
+		uk.BritBox,
 		transnation.Claude,
 		transnation.Copilot,
-		transnation.DAZN,
 		transnation.DisneyPlus,
 		transnation.Gemini,
 		transnation.GoogleSearch,
 		transnation.GooglePlayStore,
+		us.HBOMax,
+		asia.HotStar,
 		transnation.IQiYi,
 		transnation.Instagram,
 		transnation.KOCOWA,
+		eu.MathsSpot,
 		transnation.MetaAI,
 		transnation.Netflix,
 		transnation.NetflixCDN,
@@ -582,32 +597,25 @@ func Multination() [](func(c *http.Client) model.Result) {
 		transnation.Steam,
 		transnation.TVBAnywhere,
 		transnation.TikTok,
+		eu.Viaplay,
 		transnation.ViuCom,
 		transnation.WeTV,
 		transnation.WikipediaEditable,
 		transnation.Youtube,
 		transnation.YoutubeCDN,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func SouthAmerica() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		asia.StarPlus,
-		us.HBOMax,
 		us.DirecTVGO,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func Oceania() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		us.AcornTV,
-		us.AMCPlus,
-		uk.BritBox,
-		us.NBATV,
 		// AU
 		utils.PrintAU,
 		au.ABCiView,
@@ -615,7 +623,6 @@ func Oceania() [](func(c *http.Client) model.Result) {
 		au.Channel10,
 		au.Channel9,
 		au.KayoSports,
-		au.OptusSports,
 		au.SBSonDemand,
 		au.Stan,
 		eu.Docplay,
@@ -626,8 +633,7 @@ func Oceania() [](func(c *http.Client) model.Result) {
 		nz.ThreeNow,
 		nz.MaoriTV,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func Korea() [](func(c *http.Client) model.Result) {
@@ -642,18 +648,11 @@ func Korea() [](func(c *http.Client) model.Result) {
 		kr.Watcha,
 		kr.Wavve,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func SouthEastAsia() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		asia.HotStar,
-		us.HBOMax,
-		asia.BilibiliSEA,
-		// TW
-		utils.PrintTW,
-		tw.Catchplay,
 		// SG
 		utils.PrintSG,
 		sg.MeWatch,
@@ -670,14 +669,8 @@ func SouthEastAsia() [](func(c *http.Client) model.Result) {
 		vn.TV360,
 		utils.PrintMY,
 		asia.Sooka,
-		utils.PrintIN,
-		in.TataPlay,
-		transnation.SonyLiv,
-		in.MXPlayer,
-		in.Zee5,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func Sport() [](func(c *http.Client) model.Result) {
@@ -694,8 +687,7 @@ func Sport() [](func(c *http.Client) model.Result) {
 		us.NBATV,
 		us.NBCTV,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func IPV6Multination() [](func(c *http.Client) model.Result) {
@@ -719,8 +711,7 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 		transnation.Youtube,
 		transnation.YoutubeCDN,
 	}
-	PreProcess(FuncList)
-	return FuncList
+	return prepareFuncList(FuncList)
 }
 
 func finallyPrintResult(language, netType string) string {
@@ -1012,8 +1003,8 @@ func RunTests(client *http.Client, ipVersion, language string, useProgressBar bo
 	utils.SetDNSIPVersion(ipVersion)
 	defer utils.SetDNSIPVersion("")
 	funcList := getFuncList()
-	Names = RemoveDuplicates(Names)
-	funcList = uniqueFuncList(funcList)
+	funcList = sortedFuncList(uniqueFuncList(funcList))
+	Names = namesFromFunctions(funcList)
 	total = int64(len(funcList))
 	if useProgressBar {
 		bar = NewBar(total)

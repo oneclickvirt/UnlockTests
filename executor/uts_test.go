@@ -2,6 +2,7 @@ package executor
 
 import (
 	"net/http"
+	"sort"
 	"strings"
 	"syscall"
 	"testing"
@@ -110,7 +111,7 @@ func TestReferenceProvidersArePresentInExpectedSections(t *testing.T) {
 		},
 		"southeast asia": {
 			funcs: SouthEastAsia(),
-			names: []string{"Clip TV", "Galaxy Play", "K+", "TV360", "Sooka", "Tata Play"},
+			names: []string{"Clip TV", "Galaxy Play", "K+", "TV360", "Sooka"},
 		},
 	}
 	for section, tt := range tests {
@@ -118,6 +119,79 @@ func TestReferenceProvidersArePresentInExpectedSections(t *testing.T) {
 		for _, name := range tt.names {
 			if !got[name] {
 				t.Fatalf("expected %s section to include %q", section, name)
+			}
+		}
+	}
+}
+
+func TestPlatformSectionsAreAlphabetized(t *testing.T) {
+	oldNames := Names
+	defer func() { Names = oldNames }()
+
+	for section, build := range platformSectionBuilders() {
+		Names = nil
+		assertAlphabetized(t, section, orderedNamesFromFuncList(build()))
+	}
+}
+
+func TestListPlatformsReturnsAlphabetizedUniqueNames(t *testing.T) {
+	for _, selection := range []string{"0", "10", "14", "19", "20", "0 10", "0 19"} {
+		names, err := ListPlatforms(selection)
+		if err != nil {
+			t.Fatalf("ListPlatforms(%q) returned error: %v", selection, err)
+		}
+		assertNoDuplicateNames(t, "selection "+selection, names)
+		assertAlphabetized(t, "selection "+selection, names)
+	}
+}
+
+func TestUserVisibleSectionsDoNotShareProviderNames(t *testing.T) {
+	oldNames := Names
+	defer func() { Names = oldNames }()
+
+	seen := map[string]string{}
+	for section, build := range userVisibleSectionBuilders() {
+		Names = nil
+		for _, name := range orderedNamesFromFuncList(build()) {
+			if previous, ok := seen[name]; ok {
+				t.Fatalf("provider %q appears in both %s and %s sections", name, previous, section)
+			}
+			seen[name] = section
+		}
+	}
+}
+
+func TestGlobalProvidersDoNotRepeatInGeographicSections(t *testing.T) {
+	oldNames := Names
+	defer func() { Names = oldNames }()
+
+	Names = nil
+	globalNames := namesFromFuncList(Multination())
+	for section, build := range geographicSectionBuilders() {
+		Names = nil
+		for _, name := range orderedNamesFromFuncList(build()) {
+			if globalNames[name] {
+				t.Fatalf("global provider %q is repeated in %s section", name, section)
+			}
+		}
+	}
+}
+
+func TestBilibiliBrandStaysInGlobalSectionOnly(t *testing.T) {
+	oldNames := Names
+	defer func() { Names = oldNames }()
+
+	Names = nil
+	globalNames := namesFromFuncList(Multination())
+	if !globalNames["Bilibili Anime"] {
+		t.Fatalf("expected Bilibili Anime to be in global section")
+	}
+
+	for section, build := range geographicSectionBuilders() {
+		Names = nil
+		for _, name := range orderedNamesFromFuncList(build()) {
+			if strings.Contains(strings.ToLower(name), "bilibili") {
+				t.Fatalf("Bilibili provider %q should stay in global section, found in %s", name, section)
 			}
 		}
 	}
@@ -150,6 +224,35 @@ func TestReferenceProviderSectionsHaveNoDuplicateNames(t *testing.T) {
 	}
 }
 
+func platformSectionBuilders() map[string]func() []func(c *http.Client) model.Result {
+	builders := userVisibleSectionBuilders()
+	builders["ipv6 global"] = IPV6Multination
+	return builders
+}
+
+func userVisibleSectionBuilders() map[string]func() []func(c *http.Client) model.Result {
+	builders := geographicSectionBuilders()
+	builders["global"] = Multination
+	builders["sports"] = Sport
+	return builders
+}
+
+func geographicSectionBuilders() map[string]func() []func(c *http.Client) model.Result {
+	return map[string]func() []func(c *http.Client) model.Result{
+		"africa":         Africa,
+		"europe":         Europe,
+		"hong kong":      HongKong,
+		"india":          India,
+		"japan":          Japan,
+		"korea":          Korea,
+		"north america":  NorthAmerica,
+		"oceania":        Oceania,
+		"south america":  SouthAmerica,
+		"southeast asia": SouthEastAsia,
+		"taiwan":         Taiwan,
+	}
+}
+
 func namesFromFuncList(funcs []func(c *http.Client) model.Result) map[string]bool {
 	names := map[string]bool{}
 	for _, f := range funcs {
@@ -159,6 +262,44 @@ func namesFromFuncList(funcs []func(c *http.Client) model.Result) map[string]boo
 		}
 	}
 	return names
+}
+
+func orderedNamesFromFuncList(funcs []func(c *http.Client) model.Result) []string {
+	names := []string{}
+	for _, f := range funcs {
+		result := f(nil)
+		if result.Name != "" && result.Status != model.PrintHead {
+			names = append(names, result.Name)
+		}
+	}
+	return names
+}
+
+func assertAlphabetized(t *testing.T, label string, names []string) {
+	t.Helper()
+	want := append([]string(nil), names...)
+	sort.SliceStable(want, func(i, j int) bool {
+		left := strings.ToLower(want[i])
+		right := strings.ToLower(want[j])
+		if left == right {
+			return want[i] < want[j]
+		}
+		return left < right
+	})
+	if strings.Join(names, "\n") != strings.Join(want, "\n") {
+		t.Fatalf("%s names are not alphabetized:\ngot  %v\nwant %v", label, names, want)
+	}
+}
+
+func assertNoDuplicateNames(t *testing.T, label string, names []string) {
+	t.Helper()
+	seen := map[string]bool{}
+	for _, name := range names {
+		if seen[name] {
+			t.Fatalf("%s has duplicate provider %q", label, name)
+		}
+		seen[name] = true
+	}
 }
 
 func TestResultCacheKeyIncludesTransportIdentity(t *testing.T) {

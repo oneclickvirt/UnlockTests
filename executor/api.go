@@ -131,8 +131,8 @@ func functionsForSelectionLocked(selection string) ([]func(c *http.Client) model
 	if !parseSelection(selection) {
 		return nil, nil, fmt.Errorf("invalid selection: %q", selection)
 	}
-	funcs := uniqueFuncList(getFuncList())
-	names := append([]string(nil), RemoveDuplicates(Names)...)
+	funcs := sortedFuncList(uniqueFuncList(getFuncList()))
+	names := namesFromFunctions(funcs)
 	return funcs, names, nil
 }
 

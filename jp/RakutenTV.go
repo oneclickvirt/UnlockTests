@@ -13,7 +13,7 @@ import (
 // www.rakuten.tv 仅 ipv4 且 get 请求 带 cloudflare 的 5秒盾 无法使用 "is not available in your country"
 // api.tv.rakuten.co.jp 仅 ipv4 且 get 请求 无盾可使用
 func RakutenTV(c *http.Client) model.Result {
-	name := "Rakuten TV"
+	name := "Rakuten TV Japan"
 	hostname := "rakuten.co.jp"
 	if c == nil {
 		return model.Result{Name: name}

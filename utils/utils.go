@@ -245,11 +245,11 @@ func ReParse(responseBody, rex string) string {
 
 // 通过Info标记要被插入的行的下一行包含什么文本内容
 func PrintCA(c *http.Client) model.Result {
-	return model.Result{Name: "Canada", Status: model.PrintHead, Info: "HotStar"}
+	return model.Result{Name: "Canada", Status: model.PrintHead, Info: "CBC Gem"}
 }
 
 func PrintGB(c *http.Client) model.Result {
-	return model.Result{Name: "England", Status: model.PrintHead, Info: "HotStar"}
+	return model.Result{Name: "England", Status: model.PrintHead, Info: "BBC iPLAYER"}
 }
 
 func PrintFR(c *http.Client) model.Result {
