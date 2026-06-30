@@ -404,7 +404,10 @@ func ProcessFunction(FuncList [](func(c *http.Client) model.Result), c *http.Cli
 
 func NorthAmerica() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		us.AcornTV,
 		us.AETV,
+		us.AMCPlus,
+		uk.BritBox,
 		us.CWTV,
 		us.Crackle,
 		us.Crunchyroll,
@@ -413,6 +416,8 @@ func NorthAmerica() [](func(c *http.Client) model.Result) {
 		us.EncoreTVB,
 		us.FXNOW,
 		us.Fox,
+		us.HBOMax,
+		asia.HotStar,
 		us.Hulu,
 		us.MGMPlus,
 		us.NFLPlus,
@@ -425,6 +430,7 @@ func NorthAmerica() [](func(c *http.Client) model.Result) {
 		us.Shudder,
 		us.TLCGO,
 		us.TubiTV,
+		eu.Viaplay,
 		// CA
 		utils.PrintCA,
 		ca.CBCGem,
@@ -437,11 +443,15 @@ func Europe() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		eu.RakutenTV,
 		eu.SkyShowTime,
+		us.HBOMax,
 		eu.MegogoTV,
 		eu.TNTSports,
+		eu.Viaplay,
 		// GB
 		utils.PrintGB,
+		asia.HotStar,
 		uk.SkyGo,
+		uk.BritBox,
 		uk.ITVX,
 		uk.Channel4,
 		uk.Channel5,
@@ -480,6 +490,7 @@ func Europe() [](func(c *http.Client) model.Result) {
 
 func HongKong() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		us.HBOMax,
 		hk.HoyTV,
 		hk.MyTvSuper,
 		hk.NowTV,
@@ -498,6 +509,7 @@ func Africa() [](func(c *http.Client) model.Result) {
 
 func India() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		asia.HotStar,
 		in.TataPlay,
 		in.MXPlayer,
 		in.Zee5,
@@ -511,6 +523,7 @@ func Taiwan() [](func(c *http.Client) model.Result) {
 		tw.Catchplay,
 		tw.FridayVideo,
 		tw.HamiVideo,
+		us.HBOMax,
 		tw.KKTV,
 		tw.LiTV,
 		tw.LineTV,
@@ -565,20 +578,15 @@ func Japan() [](func(c *http.Client) model.Result) {
 
 func Multination() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		us.AcornTV,
-		us.AMCPlus,
 		transnation.Apple,
 		asia.BilibiliAnime,
 		transnation.Bing,
-		uk.BritBox,
 		transnation.Claude,
 		transnation.Copilot,
 		transnation.DisneyPlus,
 		transnation.Gemini,
 		transnation.GoogleSearch,
 		transnation.GooglePlayStore,
-		us.HBOMax,
-		asia.HotStar,
 		transnation.IQiYi,
 		transnation.Instagram,
 		transnation.KOCOWA,
@@ -597,7 +605,6 @@ func Multination() [](func(c *http.Client) model.Result) {
 		transnation.Steam,
 		transnation.TVBAnywhere,
 		transnation.TikTok,
-		eu.Viaplay,
 		transnation.ViuCom,
 		transnation.WeTV,
 		transnation.WikipediaEditable,
@@ -609,6 +616,7 @@ func Multination() [](func(c *http.Client) model.Result) {
 
 func SouthAmerica() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		us.HBOMax,
 		us.DirecTVGO,
 	}
 	return prepareFuncList(FuncList)
@@ -616,6 +624,9 @@ func SouthAmerica() [](func(c *http.Client) model.Result) {
 
 func Oceania() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		us.AcornTV,
+		us.AMCPlus,
+		uk.BritBox,
 		// AU
 		utils.PrintAU,
 		au.ABCiView,
@@ -653,6 +664,8 @@ func Korea() [](func(c *http.Client) model.Result) {
 
 func SouthEastAsia() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
+		asia.HotStar,
+		us.HBOMax,
 		// SG
 		utils.PrintSG,
 		sg.MeWatch,
@@ -692,7 +705,6 @@ func Sport() [](func(c *http.Client) model.Result) {
 
 func IPV6Multination() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
-		asia.HotStar,
 		asia.BilibiliAnime,
 		transnation.Apple,
 		transnation.Bing,

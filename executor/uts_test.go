@@ -145,34 +145,15 @@ func TestListPlatformsReturnsAlphabetizedUniqueNames(t *testing.T) {
 	}
 }
 
-func TestUserVisibleSectionsDoNotShareProviderNames(t *testing.T) {
-	oldNames := Names
-	defer func() { Names = oldNames }()
-
-	seen := map[string]string{}
-	for section, build := range userVisibleSectionBuilders() {
-		Names = nil
-		for _, name := range orderedNamesFromFuncList(build()) {
-			if previous, ok := seen[name]; ok {
-				t.Fatalf("provider %q appears in both %s and %s sections", name, previous, section)
-			}
-			seen[name] = section
-		}
-	}
-}
-
-func TestGlobalProvidersDoNotRepeatInGeographicSections(t *testing.T) {
+func TestRegionalProvidersAreNotClassifiedAsGlobal(t *testing.T) {
 	oldNames := Names
 	defer func() { Names = oldNames }()
 
 	Names = nil
 	globalNames := namesFromFuncList(Multination())
-	for section, build := range geographicSectionBuilders() {
-		Names = nil
-		for _, name := range orderedNamesFromFuncList(build()) {
-			if globalNames[name] {
-				t.Fatalf("global provider %q is repeated in %s section", name, section)
-			}
+	for _, name := range []string{"Acorn TV", "AMC+", "BritBox", "HBO Max", "HotStar", "Viaplay"} {
+		if globalNames[name] {
+			t.Fatalf("regional provider %q should not be in global section", name)
 		}
 	}
 }

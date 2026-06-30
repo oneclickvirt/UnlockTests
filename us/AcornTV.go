@@ -33,7 +33,7 @@ func AcornTV(c *http.Client) model.Result {
 		resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if resp.StatusCode == 200 || strings.Contains(body, "signup.acorn.tv") {
+	if resp.StatusCode == 200 || resp.StatusCode == 500 || strings.Contains(body, "signup.acorn.tv") {
 		result1, result2, result3 := utils.CheckDNS(hostname)
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
