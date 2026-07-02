@@ -24,11 +24,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.go }}
+          go-version-file: go.mod
+          check-latest: true
       - name: Test
         run: go test ./... -coverprofile=coverage.txt
       - name: Create Tag
@@ -37,7 +38,7 @@ jobs:
           set -euo pipefail
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
-          TAG="v0.0.37-$(date +'%Y%m%d%H%M%S')"
+          TAG="v0.0.38-$(date +'%Y%m%d%H%M%S')"
           echo "TAG=${TAG}" >> $GITHUB_ENV
           git tag $TAG
           git push origin $TAG
