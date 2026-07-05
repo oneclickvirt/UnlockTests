@@ -38,7 +38,12 @@ jobs:
           set -euo pipefail
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
-          TAG="v0.0.39-$(date +'%Y%m%d%H%M%S')"
+          BASE_VERSION="$(sed -nE 's/^const UnlockTestsVersion = "(v[^"]+)"/\1/p' model/model.go)"
+          if [ -z "${BASE_VERSION}" ]; then
+            echo "UnlockTestsVersion not found"
+            exit 1
+          fi
+          TAG="${BASE_VERSION}-$(date +'%Y%m%d%H%M%S')"
           echo "TAG=${TAG}" >> $GITHUB_ENV
           git tag $TAG
           git push origin $TAG

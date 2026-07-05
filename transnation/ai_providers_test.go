@@ -9,6 +9,7 @@ import (
 
 func TestAIProviderMetadata(t *testing.T) {
 	tests := map[string]func(*http.Client) model.Result{
+		"Claude":        Claude,
 		"Coze":          Coze,
 		"DeepSeek":      DeepSeek,
 		"Grok":          Grok,
@@ -16,6 +17,7 @@ func TestAIProviderMetadata(t *testing.T) {
 		"Mistral AI":    MistralAI,
 		"Perplexity AI": PerplexityAI,
 		"Poe":           Poe,
+		"Sora":          Sora,
 	}
 	for want, fn := range tests {
 		got := fn(nil)

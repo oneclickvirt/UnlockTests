@@ -146,8 +146,8 @@ func HBOMax(c *http.Client) model.Result {
 			if err != nil {
 				return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 			}
-			if strings.Contains(string(vpnCheckBody), "VPN") {
-				return model.Result{Name: name, Status: model.StatusNo}
+			if strings.Contains(strings.ToLower(string(vpnCheckBody)), "vpn") {
+				return model.Result{Name: name, Status: model.StatusBanned, Region: strings.ToLower(region), Info: "VPN Blocked"}
 			}
 		}
 		result1, result2, result3 := utils.CheckDNS(hostname)

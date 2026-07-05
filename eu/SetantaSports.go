@@ -45,19 +45,35 @@ func SetantaSports(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNetworkErr, Err: fmt.Errorf("can not parse body")}
 	}
 	var consentResponse struct {
-		OutsideAllowedTerritories bool `json:"outsideAllowedTerritories"`
+		OutsideAllowedTerritories *bool  `json:"outsideAllowedTerritories"`
+		CallerCountryCode         string `json:"callerCountryCode"`
 	}
 	if err := json.Unmarshal(b, &consentResponse); err != nil {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: err}
 	}
-	if consentResponse.OutsideAllowedTerritories {
-		return model.Result{Name: name, Status: model.StatusNo}
-	} else if !consentResponse.OutsideAllowedTerritories {
-		result1, result2, result3 := utils.CheckDNS(hostname)
-		unlockType := utils.GetUnlockType(result1, result2, result3)
-		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
+	if resp.StatusCode != http.StatusOK || consentResponse.OutsideAllowedTerritories == nil {
+		return model.Result{
+			Name: name, Status: model.StatusUnexpected,
+			Err: fmt.Errorf("get dce-frontoffice.imggaming.com failed with code: %d", resp.StatusCode)}
 	}
-	return model.Result{
-		Name: name, Status: model.StatusUnexpected,
-		Err: fmt.Errorf("get dce-frontoffice.imggaming.com failed with code: %d", resp.StatusCode)}
+	region := strings.ToLower(strings.TrimSpace(consentResponse.CallerCountryCode))
+	regionResp, err := client.R().Get("https://dce-frontoffice.imggaming.com/api/v3/i18n/country-codes")
+	if err == nil {
+		defer regionResp.Body.Close()
+		regionBody, readErr := io.ReadAll(regionResp.Body)
+		if readErr == nil && regionResp.StatusCode == http.StatusOK {
+			var regionResponse struct {
+				CallerCountryCode string `json:"callerCountryCode"`
+			}
+			if json.Unmarshal(regionBody, &regionResponse) == nil && strings.TrimSpace(regionResponse.CallerCountryCode) != "" {
+				region = strings.ToLower(strings.TrimSpace(regionResponse.CallerCountryCode))
+			}
+		}
+	}
+	if *consentResponse.OutsideAllowedTerritories {
+		return model.Result{Name: name, Status: model.StatusNo, Region: region}
+	}
+	result1, result2, result3 := utils.CheckDNS(hostname)
+	unlockType := utils.GetUnlockType(result1, result2, result3)
+	return model.Result{Name: name, Status: model.StatusYes, Region: region, UnlockType: unlockType}
 }

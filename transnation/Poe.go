@@ -7,12 +7,14 @@ import (
 )
 
 func Poe(c *http.Client) model.Result {
-	return checkAIStatus(c, aiStatusProbe{
-		name:       "Poe",
-		hostname:   "poe.com",
-		url:        "https://poe.com/",
-		noRedirect: true,
-		okCodes:    map[int]bool{http.StatusOK: true, http.StatusTemporaryRedirect: true, http.StatusPermanentRedirect: true},
-		noCodes:    map[int]bool{http.StatusForbidden: true},
+	return checkAIRegionalStatus(c, aiRegionalProbe{
+		name:        "Poe",
+		hostname:    "poe.com",
+		url:         "https://poe.com/",
+		traceURL:    "https://poe.com/cdn-cgi/trace",
+		noRedirect:  true,
+		okCodes:     map[int]bool{http.StatusOK: true, http.StatusMovedPermanently: true, http.StatusFound: true, http.StatusTemporaryRedirect: true, http.StatusPermanentRedirect: true},
+		noCodes:     map[int]bool{http.StatusForbidden: true, http.StatusUnavailableForLegalReasons: true},
+		wafKeywords: defaultAIWAFKeywords(),
 	})
 }

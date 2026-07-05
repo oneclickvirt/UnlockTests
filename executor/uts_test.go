@@ -124,7 +124,7 @@ func TestReferenceProvidersArePresentInExpectedSections(t *testing.T) {
 		},
 		"southeast asia": {
 			funcs: SouthEastAsia(),
-			names: []string{"Clip TV", "Galaxy Play", "K+", "TV360", "Sooka"},
+			names: []string{"Galaxy Play", "K+", "TV360", "Sooka"},
 		},
 	}
 	for section, tt := range tests {

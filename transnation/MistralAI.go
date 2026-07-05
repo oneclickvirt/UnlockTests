@@ -7,11 +7,14 @@ import (
 )
 
 func MistralAI(c *http.Client) model.Result {
-	return checkAIStatus(c, aiStatusProbe{
-		name:     "Mistral AI",
-		hostname: "chat.mistral.ai",
-		url:      "https://chat.mistral.ai/",
-		okCodes:  map[int]bool{http.StatusOK: true},
-		noCodes:  map[int]bool{http.StatusForbidden: true},
+	return checkAIRegionalStatus(c, aiRegionalProbe{
+		name:                "Mistral AI",
+		hostname:            "chat.mistral.ai",
+		url:                 "https://chat.mistral.ai/",
+		traceURL:            "https://chat.mistral.ai/cdn-cgi/trace",
+		okCodes:             map[int]bool{http.StatusOK: true, http.StatusAccepted: true, http.StatusFound: true, http.StatusTemporaryRedirect: true, http.StatusPermanentRedirect: true},
+		noCodes:             map[int]bool{http.StatusForbidden: true, http.StatusUnavailableForLegalReasons: true},
+		restrictedCountries: mistralAIRestrictedCountries,
+		wafKeywords:         defaultAIWAFKeywords(),
 	})
 }

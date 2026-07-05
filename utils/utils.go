@@ -300,7 +300,7 @@ func PrintTH(c *http.Client) model.Result {
 }
 
 func PrintVN(c *http.Client) model.Result {
-	return model.Result{Name: "Vietnam", Status: model.PrintHead, Info: "Clip TV"}
+	return model.Result{Name: "Vietnam", Status: model.PrintHead, Info: "Galaxy Play"}
 }
 
 func PrintMY(c *http.Client) model.Result {

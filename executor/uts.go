@@ -732,7 +732,6 @@ func SouthEastAsia() [](func(c *http.Client) model.Result) {
 		// th.BilibiliTH, 失效 - 不做检测
 		// ID 全失效 - 不做检测
 		utils.PrintVN,
-		vn.ClipTV,
 		vn.GalaxyPlay,
 		vn.KPLUS,
 		vn.TV360,
@@ -745,7 +744,6 @@ func SouthEastAsia() [](func(c *http.Client) model.Result) {
 func Sport() [](func(c *http.Client) model.Result) {
 	var FuncList = [](func(c *http.Client) model.Result){
 		africa.BeinConnect,
-		asia.MolaTV,
 		asia.StarPlus,
 		eu.Eurosport,
 		eu.SetantaSports,
