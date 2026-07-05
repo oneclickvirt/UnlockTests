@@ -259,6 +259,61 @@ download_asset() {
   curl -fsSL -o "$target" -- "$download_url"
 }
 
+# Replace existing ut binaries found on the system (current dir, PATH, common locations)
+replace_existing() {
+  local source="$1" installed_to="$2"
+  local replaced=""
+
+  # 1) Copy to current working directory so ./ut works immediately
+  if [ -n "${PWD:-}" ] && [ -d "$PWD" ] && [ -w "$PWD" ]; then
+    cp -f -- "$source" "${PWD}/${bin_name}"
+    echo "Copied ${bin_name} to current directory: ${PWD}/${bin_name}"
+    replaced="1"
+  fi
+
+  # 2) Find existing ut in PATH (skip the one we just installed)
+  local existing
+  if command -v which >/dev/null 2>&1; then
+    existing="$(which -a "$bin_name" 2>/dev/null || true)"
+  elif command -v command >/dev/null 2>&1; then
+    existing="$(command -v "$bin_name" 2>/dev/null || true)"
+  fi
+
+  if [ -n "$existing" ]; then
+    local p
+    while IFS= read -r p; do
+      [ -z "$p" ] && continue
+      # Resolve symlinks
+      if [ -L "$p" ]; then
+        p="$(readlink -f "$p" 2>/dev/null || echo "$p")"
+      fi
+      # Skip if it's the one we just installed
+      [ "$p" = "$installed_to" ] && continue
+      # Skip if it's the one we just copied to PWD
+      [ "$p" = "${PWD}/${bin_name}" ] && continue
+      if [ -w "$p" ] || [ -w "$(dirname "$p")" ]; then
+        cp -f -- "$source" "$p" 2>/dev/null && echo "Replaced existing ${bin_name} at ${p}" && replaced="1"
+      fi
+    done <<< "$existing"
+  fi
+
+  # 3) Also check common system locations
+  local common_dirs=("/usr/bin" "/usr/local/bin" "${HOME}/.local/bin")
+  local d
+  for d in "${common_dirs[@]}"; do
+    local candidate="${d}/${bin_name}"
+    [ "$candidate" = "$installed_to" ] && continue
+    [ "$candidate" = "${PWD}/${bin_name}" ] && continue
+    if [ -f "$candidate" ]; then
+      if [ -w "$candidate" ] || [ -w "$d" ]; then
+        cp -f -- "$source" "$candidate" 2>/dev/null && echo "Replaced ${bin_name} at ${candidate}" && replaced="1"
+      fi
+    fi
+  done
+
+  [ -n "$replaced" ]
+}
+
 need_cmd curl
 detect_os_arch
 choose_install_dir
@@ -276,7 +331,10 @@ fi
 download_asset "$asset" "$tmp_file"
 chmod 0755 -- "$tmp_file"
 
+installed_to=""
 if install_binary "$tmp_file" "$install_dir" 2>/dev/null; then
+  installed_to="${install_dir}/${bin_name}"
+  replace_existing "$tmp_file" "$installed_to"
   exit 0
 fi
 
@@ -288,12 +346,20 @@ fi
 if [ "$install_dir" = "$(default_system_dir)" ]; then
   if is_interactive && ! confirm_yes; then
     if install_binary_elevated "$tmp_file" "$install_dir"; then
+      installed_to="${install_dir}/${bin_name}"
+      replace_existing "$tmp_file" "$installed_to"
       exit 0
     fi
   fi
   install_dir="$(default_user_dir)"
   echo "Falling back to user install: ${install_dir}"
-  install_binary "$tmp_file" "$install_dir"
+  if install_binary "$tmp_file" "$install_dir" 2>/dev/null; then
+    installed_to="${install_dir}/${bin_name}"
+    replace_existing "$tmp_file" "$installed_to"
+  else
+    echo "Failed to install to ${install_dir}" >&2
+    exit 1
+  fi
 else
   echo "Failed to install to ${install_dir}" >&2
   exit 1
