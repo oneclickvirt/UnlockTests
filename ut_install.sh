@@ -246,7 +246,8 @@ check_cdn() {
 }
 
 download_asset() {
-  local asset_name="$1" target="$2" url="${repo_url}/${asset_name}" download_url
+  local asset_name="$1" target="$2" download_url
+  local url="${repo_url}/${asset_name}"
   download_url="${cdn_success_url}${url}"
   echo "Downloading ${asset_name}..."
   if command -v wget >/dev/null 2>&1; then
