@@ -149,7 +149,8 @@ can_write_dir() {
 }
 
 install_binary() {
-  local source="$1" dir="$2" destination="${dir}/${bin_name}"
+  local source="$1" dir="$2"
+  local destination="${dir}/${bin_name}"
   mkdir -p -- "$dir"
   if command -v install >/dev/null 2>&1; then
     install -m 0755 -- "$source" "$destination"
@@ -161,7 +162,8 @@ install_binary() {
 }
 
 install_binary_elevated() {
-  local source="$1" dir="$2" destination="${dir}/${bin_name}"
+  local source="$1" dir="$2"
+  local destination="${dir}/${bin_name}"
   if [ "$asset_os" = "windows" ]; then
     if ! command -v powershell.exe >/dev/null 2>&1; then
       return 1
@@ -260,15 +262,14 @@ download_asset() {
 }
 
 # Replace existing ut binaries found on the system (current dir, PATH, common locations)
+# Best-effort: always returns 0 so set -e won't kill the script
 replace_existing() {
   local source="$1" installed_to="$2"
-  local replaced=""
 
   # 1) Copy to current working directory so ./ut works immediately
   if [ -n "${PWD:-}" ] && [ -d "$PWD" ] && [ -w "$PWD" ]; then
-    cp -f -- "$source" "${PWD}/${bin_name}"
+    cp -f -- "$source" "${PWD}/${bin_name}" 2>/dev/null || true
     echo "Copied ${bin_name} to current directory: ${PWD}/${bin_name}"
-    replaced="1"
   fi
 
   # 2) Find existing ut in PATH (skip the one we just installed)
@@ -283,35 +284,34 @@ replace_existing() {
     local p
     while IFS= read -r p; do
       [ -z "$p" ] && continue
-      # Resolve symlinks
-      if [ -L "$p" ]; then
-        p="$(readlink -f "$p" 2>/dev/null || echo "$p")"
+      # Resolve symlinks (best-effort, not all systems have readlink -f)
+      if [ -L "$p" ] 2>/dev/null; then
+        p="$(readlink -f "$p" 2>/dev/null || printf '%s' "$p")"
       fi
-      # Skip if it's the one we just installed
+      # Skip if it's the one we just installed or copied to PWD
       [ "$p" = "$installed_to" ] && continue
-      # Skip if it's the one we just copied to PWD
       [ "$p" = "${PWD}/${bin_name}" ] && continue
-      if [ -w "$p" ] || [ -w "$(dirname "$p")" ]; then
-        cp -f -- "$source" "$p" 2>/dev/null && echo "Replaced existing ${bin_name} at ${p}" && replaced="1"
+      if [ -w "$p" ] 2>/dev/null || [ -w "$(dirname "$p")" ] 2>/dev/null; then
+        cp -f -- "$source" "$p" 2>/dev/null && echo "Replaced existing ${bin_name} at ${p}"
       fi
     done <<< "$existing"
   fi
 
-  # 3) Also check common system locations
-  local common_dirs=("/usr/bin" "/usr/local/bin" "${HOME}/.local/bin")
-  local d
+  # 3) Also check common system locations (using HOME with default for set -u safety)
+  local common_dirs=("/usr/bin" "/usr/local/bin" "${HOME:-}/.local/bin")
+  local d candidate
   for d in "${common_dirs[@]}"; do
-    local candidate="${d}/${bin_name}"
+    candidate="${d}/${bin_name}"
     [ "$candidate" = "$installed_to" ] && continue
     [ "$candidate" = "${PWD}/${bin_name}" ] && continue
     if [ -f "$candidate" ]; then
-      if [ -w "$candidate" ] || [ -w "$d" ]; then
-        cp -f -- "$source" "$candidate" 2>/dev/null && echo "Replaced ${bin_name} at ${candidate}" && replaced="1"
+      if [ -w "$candidate" ] 2>/dev/null || [ -w "$d" ] 2>/dev/null; then
+        cp -f -- "$source" "$candidate" 2>/dev/null && echo "Replaced ${bin_name} at ${candidate}"
       fi
     fi
   done
 
-  [ -n "$replaced" ]
+  return 0
 }
 
 need_cmd curl
@@ -356,6 +356,7 @@ if [ "$install_dir" = "$(default_system_dir)" ]; then
   if install_binary "$tmp_file" "$install_dir" 2>/dev/null; then
     installed_to="${install_dir}/${bin_name}"
     replace_existing "$tmp_file" "$installed_to"
+    exit 0
   else
     echo "Failed to install to ${install_dir}" >&2
     exit 1
