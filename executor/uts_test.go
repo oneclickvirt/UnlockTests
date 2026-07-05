@@ -108,7 +108,7 @@ func TestReferenceProvidersArePresentInExpectedSections(t *testing.T) {
 		},
 		"ai": {
 			funcs: AIPlatforms(),
-			names: []string{"Coze", "DeepSeek", "Kimi", "Perplexity AI", "Poe"},
+			names: []string{"Coze", "DeepSeek", "Grok", "Kimi", "Mistral AI", "Perplexity AI", "Poe"},
 		},
 		"europe": {
 			funcs: Europe(),
@@ -249,6 +249,23 @@ func TestFunctionsForTestNamesMatchesFunctionNames(t *testing.T) {
 	}
 }
 
+func TestFormatVersionedHeader(t *testing.T) {
+	tests := map[string]struct {
+		netType string
+		title   string
+		want    string
+	}{
+		"ipv4 chinese section": {netType: "ipv4", title: "跨国平台", want: "IPV4 跨国平台"},
+		"ipv6 selected tests":  {netType: "ipv6", title: "Selected Tests", want: "IPV6 Selected Tests"},
+		"empty title":          {netType: "tcp4", title: "", want: "IPV4"},
+	}
+	for name, tt := range tests {
+		if got := formatVersionedHeader(tt.netType, tt.title); got != tt.want {
+			t.Fatalf("%s: got %q, want %q", name, got, tt.want)
+		}
+	}
+}
+
 func platformSectionBuilders() map[string]func() []func(c *http.Client) model.Result {
 	builders := userVisibleSectionBuilders()
 	builders["ipv6 global"] = IPV6Multination
@@ -366,8 +383,24 @@ func TestFinallyPrintResultIPv6UsesSelectedPlatformTitle(t *testing.T) {
 	Names = []string{"Example"}
 	R = []*model.Result{{Name: "Example", Status: model.StatusYes}}
 	got := finallyPrintResult("en", "ipv6")
-	if !strings.Contains(got, "[ Taiwan ]") {
+	if !strings.Contains(got, "[ IPV6 Taiwan ]") {
 		t.Fatalf("expected IPv6 output to use selected platform title, got %q", got)
+	}
+}
+
+func TestFinallyPrintResultIPv4PrefixesSectionTitle(t *testing.T) {
+	resetOptions()
+	defer func() {
+		resetOptions()
+		Names = nil
+		R = nil
+	}()
+	M = true
+	Names = []string{"Example"}
+	R = []*model.Result{{Name: "Example", Status: model.StatusYes}}
+	got := finallyPrintResult("zh", "ipv4")
+	if !strings.Contains(got, "[ IPV4 跨国平台 ]") {
+		t.Fatalf("expected IPv4 output to prefix platform title, got %q", got)
 	}
 }
 

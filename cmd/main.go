@@ -103,7 +103,6 @@ func main() {
 		fmt.Fprintln(utils.ColorStdout, "Test time: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
 	}
 	if executor.IPV4 {
-		fmt.Fprintln(utils.ColorStdout, Blue("IPV4:"))
 		if testString != "" {
 			result, err := executor.RunNamedTests(utils.Ipv4HttpClient, "ipv4", language, useBar, testString)
 			if err != nil {
@@ -116,7 +115,6 @@ func main() {
 		}
 	}
 	if executor.IPV6 {
-		fmt.Fprintln(utils.ColorStdout, Blue("IPV6:"))
 		if testString != "" {
 			result, err := executor.RunNamedTests(utils.Ipv6HttpClient, "ipv6", language, useBar, testString)
 			if err != nil {

@@ -223,6 +223,30 @@ func FormarPrint(message string) string {
 	return res.String()
 }
 
+func formatIPVersionLabel(netType string) string {
+	switch strings.ToLower(strings.TrimSpace(netType)) {
+	case "ipv4", "tcp4", "4":
+		return "IPV4"
+	case "ipv6", "tcp6", "6":
+		return "IPV6"
+	default:
+		return strings.ToUpper(strings.TrimSpace(netType))
+	}
+}
+
+func formatVersionedHeader(netType, title string) string {
+	ipLabel := formatIPVersionLabel(netType)
+	title = strings.TrimSpace(title)
+	switch {
+	case ipLabel == "":
+		return title
+	case title == "":
+		return ipLabel
+	default:
+		return ipLabel + " " + title
+	}
+}
+
 func Excute(F func(c *http.Client) model.Result, c *http.Client, useProgressBar bool, ipVersion string) {
 	testInfo := F(nil)
 	testName := testInfo.Name
@@ -834,7 +858,7 @@ func finallyPrintResult(language, netType string) string {
 
 	switch language {
 	case "zh":
-		result += FormarPrint(platformName)
+		result += FormarPrint(formatVersionedHeader(netType, platformName))
 	case "en":
 		enPlatformName := map[string]string{
 			"跨国平台":         "Global",
@@ -864,7 +888,7 @@ func finallyPrintResult(language, netType string) string {
 		if displayName == "" {
 			displayName = platformName
 		}
-		result += FormarPrint(displayName)
+		result += FormarPrint(formatVersionedHeader(netType, displayName))
 	}
 	return result
 }
@@ -1187,10 +1211,7 @@ func RunNamedTests(client *http.Client, ipVersion, language string, useProgressB
 		fmt.Fprint(utils.ColorStderr, "\r\033[K")
 		time.Sleep(50 * time.Millisecond)
 	}
-	if language == "en" {
-		return FormarPrint("Selected Tests"), nil
-	}
-	return FormarPrint("Selected Tests"), nil
+	return FormarPrint(formatVersionedHeader(ipVersion, "Selected Tests")), nil
 }
 
 func RunTests(client *http.Client, ipVersion, language string, useProgressBar bool) string {
