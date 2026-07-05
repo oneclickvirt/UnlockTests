@@ -243,11 +243,8 @@ func GetIpv4Info(showIP bool) {
 	}
 	body := string(b)
 	if showIP && body != "" && strings.Contains(body, "ip=") {
-		s := body
-		i := strings.Index(s, "ip=")
-		s = s[i+3:]
-		i = strings.Index(s, "\n")
-		ip := s[:i]
+		_, afterIP, _ := strings.Cut(body, "ip=")
+		ip, _, _ := strings.Cut(afterIP, "\n")
 		maskedIP := maskIP(ip)
 		fmt.Fprintln(utils.ColorStdout, "Your IPV4 address:", Blue(maskedIP))
 	}
@@ -275,11 +272,8 @@ func GetIpv6Info(showIP bool) {
 	}
 	body := string(b)
 	if showIP && body != "" && strings.Contains(body, "ip=") {
-		s := body
-		i := strings.Index(s, "ip=")
-		s = s[i+3:]
-		i = strings.Index(s, "\n")
-		ip := s[:i]
+		_, afterIP, _ := strings.Cut(body, "ip=")
+		ip, _, _ := strings.Cut(afterIP, "\n")
 		maskedIP := maskIP(ip)
 		fmt.Fprintln(utils.ColorStdout, "Your IPV6 address:", Blue(maskedIP))
 	}

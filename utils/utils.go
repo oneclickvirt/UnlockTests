@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"regexp"
+	"slices"
 	"time"
 
 	"github.com/imroc/req/v3"
@@ -129,7 +130,7 @@ func Req(c *http.Client) *req.Client {
 		SetRetryCount(DefaultRetryCount).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
 		SetRetryFixedInterval(2 * time.Second)
-	client.SetTimeout(DefaultRequestTimeout)
+	client.SetTimeout(effectiveReqTimeout(c, DefaultRequestTimeout))
 	return client
 }
 
@@ -145,8 +146,15 @@ func ReqDefault(c *http.Client) *req.Client {
 		SetRetryCount(DefaultRetryCount).
 		SetRetryBackoffInterval(1*time.Second, 5*time.Second).
 		SetRetryFixedInterval(2 * time.Second)
-	client.SetTimeout(DefaultRequestTimeout)
+	client.SetTimeout(effectiveReqTimeout(c, DefaultRequestTimeout))
 	return client
+}
+
+func effectiveReqTimeout(c *http.Client, fallback time.Duration) time.Duration {
+	if c != nil && c.Timeout > 0 && c.Timeout < fallback {
+		return c.Timeout
+	}
+	return fallback
 }
 
 func configureReqTransport(client *req.Client, c *http.Client) {
@@ -224,12 +232,7 @@ func PostJson(c *http.Client, url string, payload string, headers map[string]str
 // GetRegion
 // 判断地址是否在允许的地区范围内
 func GetRegion(loc string, locationList []string) bool {
-	for _, s := range locationList {
-		if loc == s {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(locationList, loc)
 }
 
 // ReParse

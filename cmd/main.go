@@ -17,7 +17,7 @@ import (
 func main() {
 	mode := 0
 	var showVersion, help, showIP, useBar, cache bool
-	var Iface, DnsServers, httpProxy, socksProxy, language, flagString string
+	var Iface, DnsServers, httpProxy, socksProxy, language, flagString, testString string
 	var conc uint64
 	utFlag := flag.NewFlagSet("ut", flag.ContinueOnError)
 	utFlag.BoolVar(&help, "h", false, "show help information")
@@ -27,6 +27,7 @@ func main() {
 	utFlag.BoolVar(&useBar, "b", true, "use progress bar; to disable, use: -b=false")
 	utFlag.BoolVar(&model.EnableLoger, "log", false, "enable logging")
 	utFlag.StringVar(&flagString, "f", "", "specify selection option in menu; example: -f 0")
+	utFlag.StringVar(&testString, "test", "", "run specific providers by name or function, comma-separated; example: -test \"Coze,Poe\"")
 	utFlag.StringVar(&Iface, "I", "", "bind IP address or network interface; example: -I 192.168.1.100 or -I eth0")
 	utFlag.StringVar(&DnsServers, "dns-servers", "", "specify DNS servers; example: -dns-servers \"1.1.1.1:53\"")
 	utFlag.StringVar(&httpProxy, "http-proxy", "", "specify HTTP proxy; example: -http-proxy \"http://username:password@127.0.0.1:1080\"")
@@ -83,9 +84,11 @@ func main() {
 	} else {
 		fmt.Fprintln(utils.ColorStdout, "Github Repo: "+Blue("https://github.com/oneclickvirt/UnlockTests"))
 	}
-	readStatus := executor.ReadSelect(language, flagString)
-	if !readStatus {
-		return
+	if testString == "" {
+		readStatus := executor.ReadSelect(language, flagString)
+		if !readStatus {
+			return
+		}
 	}
 	trackHit()
 	if executor.IPV4 {
@@ -101,11 +104,29 @@ func main() {
 	}
 	if executor.IPV4 {
 		fmt.Fprintln(utils.ColorStdout, Blue("IPV4:"))
-		fmt.Fprint(utils.ColorStdout, executor.RunTests(utils.Ipv4HttpClient, "ipv4", language, useBar))
+		if testString != "" {
+			result, err := executor.RunNamedTests(utils.Ipv4HttpClient, "ipv4", language, useBar, testString)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return
+			}
+			fmt.Fprint(utils.ColorStdout, result)
+		} else {
+			fmt.Fprint(utils.ColorStdout, executor.RunTests(utils.Ipv4HttpClient, "ipv4", language, useBar))
+		}
 	}
 	if executor.IPV6 {
 		fmt.Fprintln(utils.ColorStdout, Blue("IPV6:"))
-		fmt.Fprint(utils.ColorStdout, executor.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
+		if testString != "" {
+			result, err := executor.RunNamedTests(utils.Ipv6HttpClient, "ipv6", language, useBar, testString)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return
+			}
+			fmt.Fprint(utils.ColorStdout, result)
+		} else {
+			fmt.Fprint(utils.ColorStdout, executor.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
+		}
 	}
 	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
 		fmt.Println("Press Enter to exit...")

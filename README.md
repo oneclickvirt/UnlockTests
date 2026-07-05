@@ -69,6 +69,8 @@ Usage: ut [options]
   -s    show IP address status; to disable, use: -s=false (default true)
   -socks-proxy string
         specify SOCKS5 proxy; example: -socks-proxy "socks5://username:password@127.0.0.1:1080"
+  -test string
+        run specific providers by name or function, comma-separated; example: -test "Coze,Poe"
   -v    show version
 ```
 
@@ -83,8 +85,15 @@ Usage: ut [options]
 | `10` - `18` | 仅指定地区平台 |
 | `19` | 仅体育平台 |
 | `20` | 全部平台 |
+| `21` | 仅 AI 平台 |
 
 地区平台包括台湾、香港、日本、韩国、北美、南美、欧洲、非洲、大洋洲。
+
+单独运行指定平台可使用 `-test`，多个平台使用半角逗号分隔，例如：
+
+```shell
+ut -test "Coze,Poe"
+```
 
 ## 命令行参数
 

@@ -1,8 +1,11 @@
 package executor
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"reflect"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -40,19 +43,19 @@ import (
 )
 
 var (
-	total                                           int64
-	bar                                             *pb.ProgressBar
-	wg                                              *sync.WaitGroup
-	IPV4, IPV6                                      = true, true
-	R                                               []*model.Result
-	resultMutex                                     sync.Mutex
-	Names                                           []string
-	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
-	sem                                             chan struct{}
-	cacheEnabled                                    = false
-	resultCache                                     = make(map[string]model.Result)
-	cacheMutex                                      sync.RWMutex
-	runTestsMutex                                   sync.Mutex
+	total                                               int64
+	bar                                                 *pb.ProgressBar
+	wg                                                  *sync.WaitGroup
+	IPV4, IPV6                                          = true, true
+	R                                                   []*model.Result
+	resultMutex                                         sync.Mutex
+	Names                                               []string
+	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT, AI = false, false, false, false, false, false, false, false, false, false, false, false
+	sem                                                 chan struct{}
+	cacheEnabled                                        = false
+	resultCache                                         = make(map[string]model.Result)
+	cacheMutex                                          sync.RWMutex
+	runTestsMutex                                       sync.Mutex
 )
 
 const testExecutionTimeout = 30 * time.Second
@@ -196,7 +199,7 @@ func FormarPrint(message string) string {
 		}
 	}
 	// 插入小分区的head行
-	if !M || !TW || !HK || !JP || !KR || !NA || !SA || !EU || !AFR || !OCEA || !SPORT {
+	if !M || !TW || !HK || !JP || !KR || !NA || !SA || !EU || !AFR || !OCEA || !SPORT || !AI {
 		for _, r := range R {
 			if r.Status == model.PrintHead {
 				anotherList := []string{}
@@ -352,6 +355,9 @@ func resultCacheKey(testName, ipVersion string, c *http.Client) string {
 }
 
 func runTestWithTimeout(F func(c *http.Client) model.Result, c *http.Client, testName string) model.Result {
+	ctx, cancel := context.WithTimeout(context.Background(), testExecutionTimeout)
+	defer cancel()
+	testClient := clientWithContextDeadline(c, ctx)
 	resultCh := make(chan model.Result, 1)
 	go func() {
 		defer func() {
@@ -363,12 +369,12 @@ func runTestWithTimeout(F func(c *http.Client) model.Result, c *http.Client, tes
 				}
 			}
 		}()
-		resultCh <- F(c)
+		resultCh <- F(testClient)
 	}()
 	select {
 	case res := <-resultCh:
 		return res
-	case <-time.After(testExecutionTimeout):
+	case <-ctx.Done():
 		return model.Result{
 			Name:   testName,
 			Status: model.StatusTimeout,
@@ -583,20 +589,27 @@ func Multination() [](func(c *http.Client) model.Result) {
 		transnation.Bing,
 		transnation.Claude,
 		transnation.Copilot,
+		transnation.Coze,
+		transnation.DeepSeek,
 		transnation.DisneyPlus,
 		transnation.Gemini,
 		transnation.GoogleSearch,
 		transnation.GooglePlayStore,
+		transnation.Grok,
 		transnation.IQiYi,
 		transnation.Instagram,
+		transnation.Kimi,
 		transnation.KOCOWA,
 		eu.MathsSpot,
 		transnation.MetaAI,
+		transnation.MistralAI,
 		transnation.Netflix,
 		transnation.NetflixCDN,
 		transnation.OneTrust,
 		transnation.OpenAI,
 		transnation.ParamountPlus,
+		transnation.PerplexityAI,
+		transnation.Poe,
 		transnation.PrimeVideo,
 		transnation.Reddit,
 		transnation.SonyLiv,
@@ -610,6 +623,25 @@ func Multination() [](func(c *http.Client) model.Result) {
 		transnation.WikipediaEditable,
 		transnation.Youtube,
 		transnation.YoutubeCDN,
+	}
+	return prepareFuncList(FuncList)
+}
+
+func AIPlatforms() [](func(c *http.Client) model.Result) {
+	var FuncList = [](func(c *http.Client) model.Result){
+		transnation.Claude,
+		transnation.Copilot,
+		transnation.Coze,
+		transnation.DeepSeek,
+		transnation.Gemini,
+		transnation.Grok,
+		transnation.Kimi,
+		transnation.MetaAI,
+		transnation.MistralAI,
+		transnation.OpenAI,
+		transnation.PerplexityAI,
+		transnation.Poe,
+		transnation.Sora,
 	}
 	return prepareFuncList(FuncList)
 }
@@ -691,7 +723,6 @@ func Sport() [](func(c *http.Client) model.Result) {
 		africa.BeinConnect,
 		asia.MolaTV,
 		asia.StarPlus,
-		au.OptusSports,
 		eu.Eurosport,
 		eu.SetantaSports,
 		transnation.DAZN,
@@ -711,11 +742,19 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 		transnation.OpenAI,
 		transnation.Claude,
 		transnation.Copilot,
+		transnation.Coze,
+		transnation.DeepSeek,
 		transnation.DisneyPlus,
 		transnation.Gemini,
 		transnation.GooglePlayStore,
+		transnation.Grok,
+		transnation.Kimi,
+		transnation.MetaAI,
+		transnation.MistralAI,
 		transnation.Netflix,
 		transnation.NetflixCDN,
+		transnation.PerplexityAI,
+		transnation.Poe,
 		transnation.Sora,
 		transnation.Spotify,
 		transnation.WeTV,
@@ -728,7 +767,16 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 
 func finallyPrintResult(language, netType string) string {
 	var result string
-	getPlatformName := func(multi bool, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT bool) string {
+	getPlatformName := func(multi bool, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT, AI bool) string {
+		if TW && HK && JP && KR && NA && SA && EU && AFR && OCEA && SPORT && AI {
+			return "All Platform"
+		}
+		if AI && !TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
+			if multi {
+				return "Global + AI"
+			}
+			return "AI"
+		}
 		if multi {
 			if TW && !HK && !JP && !KR && !NA && !SA && !EU && !AFR && !OCEA && !SPORT {
 				return "跨国平台 + 台湾平台"
@@ -782,7 +830,7 @@ func finallyPrintResult(language, netType string) string {
 		}
 	}
 
-	platformName := getPlatformName(M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT)
+	platformName := getPlatformName(M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT, AI)
 
 	switch language {
 	case "zh":
@@ -812,13 +860,17 @@ func finallyPrintResult(language, netType string) string {
 			"体育平台":         "Sports",
 			"所有平台":         "All Platform",
 		}
-		result += FormarPrint(enPlatformName[platformName])
+		displayName := enPlatformName[platformName]
+		if displayName == "" {
+			displayName = platformName
+		}
+		result += FormarPrint(displayName)
 	}
 	return result
 }
 
 func resetOptions() {
-	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = false, false, false, false, false, false, false, false, false, false, false
+	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT, AI = false, false, false, false, false, false, false, false, false, false, false, false
 }
 
 func SwitchOptions(c string) bool {
@@ -873,7 +925,9 @@ func SwitchOptions(c string) bool {
 	case "19":
 		SPORT = true
 	case "20":
-		M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = true, true, true, true, true, true, true, true, true, true, true
+		M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT, AI = true, true, true, true, true, true, true, true, true, true, true, true
+	case "21":
+		AI = true
 	default:
 		return false
 	}
@@ -882,7 +936,9 @@ func SwitchOptions(c string) bool {
 
 func parseSelection(flagString string) bool {
 	resetOptions()
-	fields := strings.Fields(flagString)
+	fields := strings.FieldsFunc(flagString, func(r rune) bool {
+		return r == ' ' || r == '\t' || r == '\n' || r == '\r' || r == ','
+	})
 	if len(fields) == 0 {
 		return false
 	}
@@ -921,6 +977,7 @@ func ReadSelect(language, flagString string) bool {
 			fmt.Println("[18]: 仅大洋洲平台")
 			fmt.Println("[19]: 仅体育平台")
 			fmt.Println("[20]: 全部平台")
+			fmt.Println("[21]: 仅 AI 平台")
 			prompt = "请输入对应数字,空格分隔(回车确认): "
 		} else {
 			fmt.Println("Please select detection items:")
@@ -945,6 +1002,7 @@ func ReadSelect(language, flagString string) bool {
 			fmt.Println("[18]: Oceania platform only")
 			fmt.Println("[19]: Sports platform only")
 			fmt.Println("[20]: All platforms")
+			fmt.Println("[21]: AI platforms only")
 			prompt = "Please enter corresponding numbers, separated by spaces (press Enter to confirm): "
 		}
 		l, err := readLine(prompt)
@@ -1000,7 +1058,139 @@ func getFuncList() [](func(c *http.Client) model.Result) {
 	if SPORT {
 		funcList = append(funcList, Sport()...)
 	}
+	if AI {
+		funcList = append(funcList, AIPlatforms()...)
+	}
 	return funcList
+}
+
+func allPlatformFuncList() [](func(c *http.Client) model.Result) {
+	var funcList [](func(c *http.Client) model.Result)
+	for _, build := range []func() [](func(c *http.Client) model.Result){
+		Multination,
+		Taiwan,
+		HongKong,
+		Japan,
+		Korea,
+		NorthAmerica,
+		SouthAmerica,
+		Europe,
+		Africa,
+		Oceania,
+		Sport,
+		AIPlatforms,
+	} {
+		funcList = append(funcList, build()...)
+	}
+	return sortedFuncList(uniqueFuncList(funcList))
+}
+
+func parseTestNames(testNames string) []string {
+	fields := strings.FieldsFunc(testNames, func(r rune) bool {
+		return r == ','
+	})
+	names := make([]string, 0, len(fields))
+	for _, field := range fields {
+		field = strings.TrimSpace(field)
+		if field != "" {
+			names = append(names, field)
+		}
+	}
+	return names
+}
+
+func normalizeTestName(name string) string {
+	name = strings.ToLower(strings.TrimSpace(name))
+	replacer := strings.NewReplacer(" ", "", "-", "", "_", "", ".", "", "+", "", "'", "", "\"", "")
+	return replacer.Replace(name)
+}
+
+func functionShortName(f func(c *http.Client) model.Result) string {
+	fullName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
+	if fullName == "" {
+		return ""
+	}
+	if idx := strings.LastIndex(fullName, "."); idx >= 0 {
+		fullName = fullName[idx+1:]
+	}
+	return strings.TrimSuffix(fullName, "-fm")
+}
+
+func functionMatchesTestName(f func(c *http.Client) model.Result, target string) bool {
+	target = normalizeTestName(target)
+	if target == "" {
+		return false
+	}
+	info := f(nil)
+	for _, candidate := range []string{info.Name, functionShortName(f)} {
+		if normalizeTestName(candidate) == target {
+			return true
+		}
+	}
+	return false
+}
+
+func functionsForTestNamesLocked(testNames string) ([]func(c *http.Client) model.Result, []string, []string) {
+	state := snapshotSelectionState()
+	defer restoreSelectionState(state)
+
+	Names = nil
+	R = nil
+	targets := parseTestNames(testNames)
+	candidates := allPlatformFuncList()
+	funcs := make([]func(c *http.Client) model.Result, 0, len(targets))
+	missing := make([]string, 0)
+	for _, target := range targets {
+		found := false
+		for _, f := range candidates {
+			if functionMatchesTestName(f, target) {
+				funcs = append(funcs, f)
+				found = true
+				break
+			}
+		}
+		if !found {
+			missing = append(missing, target)
+		}
+	}
+	funcs = sortedFuncList(uniqueFuncList(funcs))
+	return funcs, namesFromFunctions(funcs), missing
+}
+
+func RunNamedTests(client *http.Client, ipVersion, language string, useProgressBar bool, testNames string) (string, error) {
+	runTestsMutex.Lock()
+	defer runTestsMutex.Unlock()
+	Names = []string{}
+	resultMutex.Lock()
+	R = nil
+	resultMutex.Unlock()
+	total = 0
+	wg = &sync.WaitGroup{}
+	utils.SetDNSIPVersion(ipVersion)
+	defer utils.SetDNSIPVersion("")
+	funcList, names, missing := functionsForTestNamesLocked(testNames)
+	if len(missing) > 0 {
+		return "", fmt.Errorf("test not found: %s", strings.Join(missing, ", "))
+	}
+	if len(funcList) == 0 {
+		return "", fmt.Errorf("no valid test specified")
+	}
+	Names = names
+	total = int64(len(funcList))
+	if useProgressBar {
+		bar = NewBar(total)
+	}
+	ProcessFunction(funcList, client, useProgressBar, ipVersion)
+	wg.Wait()
+	if useProgressBar {
+		bar.Finish()
+		fmt.Fprint(utils.ColorStderr, "\r\033[K")
+		time.Sleep(50 * time.Millisecond)
+	}
+	if language == "en" {
+		return FormarPrint("Selected Tests"), nil
+	}
+	return FormarPrint("Selected Tests"), nil
 }
 
 func RunTests(client *http.Client, ipVersion, language string, useProgressBar bool) string {

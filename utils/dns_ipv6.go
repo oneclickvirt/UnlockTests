@@ -51,7 +51,7 @@ func CheckIPv4Support(hostname string) bool {
 	return true
 }
 
-func IsIPv6Client(client interface{}) bool {
+func IsIPv6Client(client any) bool {
 	httpClient, ok := client.(*http.Client)
 	if !ok {
 		return getDNSIPVersion() == "ipv6"
@@ -231,7 +231,7 @@ func isRateLimitInfo(info string) bool {
 // hostname: 要检测的域名
 // err: 原始错误
 // name: 服务名称
-func HandleNetworkError(client interface{}, hostname string, err error, name string) model.Result {
+func HandleNetworkError(client any, hostname string, err error, name string) model.Result {
 	if hostname == "" {
 		hostname = extractHostnameFromError(err)
 	}
@@ -259,7 +259,7 @@ func HandleNetworkError(client interface{}, hostname string, err error, name str
 	return model.Result{Name: name, Status: model.StatusNetworkErr, Err: err}
 }
 
-func NormalizeResult(client interface{}, result model.Result, fallbackName string) model.Result {
+func NormalizeResult(client any, result model.Result, fallbackName string) model.Result {
 	if result.Name == "" {
 		result.Name = fallbackName
 	}

@@ -60,3 +60,13 @@ func TestReqCopiesHTTPTransportSettings(t *testing.T) {
 		t.Fatalf("transport settings were not copied: %#v", client.Transport)
 	}
 }
+
+func TestEffectiveReqTimeoutUsesShorterHTTPClientTimeout(t *testing.T) {
+	source := &http.Client{Timeout: time.Second}
+	if got := effectiveReqTimeout(source, 14*time.Second); got != time.Second {
+		t.Fatalf("expected shorter client timeout, got %s", got)
+	}
+	if got := effectiveReqTimeout(source, 500*time.Millisecond); got != 500*time.Millisecond {
+		t.Fatalf("expected shorter fallback timeout, got %s", got)
+	}
+}

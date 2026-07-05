@@ -70,8 +70,17 @@ func TestParseSelectionRejectsInvalidWithoutKeepingOldState(t *testing.T) {
 	if parseSelection("0 invalid") {
 		t.Fatalf("expected invalid selection to be rejected")
 	}
-	if M || TW || HK || JP || KR || NA || SA || EU || AFR || OCEA || SPORT {
+	if M || TW || HK || JP || KR || NA || SA || EU || AFR || OCEA || SPORT || AI {
 		t.Fatalf("expected invalid selection to reset all selection flags")
+	}
+}
+
+func TestParseSelectionSupportsAIAndCommaSeparatedItems(t *testing.T) {
+	if !parseSelection("0,21") {
+		t.Fatalf("expected comma-separated selection to parse")
+	}
+	if !M || !AI {
+		t.Fatalf("expected global and AI selections to be enabled")
 	}
 }
 
@@ -95,7 +104,11 @@ func TestReferenceProvidersArePresentInExpectedSections(t *testing.T) {
 	}{
 		"global": {
 			funcs: Multination(),
-			names: []string{"Bilibili Anime", "Microsoft Copilot", "WeTV"},
+			names: []string{"Bilibili Anime", "Coze", "Microsoft Copilot", "Poe", "WeTV"},
+		},
+		"ai": {
+			funcs: AIPlatforms(),
+			names: []string{"Coze", "DeepSeek", "Kimi", "Perplexity AI", "Poe"},
 		},
 		"europe": {
 			funcs: Europe(),
@@ -135,7 +148,7 @@ func TestPlatformSectionsAreAlphabetized(t *testing.T) {
 }
 
 func TestListPlatformsReturnsAlphabetizedUniqueNames(t *testing.T) {
-	for _, selection := range []string{"0", "10", "14", "19", "20", "0 10", "0 19"} {
+	for _, selection := range []string{"0", "10", "14", "19", "20", "21", "0 10", "0 19", "0,21"} {
 		names, err := ListPlatforms(selection)
 		if err != nil {
 			t.Fatalf("ListPlatforms(%q) returned error: %v", selection, err)
@@ -189,6 +202,7 @@ func TestReferenceProviderSectionsHaveNoDuplicateNames(t *testing.T) {
 		"india":          India(),
 		"southeast asia": SouthEastAsia(),
 		"ipv6 global":    IPV6Multination(),
+		"ai":             AIPlatforms(),
 	}
 	for section, funcs := range sections {
 		seen := map[string]bool{}
@@ -205,6 +219,36 @@ func TestReferenceProviderSectionsHaveNoDuplicateNames(t *testing.T) {
 	}
 }
 
+func TestFunctionsForTestNamesAcceptsCommaSeparatedNames(t *testing.T) {
+	funcs, names, missing := functionsForTestNamesLocked("Coze,Poe,Perplexity AI")
+	if len(missing) != 0 {
+		t.Fatalf("unexpected missing tests: %v", missing)
+	}
+	if len(funcs) != 3 {
+		t.Fatalf("expected 3 funcs, got %d", len(funcs))
+	}
+	got := map[string]bool{}
+	for _, name := range names {
+		got[name] = true
+	}
+	for _, name := range []string{"Coze", "Poe", "Perplexity AI"} {
+		if !got[name] {
+			t.Fatalf("expected selected tests to include %q, got %v", name, names)
+		}
+	}
+}
+
+func TestFunctionsForTestNamesMatchesFunctionNames(t *testing.T) {
+	_, names, missing := functionsForTestNamesLocked("MistralAI,Kimi")
+	if len(missing) != 0 {
+		t.Fatalf("unexpected missing tests: %v", missing)
+	}
+	got := strings.Join(names, "\n")
+	if !strings.Contains(got, "Mistral AI") || !strings.Contains(got, "Kimi") {
+		t.Fatalf("expected function-name lookup to match providers, got %v", names)
+	}
+}
+
 func platformSectionBuilders() map[string]func() []func(c *http.Client) model.Result {
 	builders := userVisibleSectionBuilders()
 	builders["ipv6 global"] = IPV6Multination
@@ -215,6 +259,7 @@ func userVisibleSectionBuilders() map[string]func() []func(c *http.Client) model
 	builders := geographicSectionBuilders()
 	builders["global"] = Multination
 	builders["sports"] = Sport
+	builders["ai"] = AIPlatforms
 	return builders
 }
 

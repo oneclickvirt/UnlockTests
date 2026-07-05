@@ -103,21 +103,21 @@ func ListPlatforms(selection string) ([]string, error) {
 }
 
 type selectionState struct {
-	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT bool
-	names                                           []string
-	results                                         []*model.Result
+	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT, AI bool
+	names                                               []string
+	results                                             []*model.Result
 }
 
 func snapshotSelectionState() selectionState {
 	return selectionState{
-		M: M, TW: TW, HK: HK, JP: JP, KR: KR, NA: NA, SA: SA, EU: EU, AFR: AFR, OCEA: OCEA, SPORT: SPORT,
+		M: M, TW: TW, HK: HK, JP: JP, KR: KR, NA: NA, SA: SA, EU: EU, AFR: AFR, OCEA: OCEA, SPORT: SPORT, AI: AI,
 		names:   append([]string(nil), Names...),
 		results: append([]*model.Result(nil), R...),
 	}
 }
 
 func restoreSelectionState(state selectionState) {
-	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT = state.M, state.TW, state.HK, state.JP, state.KR, state.NA, state.SA, state.EU, state.AFR, state.OCEA, state.SPORT
+	M, TW, HK, JP, KR, NA, SA, EU, AFR, OCEA, SPORT, AI = state.M, state.TW, state.HK, state.JP, state.KR, state.NA, state.SA, state.EU, state.AFR, state.OCEA, state.SPORT, state.AI
 	Names = append([]string(nil), state.names...)
 	R = append([]*model.Result(nil), state.results...)
 }
