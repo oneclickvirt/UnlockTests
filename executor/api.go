@@ -87,6 +87,73 @@ func RunStructured(ctx context.Context, opts RunOptions) ([]StructuredResult, er
 	return runStructuredVersionLocked(ctx, opts)
 }
 
+// RunNamedStructured executes only the explicitly named providers while
+// retaining the structured network, timeout, concurrency, and IP-version
+// behavior used by RunStructured.
+func RunNamedStructured(ctx context.Context, opts RunOptions, testNames string) ([]StructuredResult, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if strings.TrimSpace(testNames) == "" {
+		return nil, errors.New("test names are empty")
+	}
+	ipVersion, err := normalizeIPVersion(opts.IPVersion)
+	if err != nil {
+		return nil, err
+	}
+	opts.IPVersion = ipVersion
+	if err := validateNetworkOptions(opts); err != nil {
+		return nil, err
+	}
+
+	runTestsMutex.Lock()
+	defer runTestsMutex.Unlock()
+	funcs, _, missing := functionsForTestNamesLocked(testNames)
+	if len(missing) > 0 {
+		return nil, fmt.Errorf("unknown provider names: %s", strings.Join(missing, ", "))
+	}
+	if len(funcs) == 0 {
+		return nil, errors.New("no providers matched the requested names")
+	}
+	if opts.IPVersion == "auto" {
+		var combined []StructuredResult
+		var firstErr error
+		versions := []string{"ipv4", "ipv6"}
+		for index, version := range versions {
+			versionOptions := opts
+			versionOptions.IPVersion = version
+			versionCtx, cancel := splitVersionContext(ctx, len(versions)-index)
+			results, runErr := runNamedStructuredVersionLocked(versionCtx, versionOptions, funcs)
+			cancel()
+			combined = append(combined, results...)
+			if firstErr == nil && runErr != nil {
+				firstErr = runErr
+			}
+		}
+		return combined, firstErr
+	}
+	return runNamedStructuredVersionLocked(ctx, opts, funcs)
+}
+
+func runNamedStructuredVersionLocked(ctx context.Context, opts RunOptions, funcs []func(c *http.Client) model.Result) ([]StructuredResult, error) {
+	restoreNetwork := applyStructuredNetworkOptions(opts)
+	defer restoreNetwork()
+	if opts.Client == nil {
+		if opts.IPVersion == "ipv6" {
+			opts.Client = utils.Ipv6HttpClient
+		} else {
+			opts.Client = utils.Ipv4HttpClient
+		}
+	}
+	utils.SetDNSIPVersion(opts.IPVersion)
+	defer utils.SetDNSIPVersion("")
+	results, err := runFunctionsStructured(ctx, funcs, opts)
+	for index := range results {
+		results[index].IPVersion = opts.IPVersion
+	}
+	return results, err
+}
+
 func splitVersionContext(parent context.Context, versionsRemaining int) (context.Context, context.CancelFunc) {
 	if parent == nil {
 		parent = context.Background()

@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 	"time"
@@ -14,45 +17,140 @@ import (
 	. "github.com/oneclickvirt/defaultset"
 )
 
+type cliOptions struct {
+	mode                                          int
+	showVersion, help, showIP, useBar, cache, log bool
+	jsonOutput                                    bool
+	iface, dnsServers, httpProxy, socksProxy      string
+	language, selection, testNames                string
+	concurrency                                   uint64
+	timeout                                       time.Duration
+}
+
+type cliStructuredOutput struct {
+	SchemaVersion    string                          `json:"schema_version"`
+	Results          []executor.StructuredResult     `json:"results"`
+	ProviderMetadata []executor.ProviderMetadata     `json:"provider_metadata"`
+	MetadataSource   executor.ProviderMetadataSource `json:"provider_metadata_source"`
+	Error            string                          `json:"error,omitempty"`
+}
+
+func parseCLI(args []string) (cliOptions, error) {
+	opts := cliOptions{}
+	fs := newFlagSet(&opts, io.Discard)
+	if err := fs.Parse(args); err != nil {
+		return opts, err
+	}
+	if opts.timeout < 0 {
+		return opts, fmt.Errorf("timeout must not be negative")
+	}
+	return opts, nil
+}
+
+func newFlagSet(opts *cliOptions, output io.Writer) *flag.FlagSet {
+	fs := flag.NewFlagSet("ut", flag.ContinueOnError)
+	fs.SetOutput(output)
+	fs.BoolVar(&opts.help, "h", false, "show help information")
+	fs.IntVar(&opts.mode, "m", 0, "mode: 0 (both), 4 (only), or 6 (only); default is 0, example: -m 4")
+	fs.BoolVar(&opts.showVersion, "v", false, "show version")
+	fs.BoolVar(&opts.showIP, "s", true, "show IP address status; to disable, use: -s=false")
+	fs.BoolVar(&opts.useBar, "b", true, "use progress bar; to disable, use: -b=false")
+	fs.BoolVar(&opts.log, "log", false, "enable logging")
+	fs.StringVar(&opts.selection, "f", "", "specify selection option in menu; example: -f 0")
+	fs.StringVar(&opts.testNames, "test", "", "run specific providers by name or function, comma-separated; example: -test \"Coze,Poe\"")
+	fs.StringVar(&opts.iface, "I", "", "bind IP address or network interface; example: -I 192.168.1.100 or -I eth0")
+	fs.StringVar(&opts.dnsServers, "dns-servers", "", "specify DNS servers; example: -dns-servers \"1.1.1.1:53\"")
+	fs.StringVar(&opts.httpProxy, "http-proxy", "", "specify HTTP proxy; example: -http-proxy \"http://username:password@127.0.0.1:1080\"")
+	fs.StringVar(&opts.socksProxy, "socks-proxy", "", "specify SOCKS5 proxy; example: -socks-proxy \"socks5://username:password@127.0.0.1:1080\"")
+	fs.Uint64Var(&opts.concurrency, "conc", 0, "max concurrent tests (0=unlimited); example: -conc 50")
+	fs.BoolVar(&opts.cache, "cache", false, "enable duplicate test result caching; example: -cache")
+	fs.StringVar(&opts.language, "L", "zh", "language; specify 'en' for English or 'zh' for Chinese")
+	fs.BoolVar(&opts.jsonOutput, "json", false, "print structured provider results as JSON")
+	fs.BoolVar(&opts.jsonOutput, "structured", false, "print structured provider results as JSON")
+	fs.DurationVar(&opts.timeout, "timeout", 0, "structured run timeout (for example 2m)")
+	return fs
+}
+
 func main() {
-	mode := 0
-	var showVersion, help, showIP, useBar, cache bool
-	var Iface, DnsServers, httpProxy, socksProxy, language, flagString, testString string
-	var conc uint64
-	utFlag := flag.NewFlagSet("ut", flag.ContinueOnError)
-	utFlag.BoolVar(&help, "h", false, "show help information")
-	utFlag.IntVar(&mode, "m", 0, "mode: 0 (both), 4 (only), or 6 (only); default is 0, example: -m 4")
-	utFlag.BoolVar(&showVersion, "v", false, "show version")
-	utFlag.BoolVar(&showIP, "s", true, "show IP address status; to disable, use: -s=false")
-	utFlag.BoolVar(&useBar, "b", true, "use progress bar; to disable, use: -b=false")
-	utFlag.BoolVar(&model.EnableLoger, "log", false, "enable logging")
-	utFlag.StringVar(&flagString, "f", "", "specify selection option in menu; example: -f 0")
-	utFlag.StringVar(&testString, "test", "", "run specific providers by name or function, comma-separated; example: -test \"Coze,Poe\"")
-	utFlag.StringVar(&Iface, "I", "", "bind IP address or network interface; example: -I 192.168.1.100 or -I eth0")
-	utFlag.StringVar(&DnsServers, "dns-servers", "", "specify DNS servers; example: -dns-servers \"1.1.1.1:53\"")
-	utFlag.StringVar(&httpProxy, "http-proxy", "", "specify HTTP proxy; example: -http-proxy \"http://username:password@127.0.0.1:1080\"")
-	utFlag.StringVar(&socksProxy, "socks-proxy", "", "specify SOCKS5 proxy; example: -socks-proxy \"socks5://username:password@127.0.0.1:1080\"")
-	utFlag.Uint64Var(&conc, "conc", 0, "max concurrent tests (0=unlimited); example: -conc 50")
-	utFlag.BoolVar(&cache, "cache", false, "enable duplicate test result caching; example: -cache")
-	utFlag.StringVar(&language, "L", "zh", "language; specify 'en' for English or 'zh' for Chinese")
-	if err := utFlag.Parse(os.Args[1:]); err != nil {
-		return
+	opts, err := parseCLI(os.Args[1:])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(2)
 	}
-	if help {
+	model.EnableLoger = opts.log
+	if opts.help {
 		fmt.Printf("Usage: %s [options]\n", os.Args[0])
-		utFlag.PrintDefaults()
+		newFlagSet(&cliOptions{}, os.Stdout).PrintDefaults()
 		return
 	}
-	if showVersion {
+	if opts.showVersion {
 		fmt.Println(model.UnlockTestsVersion)
 		return
 	}
+	mode, showIP, useBar, cache := opts.mode, opts.showIP, opts.useBar, opts.cache
+	Iface, DnsServers, httpProxy, socksProxy := opts.iface, opts.dnsServers, opts.httpProxy, opts.socksProxy
+	language, flagString, testString, conc := opts.language, opts.selection, opts.testNames, opts.concurrency
 	if mode != 0 && mode != 4 && mode != 6 {
 		fmt.Fprintf(os.Stderr, "invalid mode: %d; expected 0, 4, or 6\n", mode)
-		return
+		os.Exit(2)
 	}
 	if language != "zh" && language != "en" {
 		fmt.Fprintf(os.Stderr, "invalid language: %s; expected zh or en\n", language)
+		os.Exit(2)
+	}
+	if opts.jsonOutput {
+		output := cliStructuredOutput{SchemaVersion: "goecs.unlocktests/v1", Results: []executor.StructuredResult{}}
+		if conc > uint64(^uint(0)>>1) {
+			output.Error = "concurrency exceeds the platform integer range"
+			encoded, _ := json.Marshal(output)
+			fmt.Println(string(encoded))
+			os.Exit(2)
+		}
+		ipVersion := "auto"
+		if mode == 4 {
+			ipVersion = "ipv4"
+		} else if mode == 6 {
+			ipVersion = "ipv6"
+		}
+		timeout := opts.timeout
+		if timeout <= 0 {
+			timeout = 2 * time.Minute
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+		metadata, metadataSource, metadataErr := executor.LoadProviderMetadata(ctx, nil)
+		if metadataErr != nil {
+			output.Error = metadataErr.Error()
+			encoded, _ := json.Marshal(output)
+			fmt.Println(string(encoded))
+			os.Exit(1)
+		}
+		output.ProviderMetadata = metadata
+		output.MetadataSource = metadataSource
+		runOptions := executor.RunOptions{
+			Selection: flagString, IPVersion: ipVersion, Concurrency: int(conc), Interface: Iface,
+			DNSServers: DnsServers, HTTPProxy: httpProxy, SOCKSProxy: socksProxy, UseCache: cache,
+		}
+		var results []executor.StructuredResult
+		var runErr error
+		if testString != "" {
+			results, runErr = executor.RunNamedStructured(ctx, runOptions, testString)
+		} else {
+			results, runErr = executor.RunStructured(ctx, runOptions)
+		}
+		output.Results = results
+		if runErr != nil {
+			output.Error = runErr.Error()
+		}
+		encoded, marshalErr := json.Marshal(output)
+		if marshalErr != nil {
+			fmt.Fprintln(os.Stderr, marshalErr)
+			return
+		}
+		fmt.Println(string(encoded))
+		if runErr != nil {
+			os.Exit(1)
+		}
 		return
 	}
 	if Iface != "" {

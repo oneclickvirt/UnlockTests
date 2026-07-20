@@ -1,0 +1,718 @@
+{
+  "schema_version": "goecs.unlocktests/provider-metadata-v1",
+  "providers": [
+    {
+      "name": "4GTV.TV",
+      "category": "taiwan"
+    },
+    {
+      "name": "7plus",
+      "category": "oceania"
+    },
+    {
+      "name": "A\u0026E TV",
+      "category": "north-america"
+    },
+    {
+      "name": "ABC iView",
+      "category": "oceania"
+    },
+    {
+      "name": "Abema.TV",
+      "category": "japan"
+    },
+    {
+      "name": "Acorn TV",
+      "category": "oceania"
+    },
+    {
+      "name": "Amazon Prime Video",
+      "category": "global"
+    },
+    {
+      "name": "AMC+",
+      "category": "oceania"
+    },
+    {
+      "name": "Amediateka",
+      "category": "europe"
+    },
+    {
+      "name": "AnimeFesta",
+      "category": "japan"
+    },
+    {
+      "name": "Apple",
+      "category": "global"
+    },
+    {
+      "name": "Bahamut Anime",
+      "category": "taiwan"
+    },
+    {
+      "name": "BBC iPLAYER",
+      "category": "europe"
+    },
+    {
+      "name": "Bein Sports Connect",
+      "category": "sports"
+    },
+    {
+      "name": "Bilibili Anime",
+      "category": "global"
+    },
+    {
+      "name": "BingSearch",
+      "category": "global"
+    },
+    {
+      "name": "BritBox",
+      "category": "oceania"
+    },
+    {
+      "name": "Canal+",
+      "category": "europe"
+    },
+    {
+      "name": "CatchPlay+",
+      "category": "taiwan"
+    },
+    {
+      "name": "CBC Gem",
+      "category": "north-america"
+    },
+    {
+      "name": "Channel 10",
+      "category": "oceania"
+    },
+    {
+      "name": "Channel 4",
+      "category": "europe"
+    },
+    {
+      "name": "Channel 5",
+      "category": "europe"
+    },
+    {
+      "name": "Channel 9",
+      "category": "oceania"
+    },
+    {
+      "name": "Claude",
+      "category": "ai",
+      "aliases": [
+        "Anthropic"
+      ]
+    },
+    {
+      "name": "Copilot",
+      "category": "ai",
+      "aliases": [
+        "Microsoft Copilot"
+      ]
+    },
+    {
+      "name": "Coupang Play",
+      "category": "korea"
+    },
+    {
+      "name": "Coze",
+      "category": "ai"
+    },
+    {
+      "name": "Crackle",
+      "category": "north-america"
+    },
+    {
+      "name": "Crave",
+      "category": "north-america"
+    },
+    {
+      "name": "Crunchyroll",
+      "category": "north-america"
+    },
+    {
+      "name": "CW TV",
+      "category": "north-america"
+    },
+    {
+      "name": "D Anime Store",
+      "category": "japan"
+    },
+    {
+      "name": "Dazn",
+      "category": "sports"
+    },
+    {
+      "name": "DeepSeek",
+      "category": "ai"
+    },
+    {
+      "name": "DirecTV Go",
+      "category": "south-america"
+    },
+    {
+      "name": "Directv Stream",
+      "category": "north-america"
+    },
+    {
+      "name": "Discovery+",
+      "category": "north-america"
+    },
+    {
+      "name": "Discovery+ UK",
+      "category": "europe"
+    },
+    {
+      "name": "Disney+",
+      "category": "global"
+    },
+    {
+      "name": "DMM",
+      "category": "japan"
+    },
+    {
+      "name": "DMM TV",
+      "category": "japan"
+    },
+    {
+      "name": "Docplay",
+      "category": "oceania"
+    },
+    {
+      "name": "Dola AI",
+      "category": "ai",
+      "aliases": [
+        "Dola"
+      ]
+    },
+    {
+      "name": "DSTV",
+      "category": "africa"
+    },
+    {
+      "name": "EncoreTVB",
+      "category": "north-america"
+    },
+    {
+      "name": "EroGameSpace",
+      "category": "japan"
+    },
+    {
+      "name": "ESPN+",
+      "category": "sports"
+    },
+    {
+      "name": "Eurosport RO",
+      "category": "sports"
+    },
+    {
+      "name": "FOD(Fuji TV)",
+      "category": "japan"
+    },
+    {
+      "name": "FOX",
+      "category": "north-america"
+    },
+    {
+      "name": "France TV",
+      "category": "europe"
+    },
+    {
+      "name": "FridayVideo",
+      "category": "taiwan"
+    },
+    {
+      "name": "Fubo TV",
+      "category": "sports"
+    },
+    {
+      "name": "FXNOW",
+      "category": "north-america"
+    },
+    {
+      "name": "Gemini",
+      "category": "ai",
+      "aliases": [
+        "Google Gemini"
+      ]
+    },
+    {
+      "name": "Google Play Store",
+      "category": "global"
+    },
+    {
+      "name": "GoogleSearch",
+      "category": "global"
+    },
+    {
+      "name": "Grok",
+      "category": "ai",
+      "aliases": [
+        "xAI"
+      ]
+    },
+    {
+      "name": "Hami Video",
+      "category": "taiwan"
+    },
+    {
+      "name": "HBO Max",
+      "category": "europe"
+    },
+    {
+      "name": "HotStar",
+      "category": "europe"
+    },
+    {
+      "name": "Hoy TV",
+      "category": "hong-kong"
+    },
+    {
+      "name": "Hulu",
+      "category": "north-america"
+    },
+    {
+      "name": "Hulu Japan",
+      "category": "japan"
+    },
+    {
+      "name": "Instagram Licensed Audio",
+      "category": "global"
+    },
+    {
+      "name": "IQiYi",
+      "category": "global"
+    },
+    {
+      "name": "ITV Hub",
+      "category": "europe"
+    },
+    {
+      "name": "J:com On Demand",
+      "category": "japan"
+    },
+    {
+      "name": "Joyn",
+      "category": "europe"
+    },
+    {
+      "name": "Kancolle Japan",
+      "category": "japan"
+    },
+    {
+      "name": "Karaoke@DAM",
+      "category": "japan"
+    },
+    {
+      "name": "Kayo Sports",
+      "category": "oceania"
+    },
+    {
+      "name": "KBS Domestic",
+      "category": "korea"
+    },
+    {
+      "name": "Kimi",
+      "category": "ai",
+      "aliases": [
+        "Moonshot AI"
+      ]
+    },
+    {
+      "name": "KKTV",
+      "category": "taiwan"
+    },
+    {
+      "name": "KOCOWA",
+      "category": "global"
+    },
+    {
+      "name": "Lemino",
+      "category": "japan"
+    },
+    {
+      "name": "LineTV.TW",
+      "category": "taiwan"
+    },
+    {
+      "name": "LiTV",
+      "category": "taiwan"
+    },
+    {
+      "name": "Maori TV",
+      "category": "oceania"
+    },
+    {
+      "name": "MathsSpot",
+      "category": "global"
+    },
+    {
+      "name": "MegogoTV",
+      "category": "europe"
+    },
+    {
+      "name": "Meta AI",
+      "category": "ai",
+      "aliases": [
+        "MetaAI"
+      ]
+    },
+    {
+      "name": "MGM+",
+      "category": "north-america"
+    },
+    {
+      "name": "MGStage",
+      "category": "japan"
+    },
+    {
+      "name": "Mistral AI",
+      "category": "ai",
+      "aliases": [
+        "Mistral"
+      ]
+    },
+    {
+      "name": "Molotov",
+      "category": "europe"
+    },
+    {
+      "name": "Mora",
+      "category": "japan"
+    },
+    {
+      "name": "Movistar+",
+      "category": "europe"
+    },
+    {
+      "name": "music.jp",
+      "category": "japan"
+    },
+    {
+      "name": "MyTVSuper",
+      "category": "hong-kong"
+    },
+    {
+      "name": "MyVideo",
+      "category": "taiwan"
+    },
+    {
+      "name": "Naver TV",
+      "category": "korea"
+    },
+    {
+      "name": "NBA TV",
+      "category": "sports"
+    },
+    {
+      "name": "NBC TV",
+      "category": "sports"
+    },
+    {
+      "name": "Neon TV",
+      "category": "oceania"
+    },
+    {
+      "name": "Netflix",
+      "category": "global"
+    },
+    {
+      "name": "Netflix CDN",
+      "category": "global"
+    },
+    {
+      "name": "NETRIDE",
+      "category": "japan"
+    },
+    {
+      "name": "NFL+",
+      "category": "north-america"
+    },
+    {
+      "name": "NHK+",
+      "category": "japan"
+    },
+    {
+      "name": "Niconico",
+      "category": "japan"
+    },
+    {
+      "name": "NLZIET",
+      "category": "europe"
+    },
+    {
+      "name": "Now TV",
+      "category": "hong-kong"
+    },
+    {
+      "name": "NPO Start Plus",
+      "category": "europe"
+    },
+    {
+      "name": "Ofiii",
+      "category": "taiwan"
+    },
+    {
+      "name": "OneTrust",
+      "category": "global"
+    },
+    {
+      "name": "OpenAI",
+      "category": "ai",
+      "aliases": [
+        "ChatGPT"
+      ]
+    },
+    {
+      "name": "PandaTV",
+      "category": "korea"
+    },
+    {
+      "name": "ParamountPlus",
+      "category": "global"
+    },
+    {
+      "name": "Peacock TV",
+      "category": "north-america"
+    },
+    {
+      "name": "Perplexity AI",
+      "category": "ai",
+      "aliases": [
+        "Perplexity"
+      ]
+    },
+    {
+      "name": "Philo",
+      "category": "north-america"
+    },
+    {
+      "name": "Pluto TV",
+      "category": "north-america"
+    },
+    {
+      "name": "Poe",
+      "category": "ai"
+    },
+    {
+      "name": "Pornhub",
+      "category": "north-america"
+    },
+    {
+      "name": "Pretty Derby Japan",
+      "category": "japan"
+    },
+    {
+      "name": "Princess Connect Re - Dive Japan",
+      "category": "japan"
+    },
+    {
+      "name": "Project Sekai - Colorful Stage",
+      "category": "japan"
+    },
+    {
+      "name": "Radiko",
+      "category": "japan"
+    },
+    {
+      "name": "Rai Play",
+      "category": "europe"
+    },
+    {
+      "name": "Rakuten Magazine",
+      "category": "japan"
+    },
+    {
+      "name": "Rakuten TV",
+      "category": "europe"
+    },
+    {
+      "name": "Rakuten TV Japan",
+      "category": "japan"
+    },
+    {
+      "name": "Reddit",
+      "category": "global"
+    },
+    {
+      "name": "SBS on Demand",
+      "category": "oceania"
+    },
+    {
+      "name": "SD Gundam G",
+      "category": "japan"
+    },
+    {
+      "name": "Setanta Sports",
+      "category": "sports"
+    },
+    {
+      "name": "Showmax",
+      "category": "africa"
+    },
+    {
+      "name": "Shudder",
+      "category": "north-america"
+    },
+    {
+      "name": "SKY CH",
+      "category": "europe"
+    },
+    {
+      "name": "SKY DE",
+      "category": "europe"
+    },
+    {
+      "name": "Sky Go",
+      "category": "europe"
+    },
+    {
+      "name": "SkyGo NZ",
+      "category": "oceania"
+    },
+    {
+      "name": "SkyShowTime",
+      "category": "europe"
+    },
+    {
+      "name": "Sling TV",
+      "category": "north-america"
+    },
+    {
+      "name": "SonyLiv",
+      "category": "global"
+    },
+    {
+      "name": "SOOP",
+      "category": "korea"
+    },
+    {
+      "name": "Sora",
+      "category": "ai",
+      "aliases": [
+        "OpenAI Sora"
+      ]
+    },
+    {
+      "name": "Spotify Registration",
+      "category": "global"
+    },
+    {
+      "name": "SPOTV NOW",
+      "category": "korea"
+    },
+    {
+      "name": "Stan",
+      "category": "oceania"
+    },
+    {
+      "name": "Star+",
+      "category": "sports"
+    },
+    {
+      "name": "Starz",
+      "category": "north-america"
+    },
+    {
+      "name": "Steam Store",
+      "category": "global"
+    },
+    {
+      "name": "Telasa",
+      "category": "japan"
+    },
+    {
+      "name": "ThreeNow",
+      "category": "oceania"
+    },
+    {
+      "name": "TikTok",
+      "category": "global"
+    },
+    {
+      "name": "TLC GO",
+      "category": "north-america"
+    },
+    {
+      "name": "TNTSports",
+      "category": "europe"
+    },
+    {
+      "name": "Tubi TV",
+      "category": "north-america"
+    },
+    {
+      "name": "TVBAnywhere+",
+      "category": "global"
+    },
+    {
+      "name": "TVer",
+      "category": "japan"
+    },
+    {
+      "name": "Tving",
+      "category": "korea"
+    },
+    {
+      "name": "U-NEXT",
+      "category": "japan"
+    },
+    {
+      "name": "Viaplay",
+      "category": "europe"
+    },
+    {
+      "name": "Videoland",
+      "category": "europe"
+    },
+    {
+      "name": "VideoMarket",
+      "category": "japan"
+    },
+    {
+      "name": "Viu.com",
+      "category": "global"
+    },
+    {
+      "name": "Viu.TV",
+      "category": "hong-kong"
+    },
+    {
+      "name": "WATCHA",
+      "category": "korea"
+    },
+    {
+      "name": "Wavve",
+      "category": "korea"
+    },
+    {
+      "name": "WeTV",
+      "category": "global"
+    },
+    {
+      "name": "Wikipedia Editability",
+      "category": "global"
+    },
+    {
+      "name": "WOWOW",
+      "category": "japan"
+    },
+    {
+      "name": "X (formerly Twitter)",
+      "category": "global"
+    },
+    {
+      "name": "YouTube CDN",
+      "category": "global"
+    },
+    {
+      "name": "YouTube Region",
+      "category": "global"
+    },
+    {
+      "name": "ZDF",
+      "category": "europe"
+    }
+  ]
+}

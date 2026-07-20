@@ -269,6 +269,13 @@ func TestValidateNetworkOptions(t *testing.T) {
 	}
 }
 
+func TestRunNamedStructuredRejectsUnknownProvider(t *testing.T) {
+	results, err := RunNamedStructured(context.Background(), RunOptions{IPVersion: "ipv4"}, "definitely-not-a-provider")
+	if err == nil || len(results) != 0 {
+		t.Fatalf("unknown named provider result = %#v, %v", results, err)
+	}
+}
+
 func TestValidateNetworkOptionsRejectsUnsupportedInterfaceNameBinding(t *testing.T) {
 	if runtime.GOOS == "linux" {
 		if err := validateNetworkOptions(RunOptions{Interface: "eth0"}); err != nil {
