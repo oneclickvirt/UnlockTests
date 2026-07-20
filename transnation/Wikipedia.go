@@ -34,7 +34,7 @@ func WikipediaEditable(c *http.Client) model.Result {
 	} else if resp.StatusCode == 200 {
 		return model.Result{Name: name, Status: model.StatusYes}
 	} else if resp.StatusCode == 429 {
-		return model.Result{Name: name, Status: model.StatusBanned}
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
 	}
 	return model.Result{Name: name, Status: model.StatusUnexpected,
 		Err: fmt.Errorf("get zh.wikipedia.org failed with code: %d", resp.StatusCode)}

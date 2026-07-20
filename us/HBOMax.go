@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -129,10 +128,7 @@ func HBOMax(c *http.Client) model.Result {
 				strings.Split(body, "\"url\":\"/")[1:], " ")),
 		" "))
 	if region != "" && strings.Contains(availableRegion, region) {
-		vpnCheckToken := strings.TrimSpace(os.Getenv("UNLOCKTESTS_HBOMAX_VPN_CHECK_ST"))
-		if vpnCheckToken == "" {
-			vpnCheckToken = defaultHBOMaxVPNCheckST
-		}
+		vpnCheckToken := defaultHBOMaxVPNCheckST
 		if vpnCheckToken != "" {
 			vpnCheckResp, err := client.R().
 				SetHeader("Content-Type", "application/x-www-form-urlencoded").

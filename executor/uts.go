@@ -7,10 +7,11 @@ import (
 	"reflect"
 	"runtime"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/mattn/go-runewidth"
 
 	"github.com/oneclickvirt/UnlockTests/africa"
 	"github.com/oneclickvirt/UnlockTests/asia"
@@ -108,6 +109,8 @@ func ShowResult(r *model.Result) (s string) {
 		return Yellow("N/A") + White(" (DNS Resolve Failed)")
 	case model.StatusRestricted:
 		return formatResult(Yellow, "Restricted", *r)
+	case model.StatusRateLimited:
+		return formatResult(Yellow, "Rate Limited", *r)
 	case model.StatusErr:
 		s = Yellow("Error")
 		logErr()
@@ -166,10 +169,10 @@ func PrintCenteredMessage(message string, totalLength int) string {
 	if totalLength == 0 {
 		totalLength = 40
 	}
-	messageLength := len(message)
+	messageLength := runewidth.StringWidth(message)
 	if messageLength > totalLength {
-		message = message[:totalLength]
-		messageLength = totalLength
+		message = runewidth.Truncate(message, totalLength, "")
+		messageLength = runewidth.StringWidth(message)
 	}
 	paddingLength := (totalLength - messageLength) / 2
 	leftPadding := strings.Repeat("=", paddingLength)
@@ -180,8 +183,8 @@ func PrintCenteredMessage(message string, totalLength int) string {
 func FormarPrint(message string) string {
 	Length := 25
 	for _, r := range R {
-		if len(r.Name) > Length {
-			Length = len(r.Name)
+		if width := runewidth.StringWidth(r.Name); width > Length {
+			Length = width
 		}
 	}
 	head := PrintCenteredMessage("[ "+message+" ]", 0)
@@ -195,7 +198,8 @@ func FormarPrint(message string) string {
 	for _, name := range Names {
 		if r, found := resultMap[name]; found {
 			result := ShowResult(r)
-			tempList = append(tempList, fmt.Sprintf("%-"+strconv.Itoa(Length)+"s %s\n", r.Name, result))
+			padding := max(Length-runewidth.StringWidth(r.Name), 0)
+			tempList = append(tempList, r.Name+strings.Repeat(" ", padding)+" "+result+"\n")
 		}
 	}
 	// 插入小分区的head行
@@ -616,6 +620,7 @@ func Multination() [](func(c *http.Client) model.Result) {
 		transnation.Coze,
 		transnation.DeepSeek,
 		transnation.DisneyPlus,
+		transnation.Dola,
 		transnation.Gemini,
 		transnation.GoogleSearch,
 		transnation.GooglePlayStore,
@@ -645,6 +650,7 @@ func Multination() [](func(c *http.Client) model.Result) {
 		transnation.ViuCom,
 		transnation.WeTV,
 		transnation.WikipediaEditable,
+		transnation.X,
 		transnation.Youtube,
 		transnation.YoutubeCDN,
 	}
@@ -657,6 +663,7 @@ func AIPlatforms() [](func(c *http.Client) model.Result) {
 		transnation.Copilot,
 		transnation.Coze,
 		transnation.DeepSeek,
+		transnation.Dola,
 		transnation.Gemini,
 		transnation.Grok,
 		transnation.Kimi,
@@ -767,6 +774,7 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 		transnation.Coze,
 		transnation.DeepSeek,
 		transnation.DisneyPlus,
+		transnation.Dola,
 		transnation.Gemini,
 		transnation.GooglePlayStore,
 		transnation.Grok,
@@ -781,6 +789,7 @@ func IPV6Multination() [](func(c *http.Client) model.Result) {
 		transnation.Spotify,
 		transnation.WeTV,
 		transnation.WikipediaEditable,
+		transnation.X,
 		transnation.Youtube,
 		transnation.YoutubeCDN,
 	}

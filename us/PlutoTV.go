@@ -35,7 +35,7 @@ func PlutoTV(c *http.Client) model.Result {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
 	if resp.StatusCode == 429 {
-		return model.Result{Name: name, Status: model.StatusUnexpected, Info: "Rate Limit"}
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
 	}
 	result1, result2, result3 := utils.CheckDNS(hostname)
 	unlockType := utils.GetUnlockType(result1, result2, result3)

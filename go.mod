@@ -6,6 +6,7 @@ require (
 	github.com/gofrs/uuid/v5 v5.2.0
 	github.com/imroc/req/v3 v3.59.0
 	github.com/mattn/go-colorable v0.1.14
+	github.com/mattn/go-runewidth v0.0.24
 	github.com/miekg/dns v1.1.61
 	github.com/oneclickvirt/defaultset v0.0.2-20240624082446
 	github.com/schollz/progressbar/v3 v3.14.4
@@ -21,7 +22,6 @@ require (
 	github.com/icholy/digest v1.1.0 // indirect
 	github.com/klauspost/compress v1.18.2 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.60.0 // indirect

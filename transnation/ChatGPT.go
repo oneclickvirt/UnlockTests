@@ -113,10 +113,10 @@ func OpenAI(c *http.Client) model.Result {
 			loc := strings.ToLower(location)
 			exit := utils.GetRegion(loc, model.GptSupportCountry)
 			if exit {
-				return model.Result{Name: name, Status: model.StatusNo, Info: "429 Rate limit", Region: loc}
+				return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429", Region: loc}
 			}
 		}
-		return model.Result{Name: name, Status: model.StatusNo, Info: "429 Rate limit"}
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
 	}
 	if location == "T1" {
 		return model.Result{Name: name, Status: model.StatusYes, Region: "TOR"}

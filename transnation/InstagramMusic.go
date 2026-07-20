@@ -52,7 +52,7 @@ func Instagram(c *http.Client) model.Result {
 		unlockType := utils.GetUnlockType(result1, result2, result3)
 		return model.Result{Name: name, Status: model.StatusYes, UnlockType: unlockType}
 	} else if resp.StatusCode == 429 {
-		return model.Result{Name: name, Status: model.StatusNo, Info: "Too Many Requests"}
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
 	}
 	return model.Result{
 		Name:   name,

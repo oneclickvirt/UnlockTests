@@ -3,8 +3,6 @@ package jp
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
@@ -20,10 +18,7 @@ func Lemino(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	serviceToken := strings.TrimSpace(os.Getenv("UNLOCKTESTS_LEMINO_SERVICE_TOKEN"))
-	if serviceToken == "" {
-		serviceToken = defaultLeminoServiceToken
-	}
+	serviceToken := defaultLeminoServiceToken
 	url := "https://if.lemino.docomo.ne.jp/v1/user/delivery/watch/ready"
 	headers := map[string]string{
 		"Accept":             "application/json, text/plain, */*",

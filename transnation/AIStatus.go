@@ -53,6 +53,8 @@ func checkAIStatus(c *http.Client, probe aiStatusProbe) model.Result {
 	}
 	defer resp.Body.Close()
 	switch {
+	case resp.StatusCode == http.StatusTooManyRequests:
+		return model.Result{Name: probe.name, Status: model.StatusRateLimited, Info: "HTTP 429"}
 	case probe.okCodes[resp.StatusCode]:
 		return model.Result{Name: probe.name, Status: model.StatusYes}
 	case probe.noCodes[resp.StatusCode]:
@@ -86,6 +88,10 @@ func checkAIRegionalStatus(c *http.Client, probe aiRegionalProbe) model.Result {
 		return utils.HandleNetworkError(c, probe.hostname, err, probe.name)
 	}
 	bodyText := strings.ToLower(string(body))
+	if resp.StatusCode == http.StatusTooManyRequests {
+		loc, _ := cloudflareTraceLocation(c, probe.hostname, probe.traceURL)
+		return model.Result{Name: probe.name, Status: model.StatusRateLimited, Region: loc, Info: "HTTP 429"}
+	}
 	for _, keyword := range probe.wafKeywords {
 		if strings.Contains(bodyText, strings.ToLower(keyword)) {
 			return model.Result{Name: probe.name, Status: model.StatusBanned, Info: "WAF"}
@@ -126,6 +132,11 @@ func checkAIRegionalStatus(c *http.Client, probe aiRegionalProbe) model.Result {
 }
 
 func cloudflareTraceLocation(c *http.Client, hostname, traceURL string) (string, bool) {
+	loc, _, ok := cloudflareTraceLocationStatus(c, hostname, traceURL)
+	return loc, ok
+}
+
+func cloudflareTraceLocationStatus(c *http.Client, hostname, traceURL string) (string, int, bool) {
 	if strings.TrimSpace(traceURL) == "" {
 		traceURL = "https://" + hostname + "/cdn-cgi/trace"
 	}
@@ -133,21 +144,21 @@ func cloudflareTraceLocation(c *http.Client, hostname, traceURL string) (string,
 		SetHeader("User-Agent", model.UA_Browser).
 		Get(traceURL)
 	if err != nil {
-		return "", false
+		return "", 0, false
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", false
+		return "", resp.StatusCode, false
 	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", false
+		return "", resp.StatusCode, false
 	}
 	loc := parseCloudflareTraceLocation(string(b))
 	if loc == "" {
-		return "", false
+		return "", resp.StatusCode, false
 	}
-	return loc, true
+	return loc, resp.StatusCode, true
 }
 
 func parseCloudflareTraceLocation(body string) string {

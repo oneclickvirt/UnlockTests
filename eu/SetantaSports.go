@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -22,10 +21,7 @@ func SetantaSports(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	apiKey := strings.TrimSpace(os.Getenv("UNLOCKTESTS_SETANTA_API_KEY"))
-	if apiKey == "" {
-		apiKey = defaultSetantaAPIKey
-	}
+	apiKey := defaultSetantaAPIKey
 	url := "https://dce-frontoffice.imggaming.com/api/v2/consent-prompt"
 	headers := map[string]string{
 		"User-Agent":      model.UA_Browser,

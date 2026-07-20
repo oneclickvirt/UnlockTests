@@ -60,6 +60,12 @@ func SetCustomDNSServers(servers string) {
 	dnsServerMutex.Unlock()
 }
 
+func CustomDNSServers() []string {
+	dnsServerMutex.RLock()
+	defer dnsServerMutex.RUnlock()
+	return append([]string(nil), customDNSServers...)
+}
+
 func SetDNSIPVersion(ipVersion string) {
 	dnsIPVersionMutex.Lock()
 	DNSIPVersion = ipVersion
@@ -70,6 +76,10 @@ func getDNSIPVersion() string {
 	dnsIPVersionMutex.RLock()
 	defer dnsIPVersionMutex.RUnlock()
 	return DNSIPVersion
+}
+
+func GetDNSIPVersion() string {
+	return getDNSIPVersion()
 }
 
 func lookupDNSHost(ctx context.Context, hostname string) ([]string, error) {

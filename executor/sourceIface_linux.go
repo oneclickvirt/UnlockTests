@@ -8,6 +8,7 @@ import (
 )
 
 func init() {
+	interfaceNameBindingSupported = true
 	setSocketOptions = func(network, address string, c syscall.RawConn, interfaceName string) (err error) {
 		switch network {
 		case "tcp", "tcp4", "tcp6":

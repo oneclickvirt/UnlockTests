@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -59,10 +58,7 @@ func NLZIET(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	authorization := strings.TrimSpace(os.Getenv("UNLOCKTESTS_NLZIET_AUTHORIZATION"))
-	if authorization == "" {
-		authorization = defaultNLZIETAuthorization
-	}
+	authorization := defaultNLZIETAuthorization
 	if !strings.HasPrefix(strings.ToLower(authorization), "bearer ") {
 		authorization = "Bearer " + authorization
 	}

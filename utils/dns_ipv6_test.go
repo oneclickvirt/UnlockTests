@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -81,6 +82,15 @@ func TestNormalizeResultDetectsIPv6NoAddressWithCustomClient(t *testing.T) {
 	}
 }
 
+func TestIsIPv6ClientRecognizesCallerContextWrapper(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	client := WithCallerContext(Ipv6HttpClient, ctx)
+	if !IsIPv6Client(client) {
+		t.Fatal("caller context wrapper hid IPv6 transport identity")
+	}
+}
+
 func TestNormalizeResultFillsUnexpectedForEmptyStatus(t *testing.T) {
 	result := NormalizeResult(nil, model.Result{}, "Fallback")
 	if result.Name != "Fallback" {
@@ -150,8 +160,35 @@ func TestNormalizeResultUnifiesManualUnavailableStatuses(t *testing.T) {
 		model.Result{Name: "RateLimit", Status: model.StatusNo, Info: "429 Rate limit"},
 		"Fallback",
 	)
-	if result.Status != model.StatusRestricted {
-		t.Fatalf("expected %s, got %s", model.StatusRestricted, result.Status)
+	if result.Status != model.StatusRateLimited {
+		t.Fatalf("expected %s, got %s", model.StatusRateLimited, result.Status)
+	}
+
+	result = NormalizeResult(
+		&http.Client{Transport: Ipv4Transport},
+		model.Result{Name: "RateLimit", Status: model.StatusUnexpected, Info: "Too Many Requests"},
+		"Fallback",
+	)
+	if result.Status != model.StatusRateLimited {
+		t.Fatalf("expected Too Many Requests to become %s, got %s", model.StatusRateLimited, result.Status)
+	}
+
+	result = NormalizeResult(
+		&http.Client{Transport: Ipv4Transport},
+		model.Result{Name: "RateLimit", Status: model.StatusUnexpected, Err: errors.New("request failed with code: 429")},
+		"Fallback",
+	)
+	if result.Status != model.StatusRateLimited {
+		t.Fatalf("expected 429 error to become %s, got %s", model.StatusRateLimited, result.Status)
+	}
+}
+
+func TestNormalizeResultMapsRateLimitForAnyProviderStatus(t *testing.T) {
+	for _, status := range []string{model.StatusErr, model.StatusNetworkErr, model.StatusUnexpected, model.StatusNo} {
+		got := NormalizeResult(nil, model.Result{Name: "fixture", Status: status, Err: fmt.Errorf("HTTP status 429: rate limited")}, "fixture")
+		if got.Status != model.StatusRateLimited {
+			t.Fatalf("status %q normalized to %q", status, got.Status)
+		}
 	}
 }
 

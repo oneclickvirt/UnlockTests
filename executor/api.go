@@ -4,7 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
+	"net/url"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -20,17 +23,22 @@ type RunOptions struct {
 	IPVersion    string
 	Client       *http.Client
 	Concurrency  int
+	Interface    string
+	DNSServers   string
+	HTTPProxy    string
+	SOCKSProxy   string
 	UseCache     bool
 	IncludeHeads bool
 }
 
 type StructuredResult struct {
-	Name       string
-	Status     string
-	Region     string
-	Info       string
-	UnlockType string
-	Error      string
+	Name       string `json:"name"`
+	Status     string `json:"status"`
+	Region     string `json:"region,omitempty"`
+	Info       string `json:"info,omitempty"`
+	UnlockType string `json:"unlock_type,omitempty"`
+	Error      string `json:"error,omitempty"`
+	IPVersion  string `json:"ip_version"`
 }
 
 func RunSelection(ctx context.Context, client *http.Client, selection, ipVersion string) ([]StructuredResult, error) {
@@ -53,19 +61,61 @@ func RunStructured(ctx context.Context, opts RunOptions) ([]StructuredResult, er
 		return nil, err
 	}
 	opts.IPVersion = ipVersion
+	if err := validateNetworkOptions(opts); err != nil {
+		return nil, err
+	}
+
+	runTestsMutex.Lock()
+	defer runTestsMutex.Unlock()
+	if opts.IPVersion == "auto" {
+		var combined []StructuredResult
+		var firstErr error
+		versions := []string{"ipv4", "ipv6"}
+		for index, version := range versions {
+			versionOptions := opts
+			versionOptions.IPVersion = version
+			versionCtx, cancel := splitVersionContext(ctx, len(versions)-index)
+			results, runErr := runStructuredVersionLocked(versionCtx, versionOptions)
+			cancel()
+			combined = append(combined, results...)
+			if firstErr == nil && runErr != nil {
+				firstErr = runErr
+			}
+		}
+		return combined, firstErr
+	}
+	return runStructuredVersionLocked(ctx, opts)
+}
+
+func splitVersionContext(parent context.Context, versionsRemaining int) (context.Context, context.CancelFunc) {
+	if parent == nil {
+		parent = context.Background()
+	}
+	if versionsRemaining < 1 {
+		versionsRemaining = 1
+	}
+	deadline, ok := parent.Deadline()
+	if !ok {
+		return context.WithCancel(parent)
+	}
+	remaining := time.Until(deadline)
+	if remaining <= 0 {
+		return context.WithCancel(parent)
+	}
+	return context.WithTimeout(parent, remaining/time.Duration(versionsRemaining))
+}
+
+func runStructuredVersionLocked(ctx context.Context, opts RunOptions) ([]StructuredResult, error) {
+	restoreNetwork := applyStructuredNetworkOptions(opts)
+	defer restoreNetwork()
 	if opts.Client == nil {
 		switch opts.IPVersion {
 		case "ipv4":
 			opts.Client = utils.Ipv4HttpClient
 		case "ipv6":
 			opts.Client = utils.Ipv6HttpClient
-		default:
-			opts.Client = utils.AutoHttpClient
 		}
 	}
-
-	runTestsMutex.Lock()
-	defer runTestsMutex.Unlock()
 
 	funcs, _, err := functionsForSelectionLocked(opts.Selection)
 	if err != nil {
@@ -73,7 +123,39 @@ func RunStructured(ctx context.Context, opts RunOptions) ([]StructuredResult, er
 	}
 	utils.SetDNSIPVersion(opts.IPVersion)
 	defer utils.SetDNSIPVersion("")
-	return runFunctionsStructured(ctx, funcs, opts)
+	results, err := runFunctionsStructured(ctx, funcs, opts)
+	for index := range results {
+		results[index].IPVersion = opts.IPVersion
+	}
+	return results, err
+}
+
+func validateNetworkOptions(opts RunOptions) error {
+	if opts.Client != nil && (strings.TrimSpace(opts.Interface) != "" || strings.TrimSpace(opts.DNSServers) != "" || strings.TrimSpace(opts.HTTPProxy) != "" || strings.TrimSpace(opts.SOCKSProxy) != "") {
+		return errors.New("Client cannot be combined with explicit network options")
+	}
+	if strings.TrimSpace(opts.HTTPProxy) != "" && strings.TrimSpace(opts.SOCKSProxy) != "" {
+		return errors.New("HTTPProxy and SOCKSProxy are mutually exclusive")
+	}
+	if raw := strings.TrimSpace(opts.Interface); raw != "" && net.ParseIP(raw) == nil && !interfaceNameBindingSupported {
+		return fmt.Errorf("network interface binding is unsupported on %s", runtime.GOOS)
+	}
+	if raw := strings.TrimSpace(opts.HTTPProxy); raw != "" {
+		u, err := url.Parse(raw)
+		if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
+			return fmt.Errorf("invalid HTTPProxy %q", raw)
+		}
+	}
+	if raw := strings.TrimSpace(opts.SOCKSProxy); raw != "" {
+		u, err := url.Parse(raw)
+		if err != nil || u.Host == "" || (u.Scheme != "socks5" && u.Scheme != "socks5h") {
+			return fmt.Errorf("invalid SOCKSProxy %q", raw)
+		}
+	}
+	if raw := strings.TrimSpace(opts.DNSServers); raw != "" && firstDNSServerDialAddress(raw) == "" {
+		return fmt.Errorf("invalid DNSServers %q", raw)
+	}
+	return nil
 }
 
 func normalizeIPVersion(ipVersion string) (string, error) {
@@ -235,20 +317,20 @@ func clientWithContextDeadline(client *http.Client, ctx context.Context) *http.C
 	if client == nil || ctx == nil {
 		return client
 	}
+	clone := utils.WithCallerContext(client, ctx)
 	deadline, ok := ctx.Deadline()
 	if !ok {
-		return client
+		return clone
 	}
 	remaining := time.Until(deadline)
 	if remaining <= 0 {
 		remaining = time.Nanosecond
 	}
-	if client.Timeout > 0 && client.Timeout <= remaining {
-		return client
+	if clone.Timeout > 0 && clone.Timeout <= remaining {
+		return clone
 	}
-	clone := *client
 	clone.Timeout = remaining
-	return &clone
+	return clone
 }
 
 func safeTestInfo(f func(c *http.Client) model.Result) (result model.Result) {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -37,10 +36,7 @@ func SkyGO(c *http.Client) model.Result {
 			break
 		}
 	}
-	url := strings.TrimSpace(os.Getenv("UNLOCKTESTS_SKYGO_NZ_AUTH_URL"))
-	if url == "" {
-		url = defaultSkyGONZAuthURL
-	}
+	url := defaultSkyGONZAuthURL
 	resp, err := client.R().Get(url)
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)

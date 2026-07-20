@@ -12,6 +12,7 @@ func TestAIProviderMetadata(t *testing.T) {
 		"Claude":        Claude,
 		"Coze":          Coze,
 		"DeepSeek":      DeepSeek,
+		"Dola AI":       Dola,
 		"Grok":          Grok,
 		"Kimi":          Kimi,
 		"Mistral AI":    MistralAI,
@@ -27,5 +28,12 @@ func TestAIProviderMetadata(t *testing.T) {
 		if got.Status != "" {
 			t.Fatalf("expected nil-client metadata probe for %q to leave status empty, got %q", want, got.Status)
 		}
+	}
+}
+
+func TestXProviderMetadata(t *testing.T) {
+	got := X(nil)
+	if got.Name != "X (formerly Twitter)" || got.Status != "" {
+		t.Fatalf("unexpected X metadata result: %#v", got)
 	}
 }

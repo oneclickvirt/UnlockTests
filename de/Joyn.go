@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -38,10 +37,7 @@ func Joyn(c *http.Client) model.Result {
 	if err := json.Unmarshal([]byte(body), &res); err != nil {
 		return model.Result{Name: name, Status: model.StatusUnexpected, Err: err}
 	}
-	apiKey := strings.TrimSpace(os.Getenv("UNLOCKTESTS_JOYN_API_KEY"))
-	if apiKey == "" {
-		apiKey = defaultJoynAPIKey
-	}
+	apiKey := defaultJoynAPIKey
 
 	url2 := "https://api.joyn.de/content/entitlement-token"
 	headers := map[string]string{

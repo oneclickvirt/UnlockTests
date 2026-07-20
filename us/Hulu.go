@@ -48,7 +48,10 @@ func Hulu(c *http.Client) model.Result {
 	if resp.StatusCode == 403 || resp.StatusCode == 451 || strings.Contains(body, "GEO_BLOCKED") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if resp.StatusCode == 406 || resp.StatusCode == 429 {
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
+	}
+	if resp.StatusCode == http.StatusNotAcceptable {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
 	if resp.StatusCode != 200 {
@@ -79,7 +82,10 @@ func Hulu(c *http.Client) model.Result {
 	if strings.Contains(body, "GEO_BLOCKED") {
 		return model.Result{Name: name, Status: model.StatusNo}
 	}
-	if resp.StatusCode == 406 || resp.StatusCode == 429 {
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
+	}
+	if resp.StatusCode == http.StatusNotAcceptable {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}
 	if strings.Contains(body, "LOGIN_FORBIDDEN") || strings.Contains(body, "LOGIN_BAD_REQUEST") ||

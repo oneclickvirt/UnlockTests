@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -25,14 +24,8 @@ func ESPNPlus(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	subjectToken := strings.TrimSpace(os.Getenv("UNLOCKTESTS_ESPN_SUBJECT_TOKEN"))
-	if subjectToken == "" {
-		subjectToken = defaultESPNSubjectToken
-	}
-	authorization := strings.TrimSpace(os.Getenv("UNLOCKTESTS_ESPN_AUTHORIZATION"))
-	if authorization == "" {
-		authorization = defaultESPNAuthorization
-	}
+	subjectToken := defaultESPNSubjectToken
+	authorization := defaultESPNAuthorization
 	bearerAuthorization, rawAuthorization := splitBearerAuthorization(authorization)
 	url1 := "https://espn.api.edge.bamgrid.com/token"
 	data1 := url.Values{

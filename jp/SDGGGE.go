@@ -4,8 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
@@ -21,10 +19,7 @@ func SDGGGE(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	token := strings.TrimSpace(os.Getenv("UNLOCKTESTS_SDGGGE_TOKEN"))
-	if token == "" {
-		token = defaultSDGGGEToken
-	}
+	token := defaultSDGGGEToken
 	rawPayload := "1CR6PntuLeI3yaCYAZdOPxn18bOFYJxUiYtcavqqAHDCjc3C/wozplHYwfhykUStp7Bb/LAhV8aWQkS9sLliHCIgXBvDsWe4pwXvV3cSXkoaBfL23/zytEHlAatOi/32UVYLJhyUsegCRMMGREr2fXqyx970imQ35hqWVj/MRTHS9Bi8iqo9nIqSDTcQqVn3BbuyhJcz52nhfSda2may3QVHkH9QDdFjW9S/2re2cxE3iaE/DUbjB9H8KUpihQB1Emf88I0241ea7CAI1jHel6aZ5Ul4XjTf8ug3Rl/T80A="
 	body, err := base64.StdEncoding.DecodeString(rawPayload)
 	if err != nil {

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -22,10 +21,7 @@ func Catchplay(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	authorization := strings.TrimSpace(os.Getenv("UNLOCKTESTS_CATCHPLAY_AUTHORIZATION"))
-	if authorization == "" {
-		authorization = defaultCatchplayAuthorization
-	}
+	authorization := defaultCatchplayAuthorization
 	url := "https://sunapi.catchplay.com/geo"
 	headers := map[string]string{
 		"authorization": authorization,

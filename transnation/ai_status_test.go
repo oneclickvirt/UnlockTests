@@ -123,3 +123,24 @@ func TestCheckAIRegionalStatusForbiddenCodeUsesTraceRegion(t *testing.T) {
 		t.Fatalf("expected region us, got %q", got.Region)
 	}
 }
+
+func TestCheckAIRegionalStatusMaps429(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/cdn-cgi/trace" {
+			_, _ = w.Write([]byte("loc=US\n"))
+			return
+		}
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer server.Close()
+
+	got := checkAIRegionalStatus(server.Client(), aiRegionalProbe{
+		name:     "Limited AI",
+		hostname: "127.0.0.1",
+		url:      server.URL + "/",
+		traceURL: server.URL + "/cdn-cgi/trace",
+	})
+	if got.Status != model.StatusRateLimited || got.Region != "us" {
+		t.Fatalf("expected structured rate-limit result, got %#v", got)
+	}
+}

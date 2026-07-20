@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -28,12 +27,6 @@ func LiTV(c *http.Client) model.Result {
 	deviceID, err := getLiTVDeviceID(c)
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
-	}
-
-	if strings.TrimSpace(os.Getenv("UNLOCKTESTS_LITV_SIGNATURE_KEY")) != "" {
-		if legacyResult := liTVLegacy(c, hostname, name, deviceID); legacyResult.Status != model.StatusUnexpected {
-			return legacyResult
-		}
 	}
 
 	rpcResult := liTVRPC(c, hostname, name, deviceID)
@@ -202,10 +195,7 @@ func genLiTVNonce(t time.Time) string {
 }
 
 func genLiTVSignature(assetID, mediaType, nonce string, timestamp int64) string {
-	key := strings.TrimSpace(os.Getenv("UNLOCKTESTS_LITV_SIGNATURE_KEY"))
-	if key == "" {
-		key = defaultLiTVSignatureKey
-	}
+	key := defaultLiTVSignatureKey
 	data := assetID + mediaType + strconv.FormatInt(timestamp, 10) + nonce + key
 	hash := sha256.Sum256([]byte(data))
 	return hex.EncodeToString(hash[:])

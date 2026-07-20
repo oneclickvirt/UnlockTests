@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"strings"
 
@@ -67,10 +66,7 @@ func AETV(c *http.Client) model.Result {
 							q2.Set("client", "tve-web-theo")
 							q2.Set("sig", "00697b29892c60831e3de250beaec91bd6ab73901a0ffb723b533130425058484d6c62")
 							u2.RawQuery = q2.Encode()
-							videoMetaToken := strings.TrimSpace(os.Getenv("UNLOCKTESTS_AETV_VIDEO_META_TOKEN"))
-							if videoMetaToken == "" {
-								videoMetaToken = defaultAETVVideoMetaToken
-							}
+							videoMetaToken := defaultAETVVideoMetaToken
 							client2 := utils.Req(c)
 							resp2, err2 := client2.R().
 								SetHeader("accept", "*/*").

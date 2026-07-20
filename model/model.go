@@ -1,6 +1,6 @@
 package model
 
-const UnlockTestsVersion = "v0.0.40"
+const UnlockTestsVersion = "v0.0.41"
 
 var EnableLoger = false
 
@@ -14,22 +14,23 @@ type Result struct {
 }
 
 const (
-	StatusUnexpected = "Unknown"
-	StatusNetworkErr = "NetworkError"
-	StatusErr        = "Error"
-	StatusRestricted = "Restricted"
-	StatusYes        = "Yes"
-	StatusNo         = "No"
-	StatusBanned     = "Banned"
-	StatusTimeout    = "Timeout"
-	StatusNoIPv6     = "NoIPv6Support"    // 站点不支持IPv6
-	StatusDNSFailed  = "DNSResolveFailed" // DNS解析失败
-	StatusCDNRelay   = "CDN Relay Available"
-	PrintHead        = "PrintHead"
-	UA_Browser       = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-	UA_SecCHUA       = "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\""
-	UA_Dalvik        = "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36"
-	UA_Pjsekai       = "pjsekai/48 CFNetwork/1240.0.4 Darwin/20.6.0"
+	StatusUnexpected  = "Unknown"
+	StatusNetworkErr  = "NetworkError"
+	StatusErr         = "Error"
+	StatusRestricted  = "Restricted"
+	StatusRateLimited = "RateLimited"
+	StatusYes         = "Yes"
+	StatusNo          = "No"
+	StatusBanned      = "Banned"
+	StatusTimeout     = "Timeout"
+	StatusNoIPv6      = "NoIPv6Support"    // 站点不支持IPv6
+	StatusDNSFailed   = "DNSResolveFailed" // DNS解析失败
+	StatusCDNRelay    = "CDN Relay Available"
+	PrintHead         = "PrintHead"
+	UA_Browser        = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+	UA_SecCHUA        = "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\""
+	UA_Dalvik         = "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36"
+	UA_Pjsekai        = "pjsekai/48 CFNetwork/1240.0.4 Darwin/20.6.0"
 )
 
 var PrivateIPv4Ranges = []string{

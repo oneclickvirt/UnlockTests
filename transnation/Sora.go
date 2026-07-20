@@ -60,7 +60,7 @@ func Sora(c *http.Client) model.Result {
 	}
 	lowLoc := strings.ToLower(loc)
 	if resp.StatusCode == 429 {
-		return model.Result{Name: name, Status: model.StatusRestricted, Region: lowLoc, Info: "429 Rate limit"}
+		return model.Result{Name: name, Status: model.StatusRateLimited, Region: lowLoc, Info: "HTTP 429"}
 	}
 	if loc == "T1" {
 		return model.Result{Name: name, Status: model.StatusYes, Region: "tor"}

@@ -3,7 +3,6 @@ package jp
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -23,10 +22,7 @@ func VideoMarket(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	authorization := strings.TrimSpace(os.Getenv("UNLOCKTESTS_VIDEOMARKET_AUTHORIZATION"))
-	if authorization == "" {
-		authorization = defaultVideoMarketAuthorization
-	}
+	authorization := defaultVideoMarketAuthorization
 	if !strings.HasPrefix(strings.ToLower(authorization), "bearer ") {
 		authorization = "Bearer " + authorization
 	}

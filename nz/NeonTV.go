@@ -3,7 +3,6 @@ package nz
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -20,10 +19,7 @@ func NeonTV(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	authorization := strings.TrimSpace(os.Getenv("UNLOCKTESTS_NEONTV_AUTHORIZATION"))
-	if authorization == "" {
-		authorization = defaultNeonTVAuthorization
-	}
+	authorization := defaultNeonTVAuthorization
 	if !strings.HasPrefix(strings.ToLower(authorization), "bearer ") {
 		authorization = "Bearer " + authorization
 	}

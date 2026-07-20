@@ -25,7 +25,7 @@ func Reddit(c *http.Client) model.Result {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 429 {
-		return model.Result{Name: name, Status: model.StatusBanned}
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
 	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {

@@ -56,7 +56,10 @@ func main() {
 		return
 	}
 	if Iface != "" {
-		executor.SetupInterface(Iface)
+		if err := executor.SetupInterface(Iface); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
 	}
 	if DnsServers != "" {
 		executor.SetupDnsServers(DnsServers)

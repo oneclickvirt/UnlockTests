@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -23,10 +22,7 @@ func DisneyPlus(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	disneyAuth := strings.TrimSpace(os.Getenv("UNLOCKTESTS_DISNEY_AUTHORIZATION"))
-	if disneyAuth == "" {
-		disneyAuth = defaultDisneyAuthorization
-	}
+	disneyAuth := defaultDisneyAuthorization
 	deviceAuth, tokenAuth := disneyAuthorizations(disneyAuth)
 	// 首次请求，获取assertion
 	url1 := "https://disney.api.edge.bamgrid.com/devices"
@@ -42,6 +38,9 @@ func DisneyPlus(c *http.Client) model.Result {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp1.Body.Close()
+	if resp1.StatusCode == http.StatusTooManyRequests {
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
+	}
 	body1, err := io.ReadAll(resp1.Body)
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
@@ -76,6 +75,9 @@ func DisneyPlus(c *http.Client) model.Result {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp2.Body.Close()
+	if resp2.StatusCode == http.StatusTooManyRequests {
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
+	}
 	body2, err := io.ReadAll(resp2.Body)
 	if err != nil {
 		return utils.HandleNetworkError(c, hostname, err, name)
@@ -97,6 +99,9 @@ func DisneyPlus(c *http.Client) model.Result {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp3.Body.Close()
+	if resp3.StatusCode == http.StatusTooManyRequests {
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
+	}
 	if strings.Contains(resp3.Request.URL.String(), "preview") || strings.Contains(resp3.Request.URL.String(), "unavailable") {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "Can not visit page"}
 	}
@@ -112,6 +117,9 @@ func DisneyPlus(c *http.Client) model.Result {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp4.Body.Close()
+	if resp4.StatusCode == http.StatusTooManyRequests {
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
+	}
 	if utils.ReParse(body4, `"inSupportedLocation"\s*:\s*(false|true)`) != "true" {
 		return model.Result{Name: name, Status: model.StatusNo, Info: "UnSupported"}
 	}

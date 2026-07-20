@@ -56,10 +56,11 @@ func IsIPv6Client(client any) bool {
 	if !ok {
 		return getDNSIPVersion() == "ipv6"
 	}
-	if httpClient.Transport == Ipv6Transport {
+	transport, _ := unwrapCallerContextTransport(httpClient.Transport)
+	if transport == Ipv6Transport {
 		return true
 	}
-	if httpClient.Transport == Ipv4Transport {
+	if transport == Ipv4Transport {
 		return false
 	}
 	return getDNSIPVersion() == "ipv6"
@@ -223,7 +224,16 @@ func isBannedInfo(info string) bool {
 
 func isRateLimitInfo(info string) bool {
 	info = strings.ToLower(strings.TrimSpace(info))
-	return strings.Contains(info, "429") && strings.Contains(info, "rate limit")
+	return strings.Contains(info, "rate limit") || strings.Contains(info, "too many requests") ||
+		strings.Contains(info, "http 429")
+}
+
+func isRateLimitError(err error) bool {
+	if err == nil {
+		return false
+	}
+	statusCode, ok := StatusCodeFromError(err)
+	return ok && statusCode == http.StatusTooManyRequests || isRateLimitInfo(err.Error())
 }
 
 // HandleNetworkError 智能处理网络错误，在 IPv6 模式下检测是否是因为不支持 IPv6
@@ -234,6 +244,10 @@ func isRateLimitInfo(info string) bool {
 func HandleNetworkError(client any, hostname string, err error, name string) model.Result {
 	if hostname == "" {
 		hostname = extractHostnameFromError(err)
+	}
+
+	if isRateLimitError(err) {
+		return model.Result{Name: name, Status: model.StatusRateLimited, Err: err}
 	}
 
 	if IsWAFBlockError(err) {
@@ -266,6 +280,10 @@ func NormalizeResult(client any, result model.Result, fallbackName string) model
 	if result.Name == "" {
 		result.Name = "Unknown"
 	}
+	if isRateLimitError(result.Err) {
+		result.Status = model.StatusRateLimited
+		return result
+	}
 	if result.Status == model.StatusNetworkErr {
 		normalized := HandleNetworkError(client, "", result.Err, result.Name)
 		if result.Err == nil {
@@ -273,13 +291,22 @@ func NormalizeResult(client any, result model.Result, fallbackName string) model
 		}
 		return normalized
 	}
-	if result.Status == model.StatusNo && isRateLimitInfo(result.Info) {
-		result.Status = model.StatusRestricted
+	if result.Status == model.StatusRateLimited {
+		return result
+	}
+	if isRateLimitInfo(result.Info) {
+		result.Status = model.StatusRateLimited
 		return result
 	}
 	if (result.Status == model.StatusNo || result.Status == model.StatusUnexpected) && isBannedInfo(result.Info) {
 		result.Status = model.StatusBanned
 		return result
+	}
+	if result.Status == model.StatusUnexpected && result.Err != nil {
+		if statusCode, ok := StatusCodeFromError(result.Err); ok && statusCode == http.StatusTooManyRequests {
+			result.Status = model.StatusRateLimited
+			return result
+		}
 	}
 	if result.Status == model.StatusUnexpected && result.Err != nil && IsWAFBlockError(result.Err) {
 		return model.Result{
@@ -292,9 +319,11 @@ func NormalizeResult(client any, result model.Result, fallbackName string) model
 		}
 	}
 	if result.Status == model.StatusUnexpected && result.Err != nil {
-		if statusCode, ok := StatusCodeFromError(result.Err); ok && IsUnavailableStatusCode(statusCode) {
-			result.Status = model.StatusNo
-			return result
+		if statusCode, ok := StatusCodeFromError(result.Err); ok {
+			if IsUnavailableStatusCode(statusCode) {
+				result.Status = model.StatusNo
+				return result
+			}
 		}
 		if strings.Contains(strings.ToLower(result.Err.Error()), "token get null") {
 			result.Status = model.StatusNo

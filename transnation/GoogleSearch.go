@@ -30,7 +30,7 @@ func GoogleSearch(c *http.Client) model.Result {
 	body := string(b)
 	// fmt.Println(body)
 	if resp.StatusCode == 429 {
-		return model.Result{Name: name, Status: model.StatusUnexpected, Info: "Rate Limited"}
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
 	}
 	if strings.Contains(body, "unusual traffic from") || resp.StatusCode == 403 || resp.StatusCode == 451 {
 		return model.Result{Name: name, Status: model.StatusNo}
@@ -50,7 +50,7 @@ func GoogleSearch(c *http.Client) model.Result {
 		}
 		body = string(b)
 		if resp2.StatusCode == 429 {
-			return model.Result{Name: name, Status: model.StatusUnexpected, Info: "Rate Limited"}
+			return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
 		}
 		if strings.Contains(body, "unusual traffic from") || resp2.StatusCode == 403 || resp2.StatusCode == 451 {
 			return model.Result{Name: name, Status: model.StatusNo}

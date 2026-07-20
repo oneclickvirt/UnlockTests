@@ -11,7 +11,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -28,10 +27,7 @@ func NaverTV(c *http.Client) model.Result {
 	}
 	ts := time.Now().UnixNano() / int64(time.Millisecond)
 	baseURL := "https://apis.naver.com/"
-	key := strings.TrimSpace(os.Getenv("UNLOCKTESTS_NAVERTV_KEY"))
-	if key == "" {
-		key = defaultNaverTVKey
-	}
+	key := defaultNaverTVKey
 	signText := fmt.Sprintf("https://apis.naver.com/now_web2/now_web_api/v1/clips/31030608/play-info%d", ts)
 	// 生成 HMAC-SHA1 签名并进行 base64 编码
 	h := hmac.New(sha1.New, []byte(key))

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -73,10 +72,7 @@ func StarPlus(c *http.Client) model.Result {
 // StarPlus 的 另一个检测逻辑
 func AnotherStarPlus(c *http.Client) model.Result {
 	name := "Star+"
-	authorization := strings.TrimSpace(os.Getenv("UNLOCKTESTS_STARPLUS_AUTHORIZATION"))
-	if authorization == "" {
-		authorization = defaultStarPlusAuthorization
-	}
+	authorization := defaultStarPlusAuthorization
 	headers := map[string]string{
 		"authorization": authorization,
 	}

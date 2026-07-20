@@ -3,7 +3,6 @@ package vn
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -24,10 +23,7 @@ func TV360(c *http.Client) model.Result {
 	}
 	url := "http://api-v2.tv360.vn/public/v1/composite/get-link?childId=998335&device_type=WEB_IPHONE&id=19474&network_device_id=prIUMaumjI7dNWKSUxFkEViFygs%3D&t=1686572228&type=film"
 	userAgent := "TV360/31 CFNetwork/1402.0.8 Darwin/22.2.0"
-	authorization := strings.TrimSpace(os.Getenv("UNLOCKTESTS_TV360_AUTHORIZATION"))
-	if authorization == "" {
-		authorization = defaultTV360Authorization
-	}
+	authorization := defaultTV360Authorization
 	if !strings.HasPrefix(strings.ToLower(authorization), "bearer ") {
 		authorization = "Bearer " + authorization
 	}

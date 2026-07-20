@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -22,10 +21,7 @@ func MGMPlus(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	apiKey := strings.TrimSpace(os.Getenv("UNLOCKTESTS_MGMPLUS_API_KEY"))
-	if apiKey == "" {
-		apiKey = defaultMGMPlusAPIKey
-	}
+	apiKey := defaultMGMPlusAPIKey
 	url := "https://api.epix.com/v2/sessions"
 	payload := fmt.Sprintf(`{"device":{"guid":"7a0baaaf-384c-45cd-a21d-310ca5d3002a","format":"console","os":"web","display_width":1865,"display_height":942,"app_version":"1.0.2","model":"browser","manufacturer":"google"},"apikey":%q}`, apiKey)
 	headers := map[string]string{

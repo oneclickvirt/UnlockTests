@@ -6,8 +6,10 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"regexp"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/imroc/req/v3"
@@ -21,7 +23,9 @@ const (
 	DefaultRetryCount     = 1
 )
 
-var ClientProxy = http.ProxyFromEnvironment
+// ClientProxy is nil by default. Proxy selection is an explicit API/CLI
+// option; ambient HTTP(S)_PROXY variables must not alter test results.
+var ClientProxy func(*http.Request) (*url.URL, error)
 var Dialer = &net.Dialer{Timeout: DefaultRequestTimeout, KeepAlive: 30 * time.Second}
 var AutoTransport = &http.Transport{
 	Proxy:       ClientProxy,
@@ -157,11 +161,93 @@ func effectiveReqTimeout(c *http.Client, fallback time.Duration) time.Duration {
 	return fallback
 }
 
+type callerContextRoundTripper struct {
+	base   http.RoundTripper
+	caller context.Context
+}
+
+func (t *callerContextRoundTripper) RoundTrip(request *http.Request) (*http.Response, error) {
+	return roundTripWithCallerContext(t.base, request, t.caller)
+}
+
+// WithCallerContext clones an HTTP client and makes every request inherit the
+// caller context, including requests created by provider helpers that do not
+// expose context.Context in their public signature.
+func WithCallerContext(client *http.Client, caller context.Context) *http.Client {
+	if client == nil || caller == nil {
+		return client
+	}
+	clone := *client
+	base := client.Transport
+	if base == nil {
+		base = http.DefaultTransport
+	} else {
+		base, _ = unwrapCallerContextTransport(base)
+	}
+	clone.Transport = &callerContextRoundTripper{base: base, caller: caller}
+	return &clone
+}
+
+func unwrapCallerContextTransport(roundTripper http.RoundTripper) (http.RoundTripper, context.Context) {
+	var caller context.Context
+	for {
+		wrapped, ok := roundTripper.(*callerContextRoundTripper)
+		if !ok {
+			return roundTripper, caller
+		}
+		if caller == nil {
+			caller = wrapped.caller
+		}
+		roundTripper = wrapped.base
+	}
+}
+
+func roundTripWithCallerContext(roundTripper http.RoundTripper, request *http.Request, caller context.Context) (*http.Response, error) {
+	if caller == nil {
+		return roundTripper.RoundTrip(request)
+	}
+	ctx, cancel := context.WithCancel(request.Context())
+	stop := context.AfterFunc(caller, cancel)
+	if caller.Err() != nil {
+		cancel()
+	}
+	var once sync.Once
+	cleanup := func() {
+		once.Do(func() {
+			stop()
+			cancel()
+		})
+	}
+	response, err := roundTripper.RoundTrip(request.Clone(ctx))
+	if err != nil {
+		cleanup()
+		return nil, err
+	}
+	if response.Body == nil {
+		cleanup()
+		return response, nil
+	}
+	response.Body = &contextBody{ReadCloser: response.Body, cleanup: cleanup}
+	return response, nil
+}
+
+type contextBody struct {
+	io.ReadCloser
+	cleanup func()
+}
+
+func (b *contextBody) Close() error {
+	err := b.ReadCloser.Close()
+	b.cleanup()
+	return err
+}
+
 func configureReqTransport(client *req.Client, c *http.Client) {
 	if client == nil || c == nil {
 		return
 	}
-	transport, ok := c.Transport.(*http.Transport)
+	roundTripper, caller := unwrapCallerContextTransport(c.Transport)
+	transport, ok := roundTripper.(*http.Transport)
 	if !ok || transport == nil {
 		return
 	}
@@ -185,6 +271,13 @@ func configureReqTransport(client *req.Client, c *http.Client) {
 	client.Transport.MaxResponseHeaderBytes = cloned.MaxResponseHeaderBytes
 	client.Transport.WriteBufferSize = cloned.WriteBufferSize
 	client.Transport.ReadBufferSize = cloned.ReadBufferSize
+	if caller != nil {
+		client.GetTransport().WrapRoundTripFunc(func(roundTripper http.RoundTripper) req.HttpRoundTripFunc {
+			return func(request *http.Request) (*http.Response, error) {
+				return roundTripWithCallerContext(roundTripper, request, caller)
+			}
+		})
+	}
 }
 
 // SetReqHeaders

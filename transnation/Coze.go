@@ -21,6 +21,9 @@ func Coze(c *http.Client) model.Result {
 		return utils.HandleNetworkError(c, hostname, err, name)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
+	}
 	if resp.StatusCode == http.StatusForbidden {
 		return model.Result{Name: name, Status: model.StatusBanned}
 	}

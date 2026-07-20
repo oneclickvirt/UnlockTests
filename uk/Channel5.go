@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
@@ -25,10 +24,7 @@ func Channel5(c *http.Client) model.Result {
 		return model.Result{Name: name}
 	}
 	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
-	auth := strings.TrimSpace(os.Getenv("UNLOCKTESTS_CHANNEL5_AUTH"))
-	if auth == "" {
-		auth = defaultChannel5Auth
-	}
+	auth := defaultChannel5Auth
 	url := fmt.Sprintf("https://cassie.channel5.com/api/v2/live_media/my5desktopng/C5.json?timestamp=%d&auth=%s", timestamp, url.QueryEscape(auth))
 	client := utils.Req(c)
 	resp, err := client.R().Get(url)

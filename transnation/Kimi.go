@@ -28,6 +28,8 @@ func Kimi(c *http.Client) model.Result {
 	}
 	defer resp.Body.Close()
 	switch resp.StatusCode {
+	case http.StatusTooManyRequests:
+		return model.Result{Name: name, Status: model.StatusRateLimited, Info: "HTTP 429"}
 	case http.StatusForbidden:
 		return model.Result{Name: name, Status: model.StatusNo}
 	case http.StatusOK:

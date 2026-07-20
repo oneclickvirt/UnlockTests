@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/oneclickvirt/UnlockTests/model"
@@ -25,14 +24,8 @@ func KPLUS(c *http.Client) model.Result {
 	if c == nil {
 		return model.Result{Name: name}
 	}
-	ssoToken := strings.TrimSpace(os.Getenv("UNLOCKTESTS_KPLUS_SSO_TOKEN"))
-	if ssoToken == "" {
-		ssoToken = defaultKPLUSSSOToken
-	}
-	provisionData := strings.TrimSpace(os.Getenv("UNLOCKTESTS_KPLUS_PROVISION_DATA"))
-	if provisionData == "" {
-		provisionData = defaultKPLUSProvisionData
-	}
+	ssoToken := defaultKPLUSSSOToken
+	provisionData := defaultKPLUSProvisionData
 	firstRequestData, err := json.Marshal(map[string]any{
 		"osVersion":        "Windows NT 10.0",
 		"appVersion":       "114.0.0.0",

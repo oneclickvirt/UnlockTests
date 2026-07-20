@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -21,25 +22,31 @@ var setSocketOptions = func(network, address string, c syscall.RawConn, interfac
 	return
 }
 
-func SetupInterface(Iface string) {
+var interfaceNameBindingSupported bool
+
+func SetupInterface(Iface string) error {
 	ClearCache()
 	Iface = strings.TrimSpace(Iface)
 	if Iface == "" {
 		utils.Dialer.LocalAddr = nil
 		utils.Dialer.Control = nil
 		resetTransportDialers()
-		return
+		return nil
 	}
 	if IP := net.ParseIP(Iface); IP != nil {
 		utils.Dialer.LocalAddr = &net.TCPAddr{IP: IP}
 		utils.Dialer.Control = nil
 	} else {
+		if !interfaceNameBindingSupported {
+			return fmt.Errorf("network interface binding is unsupported on %s", runtime.GOOS)
+		}
 		utils.Dialer.LocalAddr = nil
 		utils.Dialer.Control = func(network, address string, c syscall.RawConn) error {
 			return setSocketOptions(network, address, c, Iface)
 		}
 	}
 	resetTransportDialers()
+	return nil
 }
 
 func SetupDnsServers(DnsServers string) {
@@ -89,13 +96,13 @@ func SetupHttpProxy(httpProxy string) {
 	httpProxy = strings.TrimSpace(httpProxy)
 	resetTransportDialers()
 	if httpProxy == "" {
-		setTransportProxy(http.ProxyFromEnvironment)
+		setTransportProxy(nil)
 		return
 	}
 	u, err := url.Parse(httpProxy)
 	if err != nil || u.Scheme == "" || u.Host == "" {
 		fmt.Printf("Warning: HTTP proxy address is invalid: %s\n", httpProxy)
-		setTransportProxy(http.ProxyFromEnvironment)
+		setTransportProxy(nil)
 		return
 	}
 	setTransportProxy(http.ProxyURL(u))
@@ -188,6 +195,52 @@ func SetupConcurrency(conc uint64) {
 		return
 	}
 	sem = nil
+}
+
+func applyStructuredNetworkOptions(opts RunOptions) func() {
+	restore := captureStructuredNetworkState()
+	_ = SetupInterface(opts.Interface)
+	SetupDnsServers(opts.DNSServers)
+	SetupHttpProxy(opts.HTTPProxy)
+	if opts.SOCKSProxy != "" {
+		SetupSocksProxy(opts.SOCKSProxy)
+	}
+	utils.SetDNSIPVersion(opts.IPVersion)
+	return restore
+}
+
+type structuredNetworkState struct {
+	clientProxy  func(*http.Request) (*url.URL, error)
+	autoProxy    func(*http.Request) (*url.URL, error)
+	ipv4Proxy    func(*http.Request) (*url.URL, error)
+	ipv6Proxy    func(*http.Request) (*url.URL, error)
+	autoDial     func(context.Context, string, string) (net.Conn, error)
+	ipv4Dial     func(context.Context, string, string) (net.Conn, error)
+	ipv6Dial     func(context.Context, string, string) (net.Conn, error)
+	localAddr    net.Addr
+	control      func(string, string, syscall.RawConn) error
+	resolver     *net.Resolver
+	dnsServers   []string
+	dnsIPVersion string
+}
+
+func captureStructuredNetworkState() func() {
+	state := structuredNetworkState{
+		clientProxy: utils.ClientProxy, autoProxy: utils.AutoTransport.Proxy,
+		ipv4Proxy: utils.Ipv4Transport.Proxy, ipv6Proxy: utils.Ipv6Transport.Proxy,
+		autoDial: utils.AutoTransport.DialContext, ipv4Dial: utils.Ipv4Transport.DialContext,
+		ipv6Dial: utils.Ipv6Transport.DialContext, localAddr: utils.Dialer.LocalAddr,
+		control: utils.Dialer.Control, resolver: utils.Dialer.Resolver,
+		dnsServers: utils.CustomDNSServers(), dnsIPVersion: utils.GetDNSIPVersion(),
+	}
+	return func() {
+		utils.ClientProxy = state.clientProxy
+		utils.AutoTransport.Proxy, utils.Ipv4Transport.Proxy, utils.Ipv6Transport.Proxy = state.autoProxy, state.ipv4Proxy, state.ipv6Proxy
+		utils.AutoTransport.DialContext, utils.Ipv4Transport.DialContext, utils.Ipv6Transport.DialContext = state.autoDial, state.ipv4Dial, state.ipv6Dial
+		utils.Dialer.LocalAddr, utils.Dialer.Control, utils.Dialer.Resolver = state.localAddr, state.control, state.resolver
+		utils.SetCustomDNSServers(strings.Join(state.dnsServers, ","))
+		utils.SetDNSIPVersion(state.dnsIPVersion)
+	}
 }
 
 func EnableCache() {

@@ -7,6 +7,7 @@ import (
 	"syscall"
 	"testing"
 
+	"github.com/mattn/go-runewidth"
 	"github.com/oneclickvirt/UnlockTests/model"
 	"github.com/oneclickvirt/UnlockTests/utils"
 )
@@ -22,6 +23,15 @@ func TestShowResultDNSFailed(t *testing.T) {
 	got := ShowResult(&model.Result{Name: "Test", Status: model.StatusDNSFailed})
 	if !strings.Contains(got, "DNS Resolve Failed") {
 		t.Fatalf("expected unified DNS error message, got %q", got)
+	}
+}
+
+func TestShowResultRateLimited(t *testing.T) {
+	got := ShowResult(&model.Result{Name: "Test", Status: model.StatusRateLimited, Info: "HTTP 429", Region: "us"})
+	for _, want := range []string{"Rate Limited", "HTTP 429", "Region: US"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("expected rate-limit output to contain %q, got %q", want, got)
+		}
 	}
 }
 
@@ -51,6 +61,40 @@ func TestFormarPrintKeepsCDNStatusVisible(t *testing.T) {
 		!strings.Contains(got, "YES") ||
 		!strings.Contains(got, "Region: GB") {
 		t.Fatalf("expected CDN output to include explicit status and region, got %q", got)
+	}
+}
+
+func TestFormarPrintAlignsWideProviderNames(t *testing.T) {
+	state := snapshotSelectionState()
+	defer restoreSelectionState(state)
+	Names = []string{"中文平台", "ASCII"}
+	R = []*model.Result{
+		{Name: "中文平台", Status: model.StatusYes},
+		{Name: "ASCII", Status: model.StatusYes},
+	}
+	got := FormarPrint("Test")
+	lines := strings.Split(got, "\n")
+	var chinese, ascii string
+	for _, line := range lines {
+		if strings.HasPrefix(line, "中文平台") {
+			chinese = line
+		}
+		if strings.HasPrefix(line, "ASCII") {
+			ascii = line
+		}
+	}
+	if chinese == "" || ascii == "" {
+		t.Fatalf("formatted output missing fixture lines: %q", got)
+	}
+	chineseResult := strings.Index(chinese, "YES")
+	asciiResult := strings.Index(ascii, "YES")
+	if chineseResult < 0 || asciiResult < 0 {
+		t.Fatalf("formatted output missing result text: %q", got)
+	}
+	chinesePrefix := strings.SplitN(chinese, "\x1b", 2)[0]
+	asciiPrefix := strings.SplitN(ascii, "\x1b", 2)[0]
+	if runewidth.StringWidth(chinesePrefix) != runewidth.StringWidth(asciiPrefix) {
+		t.Fatalf("provider names are not display-aligned: chinese=%q ascii=%q", chinese, ascii)
 	}
 }
 
@@ -104,11 +148,11 @@ func TestReferenceProvidersArePresentInExpectedSections(t *testing.T) {
 	}{
 		"global": {
 			funcs: Multination(),
-			names: []string{"Bilibili Anime", "Coze", "Microsoft Copilot", "Poe", "WeTV"},
+			names: []string{"Bilibili Anime", "Coze", "Dola AI", "Microsoft Copilot", "Poe", "WeTV", "X (formerly Twitter)"},
 		},
 		"ai": {
 			funcs: AIPlatforms(),
-			names: []string{"Coze", "DeepSeek", "Grok", "Kimi", "Mistral AI", "Perplexity AI", "Poe"},
+			names: []string{"Coze", "DeepSeek", "Dola AI", "Grok", "Kimi", "Mistral AI", "Perplexity AI", "Poe"},
 		},
 		"europe": {
 			funcs: Europe(),
@@ -467,6 +511,15 @@ func TestSetupSocksProxyEmptyRestoresHTTPProxy(t *testing.T) {
 	}
 	if restoredProxyURL == nil || restoredProxyURL.String() != httpProxyURL.String() {
 		t.Fatalf("expected HTTP proxy to be restored, got %v want %v", restoredProxyURL, httpProxyURL)
+	}
+}
+
+func TestDefaultTransportDoesNotReadEnvironmentProxy(t *testing.T) {
+	t.Setenv("HTTP_PROXY", "http://127.0.0.1:9")
+	t.Setenv("HTTPS_PROXY", "http://127.0.0.1:9")
+	SetupHttpProxy("")
+	if utils.ClientProxy != nil || utils.AutoTransport.Proxy != nil || utils.Ipv4Transport.Proxy != nil || utils.Ipv6Transport.Proxy != nil {
+		t.Fatal("ambient proxy environment must not affect the default transports")
 	}
 }
 
