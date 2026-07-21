@@ -46,7 +46,7 @@ func TestMergeMetadataPreservesAliasesAndAddsCurrentProviders(t *testing.T) {
 
 func TestUpdateSnapshotDoesNotRewriteSemanticMatch(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "metadata.json")
-	original := []byte(`{"schema_version":"goecs.unlocktests/provider-metadata-v1","providers":[{"name":"B","category":"ai","aliases":["two","one"]},{"name":"A","category":"ai"}]}`)
+	original := []byte(`{"schema_version":"goecs.unlocktests/provider-metadata-v1","generated_at":"2026-07-20T00:00:00Z","providers":[{"name":"B","category":"ai","aliases":["two","one"]},{"name":"A","category":"ai"}]}`)
 	if err := os.WriteFile(path, original, 0o600); err != nil {
 		t.Fatal(err)
 	}

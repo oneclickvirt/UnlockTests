@@ -24,6 +24,7 @@ const schemaVersion = executor.ProviderMetadataSchema
 
 type dataDocument struct {
 	SchemaVersion string                      `json:"schema_version"`
+	GeneratedAt   time.Time                   `json:"generated_at"`
 	Providers     []executor.ProviderMetadata `json:"providers"`
 }
 
@@ -225,10 +226,10 @@ func updateSnapshot(path string, names []string, categories map[string]string, m
 	if len(current.Providers) > 0 && len(nextProviders)*10 < len(current.Providers)*7 {
 		return fmt.Errorf("provider count dropped from %d to %d", len(current.Providers), len(nextProviders))
 	}
-	if sameMetadata(current.Providers, nextProviders) {
+	if sameMetadata(current.Providers, nextProviders) && !current.GeneratedAt.IsZero() {
 		return nil
 	}
-	next, err := json.MarshalIndent(dataDocument{SchemaVersion: schemaVersion, Providers: nextProviders}, "", "  ")
+	next, err := json.MarshalIndent(dataDocument{SchemaVersion: schemaVersion, GeneratedAt: time.Now().UTC(), Providers: nextProviders}, "", "  ")
 	if err != nil {
 		return err
 	}

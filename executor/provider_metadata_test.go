@@ -14,7 +14,7 @@ func TestLoadProviderMetadataPrefersValidatedRemote(t *testing.T) {
 			http.NotFound(w, r)
 			return
 		}
-		_, _ = w.Write([]byte(`{"schema_version":"goecs.unlocktests/provider-metadata-v1","providers":[{"name":"Zeta","category":"ai"},{"name":"Alpha","category":"ai"}]}`))
+		_, _ = w.Write([]byte(`{"schema_version":"goecs.unlocktests/provider-metadata-v1","generated_at":"2026-07-20T00:00:00Z","providers":[{"name":"Zeta","category":"ai"},{"name":"Alpha","category":"ai"}]}`))
 	}))
 	defer server.Close()
 	embedded := []byte(`{"schema_version":"goecs.unlocktests/provider-metadata-v1","providers":[{"name":"Embedded","category":"ai"}]}`)
@@ -22,7 +22,7 @@ func TestLoadProviderMetadataPrefersValidatedRemote(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if source.Source != "remote" || source.Fallback || len(providers) != 2 || providers[0].Name != "Alpha" {
+	if source.Source != "remote" || source.Fallback || source.Schema != ProviderMetadataSchema || source.Count != 2 || source.GeneratedAt.IsZero() || len(providers) != 2 || providers[0].Name != "Alpha" {
 		t.Fatalf("unexpected metadata result: %#v %#v", providers, source)
 	}
 }

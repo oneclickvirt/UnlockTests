@@ -33,13 +33,16 @@ type ProviderMetadata struct {
 }
 
 type ProviderMetadataSource struct {
-	Source   string `json:"source"`
-	URL      string `json:"url,omitempty"`
-	Fallback bool   `json:"fallback"`
+	Schema      string    `json:"schema"`
+	Count       int       `json:"count"`
+	GeneratedAt time.Time `json:"generated_at,omitempty"`
+	Source      string    `json:"source"`
+	Fallback    bool      `json:"fallback"`
 }
 
 type providerMetadataDocument struct {
 	SchemaVersion string             `json:"schema_version"`
+	GeneratedAt   time.Time          `json:"generated_at,omitempty"`
 	Providers     []ProviderMetadata `json:"providers"`
 }
 
@@ -53,6 +56,17 @@ func LoadProviderMetadata(ctx context.Context, client *http.Client) ([]ProviderM
 // performing network access.
 func EmbeddedProviderMetadata() ([]ProviderMetadata, error) {
 	return parseProviderMetadata(embeddedProviderMetadata, 0)
+}
+
+// EmbeddedProviderMetadataSnapshot returns the compile-time snapshot together
+// with the version metadata needed by aggregators and GUIs.
+func EmbeddedProviderMetadataSnapshot() ([]ProviderMetadata, ProviderMetadataSource, error) {
+	providers, err := parseProviderMetadata(embeddedProviderMetadata, 0)
+	if err != nil {
+		return nil, ProviderMetadataSource{}, err
+	}
+	source := ProviderMetadataSource{Schema: ProviderMetadataSchema, Count: len(providers), GeneratedAt: providerMetadataGeneratedAt(embeddedProviderMetadata), Source: "embedded", Fallback: true}
+	return providers, source, nil
 }
 
 func loadProviderMetadata(ctx context.Context, client *http.Client, urls []string, embedded []byte) ([]ProviderMetadata, ProviderMetadataSource, error) {
@@ -73,10 +87,20 @@ func loadProviderMetadata(ctx context.Context, client *http.Client, urls []strin
 		}
 		providers, parseErr := parseProviderMetadata(data, len(embeddedProviders))
 		if parseErr == nil {
-			return providers, ProviderMetadataSource{Source: "remote", URL: rawURL}, nil
+			return providers, ProviderMetadataSource{Schema: ProviderMetadataSchema, Count: len(providers), GeneratedAt: providerMetadataGeneratedAt(data), Source: "remote"}, nil
 		}
 	}
-	return embeddedProviders, ProviderMetadataSource{Source: "embedded", Fallback: true}, nil
+	return embeddedProviders, ProviderMetadataSource{Schema: ProviderMetadataSchema, Count: len(embeddedProviders), GeneratedAt: providerMetadataGeneratedAt(embedded), Source: "embedded", Fallback: true}, nil
+}
+
+func providerMetadataGeneratedAt(data []byte) time.Time {
+	var document struct {
+		GeneratedAt time.Time `json:"generated_at"`
+	}
+	if json.Unmarshal(data, &document) != nil {
+		return time.Time{}
+	}
+	return document.GeneratedAt
 }
 
 func fetchProviderMetadata(ctx context.Context, client *http.Client, rawURL string) ([]byte, error) {
