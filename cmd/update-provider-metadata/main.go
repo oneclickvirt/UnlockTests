@@ -1,18 +1,26 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/oneclickvirt/UnlockTests/executor"
 )
 
-const schemaVersion = "goecs.unlocktests/provider-metadata-v1"
+const schemaVersion = executor.ProviderMetadataSchema
 
 type dataDocument struct {
 	SchemaVersion string                      `json:"schema_version"`
@@ -21,14 +29,161 @@ type dataDocument struct {
 
 func main() {
 	output := flag.String("output", "executor/data/provider-metadata.json", "snapshot output path")
-	minimum := flag.Int("min-count", 1, "minimum accepted provider count")
+	source := flag.String("source", executor.DefaultProviderMetadataSyncSource, "reference provider registry URL")
+	timeout := flag.Duration("timeout", 30*time.Second, "reference provider fetch timeout")
+	minimum := flag.Int("min-count", executor.DefaultProviderMetadataMinimum, "minimum accepted provider count")
+	minimumSource := flag.Int("min-source-count", executor.DefaultProviderMetadataMinimum, "minimum accepted reference provider count")
 	flag.Parse()
 	names, categories, err := providerCatalog()
 	if err != nil {
 		fatal(err)
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
+	defer cancel()
+	reference, err := fetchReferenceProviders(ctx, http.DefaultClient, *source)
+	if err != nil {
+		fatal(err)
+	}
+	if len(reference) < *minimumSource {
+		fatal(fmt.Errorf("reference provider count %d is below minimum %d", len(reference), *minimumSource))
+	}
+	for _, provider := range reference {
+		key := strings.ToLower(provider.Name)
+		if _, exists := categories[key]; !exists {
+			categories[key] = provider.Category
+			names = append(names, provider.Name)
+		}
+	}
 	if err := updateSnapshot(*output, names, categories, *minimum); err != nil {
 		fatal(err)
+	}
+}
+
+type referenceProvider struct {
+	Name     string
+	Category string
+}
+
+func fetchReferenceProviders(ctx context.Context, client *http.Client, source string) ([]referenceProvider, error) {
+	if client == nil {
+		client = http.DefaultClient
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, source, nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("User-Agent", "oneclickvirt-unlocktests-provider-sync/1")
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("reference provider registry returned HTTP %d", response.StatusCode)
+	}
+	const maximumSize = 4 << 20
+	data, err := io.ReadAll(io.LimitReader(response.Body, maximumSize+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > maximumSize {
+		return nil, fmt.Errorf("reference provider registry exceeds %d bytes", maximumSize)
+	}
+	return parseReferenceProviders(data)
+}
+
+func parseReferenceProviders(data []byte) ([]referenceProvider, error) {
+	file, err := parser.ParseFile(token.NewFileSet(), "lists.go", data, 0)
+	if err != nil {
+		return nil, fmt.Errorf("parse reference provider registry: %w", err)
+	}
+	unique := make(map[string]referenceProvider)
+	for _, declaration := range file.Decls {
+		general, ok := declaration.(*ast.GenDecl)
+		if !ok || general.Tok != token.VAR {
+			continue
+		}
+		for _, rawSpec := range general.Specs {
+			spec, ok := rawSpec.(*ast.ValueSpec)
+			if !ok {
+				continue
+			}
+			for index, name := range spec.Names {
+				if index >= len(spec.Values) {
+					continue
+				}
+				category := referenceCategory(name.Name)
+				if category == "" {
+					continue
+				}
+				list, ok := spec.Values[index].(*ast.CompositeLit)
+				if !ok {
+					continue
+				}
+				for _, rawItem := range list.Elts {
+					item, ok := rawItem.(*ast.CompositeLit)
+					if !ok || len(item.Elts) == 0 {
+						continue
+					}
+					literal, ok := item.Elts[0].(*ast.BasicLit)
+					if !ok || literal.Kind != token.STRING {
+						continue
+					}
+					providerName, unquoteErr := strconv.Unquote(literal.Value)
+					providerName = strings.TrimSpace(providerName)
+					if unquoteErr != nil || providerName == "" {
+						continue
+					}
+					key := strings.ToLower(providerName)
+					if _, exists := unique[key]; !exists {
+						unique[key] = referenceProvider{Name: providerName, Category: category}
+					}
+				}
+			}
+		}
+	}
+	providers := make([]referenceProvider, 0, len(unique))
+	for _, provider := range unique {
+		providers = append(providers, provider)
+	}
+	sort.Slice(providers, func(i, j int) bool { return strings.ToLower(providers[i].Name) < strings.ToLower(providers[j].Name) })
+	if len(providers) == 0 {
+		return nil, fmt.Errorf("reference provider registry contains no providers")
+	}
+	return providers, nil
+}
+
+func referenceCategory(name string) string {
+	name = strings.TrimSuffix(name, "Tests")
+	switch name {
+	case "Globe":
+		return "global"
+	case "HongKong":
+		return "hong-kong"
+	case "Taiwan":
+		return "taiwan"
+	case "Japan":
+		return "japan"
+	case "Korea":
+		return "korea"
+	case "NorthAmerica":
+		return "north-america"
+	case "SouthAmerica":
+		return "south-america"
+	case "SouthEastAsia":
+		return "south-east-asia"
+	case "Europe":
+		return "europe"
+	case "Africa":
+		return "africa"
+	case "Oceania":
+		return "oceania"
+	case "Sports":
+		return "sports"
+	case "AI":
+		return "ai"
+	default:
+		return ""
 	}
 }
 

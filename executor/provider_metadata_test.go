@@ -43,7 +43,7 @@ func TestLoadProviderMetadataFallsBackOnSchemaFailure(t *testing.T) {
 }
 
 func TestEmbeddedProviderMetadataCoversAIRegistry(t *testing.T) {
-	providers, err := parseProviderMetadata(embeddedProviderMetadata, 0)
+	providers, err := EmbeddedProviderMetadata()
 	if err != nil {
 		t.Fatal(err)
 	}

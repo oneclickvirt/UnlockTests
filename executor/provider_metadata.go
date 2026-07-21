@@ -12,7 +12,11 @@ import (
 	"time"
 )
 
-const providerMetadataSchema = "goecs.unlocktests/provider-metadata-v1"
+const (
+	ProviderMetadataSchema            = "goecs.unlocktests/provider-metadata-v1"
+	DefaultProviderMetadataMinimum    = 100
+	DefaultProviderMetadataSyncSource = "https://raw.githubusercontent.com/HsukqiLee/MediaUnlockTest/main/pkg/providers/lists.go"
+)
 
 var providerMetadataURLs = []string{
 	"https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/UnlockTests/main/executor/data/provider-metadata.json",
@@ -43,6 +47,12 @@ type providerMetadataDocument struct {
 // provider function registry or any private provider request logic.
 func LoadProviderMetadata(ctx context.Context, client *http.Client) ([]ProviderMetadata, ProviderMetadataSource, error) {
 	return loadProviderMetadata(ctx, client, providerMetadataURLs, embeddedProviderMetadata)
+}
+
+// EmbeddedProviderMetadata returns the validated compile-time snapshot without
+// performing network access.
+func EmbeddedProviderMetadata() ([]ProviderMetadata, error) {
+	return parseProviderMetadata(embeddedProviderMetadata, 0)
 }
 
 func loadProviderMetadata(ctx context.Context, client *http.Client, urls []string, embedded []byte) ([]ProviderMetadata, ProviderMetadataSource, error) {
@@ -98,7 +108,7 @@ func parseProviderMetadata(data []byte, minimum int) ([]ProviderMetadata, error)
 	if err := json.Unmarshal(data, &document); err != nil {
 		return nil, err
 	}
-	if document.SchemaVersion != providerMetadataSchema {
+	if document.SchemaVersion != ProviderMetadataSchema {
 		return nil, fmt.Errorf("unsupported schema %q", document.SchemaVersion)
 	}
 	seen := make(map[string]struct{}, len(document.Providers))

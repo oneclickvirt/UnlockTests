@@ -2,6 +2,14 @@
   "schema_version": "goecs.unlocktests/provider-metadata-v1",
   "providers": [
     {
+      "name": "10 Play",
+      "category": "oceania"
+    },
+    {
+      "name": "4GTV",
+      "category": "taiwan"
+    },
+    {
       "name": "4GTV.TV",
       "category": "taiwan"
     },
@@ -18,12 +26,20 @@
       "category": "oceania"
     },
     {
+      "name": "Abema",
+      "category": "japan"
+    },
+    {
       "name": "Abema.TV",
       "category": "japan"
     },
     {
       "name": "Acorn TV",
       "category": "oceania"
+    },
+    {
+      "name": "AIS Play",
+      "category": "south-east-asia"
     },
     {
       "name": "Amazon Prime Video",
@@ -40,6 +56,10 @@
     {
       "name": "AnimeFesta",
       "category": "japan"
+    },
+    {
+      "name": "Anthropic Claude",
+      "category": "ai"
     },
     {
       "name": "Apple",
@@ -62,12 +82,20 @@
       "category": "global"
     },
     {
+      "name": "Bing",
+      "category": "global"
+    },
+    {
       "name": "BingSearch",
       "category": "global"
     },
     {
       "name": "BritBox",
       "category": "oceania"
+    },
+    {
+      "name": "ByteDance Coze",
+      "category": "ai"
     },
     {
       "name": "Canal+",
@@ -80,6 +108,10 @@
     {
       "name": "CBC Gem",
       "category": "north-america"
+    },
+    {
+      "name": "CH",
+      "category": "europe"
     },
     {
       "name": "Channel 10",
@@ -144,6 +176,10 @@
       "category": "sports"
     },
     {
+      "name": "DE",
+      "category": "europe"
+    },
+    {
       "name": "DeepSeek",
       "category": "ai"
     },
@@ -176,6 +212,10 @@
       "category": "japan"
     },
     {
+      "name": "Doc Play",
+      "category": "oceania"
+    },
+    {
       "name": "Docplay",
       "category": "oceania"
     },
@@ -195,8 +235,16 @@
       "category": "north-america"
     },
     {
+      "name": "ErogameScape",
+      "category": "japan"
+    },
+    {
       "name": "EroGameSpace",
       "category": "japan"
+    },
+    {
+      "name": "ES",
+      "category": "europe"
     },
     {
       "name": "ESPN+",
@@ -207,6 +255,10 @@
       "category": "sports"
     },
     {
+      "name": "FOD (Fuji TV)",
+      "category": "japan"
+    },
+    {
       "name": "FOD(Fuji TV)",
       "category": "japan"
     },
@@ -215,8 +267,16 @@
       "category": "north-america"
     },
     {
+      "name": "FR",
+      "category": "europe"
+    },
+    {
       "name": "France TV",
       "category": "europe"
+    },
+    {
+      "name": "Friday Video",
+      "category": "taiwan"
     },
     {
       "name": "FridayVideo",
@@ -231,11 +291,23 @@
       "category": "north-america"
     },
     {
+      "name": "Galaxy Play",
+      "category": "south-east-asia"
+    },
+    {
+      "name": "GB",
+      "category": "europe"
+    },
+    {
       "name": "Gemini",
       "category": "ai",
       "aliases": [
         "Google Gemini"
       ]
+    },
+    {
+      "name": "Google Gemini",
+      "category": "ai"
     },
     {
       "name": "Google Play Store",
@@ -277,6 +349,14 @@
       "category": "japan"
     },
     {
+      "name": "ID",
+      "category": "south-east-asia"
+    },
+    {
+      "name": "IN",
+      "category": "south-east-asia"
+    },
+    {
       "name": "Instagram Licensed Audio",
       "category": "global"
     },
@@ -285,7 +365,15 @@
       "category": "global"
     },
     {
+      "name": "IT",
+      "category": "europe"
+    },
+    {
       "name": "ITV Hub",
+      "category": "europe"
+    },
+    {
+      "name": "ITVX",
       "category": "europe"
     },
     {
@@ -295,6 +383,14 @@
     {
       "name": "Joyn",
       "category": "europe"
+    },
+    {
+      "name": "K+",
+      "category": "south-east-asia"
+    },
+    {
+      "name": "Kancolle",
+      "category": "japan"
     },
     {
       "name": "Kancolle Japan",
@@ -307,6 +403,10 @@
     {
       "name": "Kayo Sports",
       "category": "oceania"
+    },
+    {
+      "name": "KBS",
+      "category": "korea"
     },
     {
       "name": "KBS Domestic",
@@ -328,8 +428,16 @@
       "category": "global"
     },
     {
+      "name": "KOCOWA+",
+      "category": "north-america"
+    },
+    {
       "name": "Lemino",
       "category": "japan"
+    },
+    {
+      "name": "LineTV",
+      "category": "taiwan"
     },
     {
       "name": "LineTV.TW",
@@ -348,6 +456,10 @@
       "category": "global"
     },
     {
+      "name": "Max",
+      "category": "hong-kong"
+    },
+    {
       "name": "MegogoTV",
       "category": "europe"
     },
@@ -357,6 +469,10 @@
       "aliases": [
         "MetaAI"
       ]
+    },
+    {
+      "name": "MeWatch",
+      "category": "south-east-asia"
     },
     {
       "name": "MGM+",
@@ -378,8 +494,16 @@
       "category": "europe"
     },
     {
+      "name": "Moonshot Kimi",
+      "category": "ai"
+    },
+    {
       "name": "Mora",
       "category": "japan"
+    },
+    {
+      "name": "Movistar Plus+",
+      "category": "europe"
     },
     {
       "name": "Movistar+",
@@ -388,6 +512,14 @@
     {
       "name": "music.jp",
       "category": "japan"
+    },
+    {
+      "name": "MX Player",
+      "category": "south-east-asia"
+    },
+    {
+      "name": "MY",
+      "category": "south-east-asia"
     },
     {
       "name": "MyTVSuper",
@@ -438,6 +570,10 @@
       "category": "japan"
     },
     {
+      "name": "NL",
+      "category": "europe"
+    },
+    {
       "name": "NLZIET",
       "category": "europe"
     },
@@ -463,6 +599,14 @@
       "aliases": [
         "ChatGPT"
       ]
+    },
+    {
+      "name": "OpenAI ChatGPT",
+      "category": "ai"
+    },
+    {
+      "name": "Panda TV",
+      "category": "korea"
     },
     {
       "name": "PandaTV",
@@ -508,8 +652,20 @@
       "category": "japan"
     },
     {
+      "name": "Princess Connect Re:Dive Japan",
+      "category": "japan"
+    },
+    {
       "name": "Project Sekai - Colorful Stage",
       "category": "japan"
+    },
+    {
+      "name": "Project Sekai: Colorful Stage",
+      "category": "japan"
+    },
+    {
+      "name": "Quora Poe",
+      "category": "ai"
     },
     {
       "name": "Radiko",
@@ -528,12 +684,24 @@
       "category": "europe"
     },
     {
+      "name": "Rakuten TV EU",
+      "category": "europe"
+    },
+    {
       "name": "Rakuten TV Japan",
+      "category": "japan"
+    },
+    {
+      "name": "Rakuten TV JP",
       "category": "japan"
     },
     {
       "name": "Reddit",
       "category": "global"
+    },
+    {
+      "name": "RU",
+      "category": "europe"
     },
     {
       "name": "SBS on Demand",
@@ -546,6 +714,10 @@
     {
       "name": "Setanta Sports",
       "category": "sports"
+    },
+    {
+      "name": "SG",
+      "category": "south-east-asia"
     },
     {
       "name": "Showmax",
@@ -568,6 +740,14 @@
       "category": "europe"
     },
     {
+      "name": "Sky Go NZ",
+      "category": "oceania"
+    },
+    {
+      "name": "Sky Show Time",
+      "category": "europe"
+    },
+    {
       "name": "SkyGo NZ",
       "category": "oceania"
     },
@@ -582,6 +762,10 @@
     {
       "name": "SonyLiv",
       "category": "global"
+    },
+    {
+      "name": "Sooka",
+      "category": "south-east-asia"
     },
     {
       "name": "SOOP",
@@ -615,12 +799,28 @@
       "category": "north-america"
     },
     {
+      "name": "Steam",
+      "category": "global"
+    },
+    {
       "name": "Steam Store",
       "category": "global"
     },
     {
+      "name": "Tata Play",
+      "category": "south-east-asia"
+    },
+    {
       "name": "Telasa",
       "category": "japan"
+    },
+    {
+      "name": "TH",
+      "category": "south-east-asia"
+    },
+    {
+      "name": "Three Now",
+      "category": "oceania"
     },
     {
       "name": "ThreeNow",
@@ -637,6 +837,10 @@
     {
       "name": "TNTSports",
       "category": "europe"
+    },
+    {
+      "name": "TrueID",
+      "category": "south-east-asia"
     },
     {
       "name": "Tubi TV",
@@ -663,6 +867,10 @@
       "category": "europe"
     },
     {
+      "name": "Video Land",
+      "category": "europe"
+    },
+    {
       "name": "Videoland",
       "category": "europe"
     },
@@ -677,6 +885,10 @@
     {
       "name": "Viu.TV",
       "category": "hong-kong"
+    },
+    {
+      "name": "VN",
+      "category": "south-east-asia"
     },
     {
       "name": "WATCHA",
@@ -703,7 +915,15 @@
       "category": "global"
     },
     {
+      "name": "x.AI Grok",
+      "category": "ai"
+    },
+    {
       "name": "YouTube CDN",
+      "category": "global"
+    },
+    {
+      "name": "Youtube Premium",
       "category": "global"
     },
     {
@@ -713,6 +933,10 @@
     {
       "name": "ZDF",
       "category": "europe"
+    },
+    {
+      "name": "Zee5",
+      "category": "south-east-asia"
     }
   ]
 }

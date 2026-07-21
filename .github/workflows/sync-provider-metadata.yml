@@ -17,12 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
       - name: Update snapshot
         run: go run ./cmd/update-provider-metadata
+      - name: Validate updater and runtime loader
+        run: go test -race ./cmd/update-provider-metadata ./executor
+      - name: Vet updater and runtime loader
+        run: go vet ./cmd/update-provider-metadata ./executor
       - name: Commit semantic changes
         run: |
           if git diff --quiet -- executor/data/provider-metadata.json; then
