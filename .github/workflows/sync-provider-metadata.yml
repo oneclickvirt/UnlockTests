@@ -4,6 +4,18 @@ on:
   schedule:
     - cron: "53 3 * * *"
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/sync-provider-metadata.yml"
+      - "cmd/update-provider-metadata/**"
+      - "executor/data/**"
+      - "executor/provider_metadata.go"
+      - "executor/provider_metadata_test.go"
+      - "model/model.go"
+      - "go.mod"
+      - "go.sum"
 
 concurrency:
   group: unlocktests-provider-metadata-sync
