@@ -29,11 +29,11 @@ jobs:
         run: go vet ./cmd/update-provider-metadata ./executor
       - name: Commit semantic changes
         run: |
-          if git diff --quiet -- executor/data/provider-metadata.json; then
+          if git diff --quiet -- executor/data/provider-metadata.json executor/data/provider-metadata.manifest.json; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add executor/data/provider-metadata.json
+          git add executor/data/provider-metadata.json executor/data/provider-metadata.manifest.json
           git commit -m "chore(data): update provider metadata"
           git push
