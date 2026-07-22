@@ -74,7 +74,7 @@ func newFlagSet(opts *cliOptions, output io.Writer) *flag.FlagSet {
 func main() {
 	opts, err := parseCLI(os.Args[1:])
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, sanitizeErrorText(err.Error()))
 		os.Exit(2)
 	}
 	model.EnableLoger = opts.log
@@ -155,7 +155,7 @@ func main() {
 	}
 	if Iface != "" {
 		if err := executor.SetupInterface(Iface); err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, sanitizeErrorText(err.Error()))
 			return
 		}
 	}
@@ -207,24 +207,24 @@ func main() {
 		if testString != "" {
 			result, err := executor.RunNamedTests(utils.Ipv4HttpClient, "ipv4", language, useBar, testString)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
+				fmt.Fprintln(os.Stderr, sanitizeErrorText(err.Error()))
 				return
 			}
-			fmt.Fprint(utils.ColorStdout, result)
+			fmt.Fprint(utils.ColorStdout, indentLegacyOutput(result))
 		} else {
-			fmt.Fprint(utils.ColorStdout, executor.RunTests(utils.Ipv4HttpClient, "ipv4", language, useBar))
+			fmt.Fprint(utils.ColorStdout, indentLegacyOutput(executor.RunTests(utils.Ipv4HttpClient, "ipv4", language, useBar)))
 		}
 	}
 	if executor.IPV6 {
 		if testString != "" {
 			result, err := executor.RunNamedTests(utils.Ipv6HttpClient, "ipv6", language, useBar, testString)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
+				fmt.Fprintln(os.Stderr, sanitizeErrorText(err.Error()))
 				return
 			}
-			fmt.Fprint(utils.ColorStdout, result)
+			fmt.Fprint(utils.ColorStdout, indentLegacyOutput(result))
 		} else {
-			fmt.Fprint(utils.ColorStdout, executor.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar))
+			fmt.Fprint(utils.ColorStdout, indentLegacyOutput(executor.RunTests(utils.Ipv6HttpClient, "ipv6", language, useBar)))
 		}
 	}
 	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
