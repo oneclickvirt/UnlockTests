@@ -101,7 +101,7 @@ func SetupHttpProxy(httpProxy string) {
 	}
 	u, err := url.Parse(httpProxy)
 	if err != nil || u.Scheme == "" || u.Host == "" {
-		fmt.Printf("Warning: HTTP proxy address is invalid: %s\n", httpProxy)
+		fmt.Println(" Warning: HTTP proxy configuration is invalid")
 		setTransportProxy(nil)
 		return
 	}
@@ -118,15 +118,15 @@ func SetupSocksProxy(socksProxy string) {
 	}
 	proxyURL, err := url.Parse(socksProxy)
 	if err != nil {
-		fmt.Printf("Warning: SOCKS5 proxy address is invalid: %v\n", err)
+		fmt.Println(" Warning: SOCKS5 proxy configuration is invalid")
 		return
 	}
 	if proxyURL.Scheme != "" && proxyURL.Scheme != "socks5" && proxyURL.Scheme != "socks5h" {
-		fmt.Printf("Warning: SOCKS5 proxy scheme is invalid: %s\n", proxyURL.Scheme)
+		fmt.Println(" Warning: SOCKS5 proxy scheme is invalid")
 		return
 	}
 	if proxyURL.Host == "" {
-		fmt.Println("Warning: SOCKS5 proxy host is empty")
+		fmt.Println(" Warning: SOCKS5 proxy host is empty")
 		return
 	}
 	var auth *proxy.Auth
@@ -140,12 +140,12 @@ func SetupSocksProxy(socksProxy string) {
 	}
 	dialer, err := proxy.SOCKS5("tcp", proxyURL.Host, auth, utils.Dialer)
 	if err != nil {
-		fmt.Printf("Warning: Failed to create SOCKS5 connection: %v\n", err)
+		fmt.Println(" Warning: Failed to create SOCKS5 connection")
 		return
 	}
 	contextDialer, ok := dialer.(proxy.ContextDialer)
 	if !ok {
-		fmt.Println("Warning: SOCKS5 dialer does not support context")
+		fmt.Println(" Warning: SOCKS5 dialer does not support context")
 		return
 	}
 
@@ -281,7 +281,7 @@ func GetIpv4Info(showIP bool) {
 	if err != nil {
 		IPV4 = false
 		if showIP {
-			fmt.Println("Can not detect IPv4 Address")
+			fmt.Println(" Can not detect IPv4 Address")
 		}
 		return
 	}
@@ -290,7 +290,7 @@ func GetIpv4Info(showIP bool) {
 	if err != nil {
 		IPV4 = false
 		if showIP {
-			fmt.Println("Can not detect IPv4 Address")
+			fmt.Println(" Can not detect IPv4 Address")
 		}
 		return
 	}
@@ -299,7 +299,7 @@ func GetIpv4Info(showIP bool) {
 		_, afterIP, _ := strings.Cut(body, "ip=")
 		ip, _, _ := strings.Cut(afterIP, "\n")
 		maskedIP := maskIP(ip)
-		fmt.Fprintln(utils.ColorStdout, "Your IPV4 address:", Blue(maskedIP))
+		fmt.Fprintln(utils.ColorStdout, " Your IPV4 address:", Blue(maskedIP))
 	}
 }
 
@@ -310,7 +310,7 @@ func GetIpv6Info(showIP bool) {
 	if err != nil {
 		IPV6 = false
 		if showIP {
-			fmt.Println("Can not detect IPv6 Address")
+			fmt.Println(" Can not detect IPv6 Address")
 		}
 		return
 	}
@@ -319,7 +319,7 @@ func GetIpv6Info(showIP bool) {
 	if err != nil {
 		IPV6 = false
 		if showIP {
-			fmt.Println("Can not detect IPv6 Address")
+			fmt.Println(" Can not detect IPv6 Address")
 		}
 		return
 	}
@@ -328,6 +328,6 @@ func GetIpv6Info(showIP bool) {
 		_, afterIP, _ := strings.Cut(body, "ip=")
 		ip, _, _ := strings.Cut(afterIP, "\n")
 		maskedIP := maskIP(ip)
-		fmt.Fprintln(utils.ColorStdout, "Your IPV6 address:", Blue(maskedIP))
+		fmt.Fprintln(utils.ColorStdout, " Your IPV6 address:", Blue(maskedIP))
 	}
 }

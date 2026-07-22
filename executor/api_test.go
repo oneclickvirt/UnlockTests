@@ -112,6 +112,16 @@ func TestStructuredResultPreservesRateLimitedStatus(t *testing.T) {
 	}
 }
 
+func TestStructuredResultUsesStableProviderError(t *testing.T) {
+	got := structuredFromResult(model.Result{
+		Name: "Fixture", Status: model.StatusNetworkErr,
+		Err: errors.New("GET https://private.example/provider?token=secret from /private/path"),
+	})
+	if got.Error != "network_error" {
+		t.Fatalf("raw provider error was retained: %#v", got)
+	}
+}
+
 func TestRunStructuredAutoRunsBothIPVersions(t *testing.T) {
 	oldMultination := M
 	defer func() { M = oldMultination }()
@@ -266,6 +276,9 @@ func TestValidateNetworkOptions(t *testing.T) {
 	}
 	if err := validateNetworkOptions(RunOptions{HTTPProxy: "http://proxy.fixture"}); err != nil {
 		t.Fatalf("valid HTTP proxy rejected: %v", err)
+	}
+	if err := ValidateRunOptions(RunOptions{HTTPProxy: "http://user:secret@%zz"}); err == nil || err.Error() != "invalid HTTP proxy configuration" {
+		t.Fatalf("invalid authenticated proxy returned an unstable error: %v", err)
 	}
 }
 

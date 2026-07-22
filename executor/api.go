@@ -210,19 +210,25 @@ func validateNetworkOptions(opts RunOptions) error {
 	if raw := strings.TrimSpace(opts.HTTPProxy); raw != "" {
 		u, err := url.Parse(raw)
 		if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
-			return fmt.Errorf("invalid HTTPProxy %q", raw)
+			return errors.New("invalid HTTP proxy configuration")
 		}
 	}
 	if raw := strings.TrimSpace(opts.SOCKSProxy); raw != "" {
 		u, err := url.Parse(raw)
 		if err != nil || u.Host == "" || (u.Scheme != "socks5" && u.Scheme != "socks5h") {
-			return fmt.Errorf("invalid SOCKSProxy %q", raw)
+			return errors.New("invalid SOCKS proxy configuration")
 		}
 	}
 	if raw := strings.TrimSpace(opts.DNSServers); raw != "" && firstDNSServerDialAddress(raw) == "" {
-		return fmt.Errorf("invalid DNSServers %q", raw)
+		return errors.New("invalid DNS server configuration")
 	}
 	return nil
+}
+
+// ValidateRunOptions lets CLI and embedding layers reject ignored or invalid
+// network settings before mutating the shared legacy transports.
+func ValidateRunOptions(opts RunOptions) error {
+	return validateNetworkOptions(opts)
 }
 
 func normalizeIPVersion(ipVersion string) (string, error) {
@@ -429,9 +435,32 @@ func structuredFromResult(result model.Result) StructuredResult {
 		UnlockType: result.UnlockType,
 	}
 	if result.Err != nil {
-		structured.Error = result.Err.Error()
+		structured.Error = stableStructuredResultError(result)
 	}
 	return structured
+}
+
+func stableStructuredResultError(result model.Result) string {
+	if errors.Is(result.Err, context.Canceled) {
+		return "canceled"
+	}
+	if errors.Is(result.Err, context.DeadlineExceeded) || result.Status == model.StatusTimeout {
+		return "timeout"
+	}
+	switch result.Status {
+	case model.StatusRateLimited:
+		return "rate_limited"
+	case model.StatusDNSFailed:
+		return "dns_failed"
+	case model.StatusNetworkErr:
+		return "network_error"
+	case model.StatusBanned:
+		return "blocked"
+	case model.StatusNoIPv6:
+		return "ipv6_unsupported"
+	default:
+		return "provider_error"
+	}
 }
 
 func filterStructuredResults(results []StructuredResult, includeHeads bool) []StructuredResult {

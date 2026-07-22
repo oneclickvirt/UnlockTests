@@ -22,6 +22,34 @@ func TestMainRejectsInvalidLanguage(t *testing.T) {
 	expectMainExit(t, []string{"-L", "ja", "-f", "0"}, 2)
 }
 
+func TestParseCLIRejectsIgnoredConflictingAndPositionalOptions(t *testing.T) {
+	for _, args := range [][]string{
+		{"-json", "-s"},
+		{"-json", "-b"},
+		{"-timeout", "1s"},
+		{"-f", "1", "-test", "Netflix"},
+		{"unexpected"},
+	} {
+		if _, err := parseCLI(args); err == nil {
+			t.Fatalf("expected arguments %v to be rejected", args)
+		}
+	}
+}
+
+func TestParseCLINormalizesLanguageAndPreservesStructuredOptions(t *testing.T) {
+	opts, err := parseCLI([]string{"-L", " EN ", "-f", "0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if opts.language != "en" {
+		t.Fatalf("unexpected options: %#v", opts)
+	}
+	structured, err := parseCLI([]string{"-json", "-timeout", "5s", "-conc", "4"})
+	if err != nil || !structured.jsonOutput || structured.concurrency != 4 {
+		t.Fatalf("unexpected structured options: %#v err=%v", structured, err)
+	}
+}
+
 func TestHelperProcess(t *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return

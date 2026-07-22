@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	req "github.com/imroc/req/v3"
@@ -25,6 +26,8 @@ type cliOptions struct {
 	language, selection, testNames                string
 	concurrency                                   uint64
 	timeout                                       time.Duration
+	showIPSet, useBarSet, timeoutSet              bool
+	selectionSet, testNamesSet                    bool
 }
 
 type cliStructuredOutput struct {
@@ -41,8 +44,45 @@ func parseCLI(args []string) (cliOptions, error) {
 	if err := fs.Parse(args); err != nil {
 		return opts, err
 	}
-	if opts.timeout < 0 {
-		return opts, fmt.Errorf("timeout must not be negative")
+	if fs.NArg() != 0 {
+		return opts, fmt.Errorf("unexpected positional arguments: %s", strings.Join(fs.Args(), " "))
+	}
+	fs.Visit(func(current *flag.Flag) {
+		switch current.Name {
+		case "s":
+			opts.showIPSet = true
+		case "b":
+			opts.useBarSet = true
+		case "timeout":
+			opts.timeoutSet = true
+		case "f":
+			opts.selectionSet = true
+		case "test":
+			opts.testNamesSet = true
+		}
+	})
+	opts.language = strings.ToLower(strings.TrimSpace(opts.language))
+	if opts.help || opts.showVersion {
+		return opts, nil
+	}
+	if opts.mode != 0 && opts.mode != 4 && opts.mode != 6 {
+		return opts, fmt.Errorf("mode must be 0, 4, or 6")
+	}
+	if opts.language != "zh" && opts.language != "en" {
+		return opts, fmt.Errorf("language must be zh or en")
+	}
+	if opts.selectionSet && opts.testNamesSet && strings.TrimSpace(opts.selection) != "" && strings.TrimSpace(opts.testNames) != "" {
+		return opts, fmt.Errorf("-f and -test cannot be combined")
+	}
+	if opts.jsonOutput {
+		if opts.showIPSet || opts.useBarSet {
+			return opts, fmt.Errorf("-s and -b are not used with structured output")
+		}
+		if opts.timeoutSet && opts.timeout <= 0 {
+			return opts, fmt.Errorf("structured timeout must be positive")
+		}
+	} else if opts.timeoutSet {
+		return opts, fmt.Errorf("-timeout requires -json or -structured")
 	}
 	return opts, nil
 }
@@ -62,7 +102,7 @@ func newFlagSet(opts *cliOptions, output io.Writer) *flag.FlagSet {
 	fs.StringVar(&opts.dnsServers, "dns-servers", "", "specify DNS servers; example: -dns-servers \"1.1.1.1:53\"")
 	fs.StringVar(&opts.httpProxy, "http-proxy", "", "specify HTTP proxy; example: -http-proxy \"http://username:password@127.0.0.1:1080\"")
 	fs.StringVar(&opts.socksProxy, "socks-proxy", "", "specify SOCKS5 proxy; example: -socks-proxy \"socks5://username:password@127.0.0.1:1080\"")
-	fs.Uint64Var(&opts.concurrency, "conc", 0, "max concurrent tests (0=unlimited); example: -conc 50")
+	fs.Uint64Var(&opts.concurrency, "conc", 0, "max concurrent tests (0=structured default or legacy unlimited); example: -conc 50")
 	fs.BoolVar(&opts.cache, "cache", false, "enable duplicate test result caching; example: -cache")
 	fs.StringVar(&opts.language, "L", "zh", "language; specify 'en' for English or 'zh' for Chinese")
 	fs.BoolVar(&opts.jsonOutput, "json", false, "print structured provider results as JSON")
@@ -90,12 +130,8 @@ func main() {
 	mode, showIP, useBar, cache := opts.mode, opts.showIP, opts.useBar, opts.cache
 	Iface, DnsServers, httpProxy, socksProxy := opts.iface, opts.dnsServers, opts.httpProxy, opts.socksProxy
 	language, flagString, testString, conc := opts.language, opts.selection, opts.testNames, opts.concurrency
-	if mode != 0 && mode != 4 && mode != 6 {
-		fmt.Fprintf(os.Stderr, "invalid mode: %d; expected 0, 4, or 6\n", mode)
-		os.Exit(2)
-	}
-	if language != "zh" && language != "en" {
-		fmt.Fprintf(os.Stderr, "invalid language: %s; expected zh or en\n", language)
+	if err := executor.ValidateRunOptions(executor.RunOptions{Interface: Iface, DNSServers: DnsServers, HTTPProxy: httpProxy, SOCKSProxy: socksProxy}); err != nil {
+		fmt.Fprintln(os.Stderr, sanitizeErrorText(err.Error()))
 		os.Exit(2)
 	}
 	if opts.jsonOutput {
@@ -120,7 +156,7 @@ func main() {
 		defer cancel()
 		metadata, metadataSource, metadataErr := executor.LoadProviderMetadata(ctx, nil)
 		if metadataErr != nil {
-			output.Error = metadataErr.Error()
+			output.Error = sanitizeErrorText(metadataErr.Error())
 			encoded, _ := json.Marshal(output)
 			fmt.Println(string(encoded))
 			os.Exit(1)
@@ -140,7 +176,7 @@ func main() {
 		}
 		output.Results = results
 		if runErr != nil {
-			output.Error = runErr.Error()
+			output.Error = sanitizeErrorText(runErr.Error())
 		}
 		encoded, marshalErr := json.Marshal(output)
 		if marshalErr != nil {
@@ -156,7 +192,7 @@ func main() {
 	if Iface != "" {
 		if err := executor.SetupInterface(Iface); err != nil {
 			fmt.Fprintln(os.Stderr, sanitizeErrorText(err.Error()))
-			return
+			os.Exit(1)
 		}
 	}
 	if DnsServers != "" {
@@ -181,9 +217,9 @@ func main() {
 		executor.IPV4 = false
 	}
 	if language == "zh" {
-		fmt.Fprintln(utils.ColorStdout, "项目地址: "+Blue("https://github.com/oneclickvirt/UnlockTests"))
+		fmt.Fprintln(utils.ColorStdout, " 项目地址: "+Blue("https://github.com/oneclickvirt/UnlockTests"))
 	} else {
-		fmt.Fprintln(utils.ColorStdout, "Github Repo: "+Blue("https://github.com/oneclickvirt/UnlockTests"))
+		fmt.Fprintln(utils.ColorStdout, " Github Repo: "+Blue("https://github.com/oneclickvirt/UnlockTests"))
 	}
 	if testString == "" {
 		readStatus := executor.ReadSelect(language, flagString)
@@ -199,16 +235,16 @@ func main() {
 		executor.GetIpv6Info(showIP)
 	}
 	if language == "zh" {
-		fmt.Fprintln(utils.ColorStdout, "测试时间: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
+		fmt.Fprintln(utils.ColorStdout, " 测试时间: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
 	} else {
-		fmt.Fprintln(utils.ColorStdout, "Test time: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
+		fmt.Fprintln(utils.ColorStdout, " Test time: ", Yellow(time.Now().Format("2006-01-02 15:04:05")))
 	}
 	if executor.IPV4 {
 		if testString != "" {
 			result, err := executor.RunNamedTests(utils.Ipv4HttpClient, "ipv4", language, useBar, testString)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, sanitizeErrorText(err.Error()))
-				return
+				os.Exit(1)
 			}
 			fmt.Fprint(utils.ColorStdout, indentLegacyOutput(result))
 		} else {
@@ -220,7 +256,7 @@ func main() {
 			result, err := executor.RunNamedTests(utils.Ipv6HttpClient, "ipv6", language, useBar, testString)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, sanitizeErrorText(err.Error()))
-				return
+				os.Exit(1)
 			}
 			fmt.Fprint(utils.ColorStdout, indentLegacyOutput(result))
 		} else {
