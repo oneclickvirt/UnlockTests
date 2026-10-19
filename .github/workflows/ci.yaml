@@ -28,7 +28,7 @@ jobs:
     - name: Test
       run: go test ./... -coverprofile=coverage.txt
     - name: Create Tag
-      if: success()
+      if: ${{ success() && !inputs.test_only }}
       run: |
         set -euo pipefail
         git config --global user.name 'github-actions'
@@ -45,22 +45,31 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Update README.md
-      if: success()
+      if: ${{ success() && !inputs.test_only }}
       run: |
         set -euo pipefail
         sed -i "s|go get github.com/oneclickvirt/UnlockTests@.*|go get github.com/oneclickvirt/UnlockTests@${TAG}|" README.md
       env:
         TAG: ${{ env.TAG }}
     - name: Commit and Push README.md
-      if: success()
+      if: ${{ success() && !inputs.test_only }}
       run: |
         set -euo pipefail
         git add README.md
-        git commit -m "Update README.md with new tag ${TAG}"
-        git push origin main
+        if git diff --cached --quiet -- README.md; then
+          echo 'README.md unchanged; skipping commit.'
+        else
+          git commit -m "Update README.md with new tag ${TAG}"
+          git push origin main
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     env:
       GOPROXY: https://proxy.golang.org|direct
 'on':
-  workflow_dispatch: null
+  workflow_dispatch:
+    inputs:
+      test_only:
+        description: Run tests without creating tags, editing README or publishing binaries
+        type: boolean
+        default: false
